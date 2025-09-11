@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pago Múltiple de Cuotas{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-credit-card-2-front me-2"></i>Pago Múltiple de Cuotas</h2>
+                <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Lista de Cuotas Seleccionadas -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Cuotas Seleccionadas ({{ invoices|length }})</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Jugador</th>
+                                            <th>Concepto</th>
+                                            <th>Vencimiento</th>
+                                            <th>Estado</th>
+                                            <th class="text-end">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for invoice in invoices %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        {% if invoice.player.photo %}
+                                                            <img src="{{ invoice.player.photo.url }}" alt="{{ invoice.player.get_full_name }}" 
+                                                                 class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
+                                                                 style="width: 32px; height: 32px;">
+                                                                <i class="bi bi-person text-muted"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <strong>{{ invoice.player.get_full_name }}</strong><br>
+                                                            <small class="text-muted">{{ invoice.player.category.name|default:"Sin categoría" }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ invoice.fee_definition.name }}</strong>
+                                                    {% if invoice.fee_definition.description %}
+                                                        <br><small class="text-muted">{{ invoice.fee_definition.description }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{ invoice.due_date|date:"d/m/Y" }}<br>
+                                                    <small class="text-muted">{{ invoice.due_date|date:"l" }}</small>
+                                                </td>
+                                                <td>
+                                                    {% if invoice.due_date < today %}
+                                                        <span class="badge bg-danger">Atrasada</span><br>
+                                                        <small class="text-danger">{{ invoice.days_overdue }} días</small>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Pendiente</span><br>
+                                                        <small class="text-warning">{{ invoice.days_until_due }} días</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    <strong class="{% if invoice.due_date < today %}text-danger{% else %}text-warning{% endif %}">
+                                                        ${{ invoice.amount|floatformat:0 }}
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-primary">
+                                            <th colspan="4" class="text-end">Total a Pagar:</th>
+                                            <th class="text-end">
+                                                <h5 class="mb-0 text-primary">${{ total_amount|floatformat:0 }}</h5>
+                                            </th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Pago -->
+                <div class="col-lg-5 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Información de Pago</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" id="multiplePaymentForm">
+                                {% csrf_token %}
+                                
+                                <!-- IDs de las facturas -->
+                                {% for invoice in invoices %}
+                                    <input type="hidden" name="invoice_ids" value="{{ invoice.id }}">
+                                {% endfor %}
+                                
+                                <div class="mb-3">
+                                    <label for="payment_method" class="form-label">Método de Pago *</label>
+                                    <select name="payment_method" id="payment_method" class="form-select" required>
+                                        <option value="">Selecciona un método</option>
+                                        <option value="transferencia">Transferencia Bancaria</option>
+                                        <option value="efectivo">Efectivo</option>
+                                        <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                                        <option value="tarjeta_debito">Tarjeta de Débito</option>
+                                        <option value="cheque">Cheque</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_number" class="form-label">Número de Referencia</label>
+                                    <input type="text" name="reference_number" id="reference_number" 
+                                           class="form-control" placeholder="Ej: Número de transferencia, comprobante, etc.">
+                                    <div class="form-text">Opcional: Se agregará un sufijo único para cada cuota</div>
+                                </div>
+
+                                <!-- Información bancaria para transferencias -->
+                                <div id="bank_info" class="alert alert-info" style="display: none;">
+                                    <h6><i class="bi bi-bank me-2"></i>Datos para Transferencia</h6>
+                                    <p class="mb-1"><strong>Banco:</strong> Banco Estado</p>
+                                    <p class="mb-1"><strong>Cuenta Corriente:</strong> 12345678-9</p>
+                                    <p class="mb-1"><strong>RUT:</strong> 12.345.678-9</p>
+                                    <p class="mb-0"><strong>Titular:</strong> Club Deportes Puerto Montt</p>
+                                </div>
+
+                                <!-- Resumen del Pago -->
+                                <div class="alert alert-primary">
+                                    <h6><i class="bi bi-calculator me-2"></i>Resumen del Pago</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Cuotas:</strong><br>
+                                            <span class="text-muted">{{ invoices|length }} cuotas</span>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <strong>Total:</strong><br>
+                                            <h5 class="text-primary mb-0">${{ total_amount|floatformat:0 }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="confirm_payment" required>
+                                        <label class="form-check-label" for="confirm_payment">
+                                            Confirmo que he realizado el pago por <strong>${{ total_amount|floatformat:0 }}</strong> correspondiente a {{ invoices|length }} cuotas
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                                        <i class="bi bi-check-circle me-2"></i>Confirmar Pago Múltiple
+                                    </button>
+                                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-info-circle me-2"></i>Información Importante</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success me-2"></i>Todas las cuotas serán procesadas simultáneamente</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Recibirás confirmación por email de cada pago</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Los comprobantes estarán disponibles en tu historial</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-shield-check me-2"></i>Seguridad</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success me-2"></i>Transacción segura y encriptada</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Registro completo de la operación</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Respaldo automático de los datos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-telephone me-2"></i>¿Necesitas Ayuda?</h6>
+                            <p class="mb-1">Contacta con nosotros:</p>
+                            <p class="mb-1"><i class="bi bi-envelope me-2"></i>finanzas@deportespuertomontt.cl</p>
+                            <p class="mb-0"><i class="bi bi-phone me-2"></i>+56 9 1234 5678</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethodSelect = document.getElementById('payment_method');
+    const bankInfo = document.getElementById('bank_info');
+    const confirmCheckbox = document.getElementById('confirm_payment');
+    const submitBtn = document.getElementById('submitBtn');
+    const paymentForm = document.getElementById('multiplePaymentForm');
+
+    // Mostrar información bancaria para transferencias
+    paymentMethodSelect.addEventListener('change', function() {
+        if (this.value === 'transferencia') {
+            bankInfo.style.display = 'block';
+        } else {
+            bankInfo.style.display = 'none';
+        }
+        checkFormValidity();
+    });
+
+    // Habilitar/deshabilitar botón de envío
+    function checkFormValidity() {
+        const methodSelected = paymentMethodSelect.value !== '';
+        const confirmed = confirmCheckbox.checked;
+        
+        submitBtn.disabled = !(methodSelected && confirmed);
+    }
+
+    confirmCheckbox.addEventListener('change', checkFormValidity);
+    paymentMethodSelect.addEventListener('change', checkFormValidity);
+
+    // Confirmación antes de enviar
+    paymentForm.addEventListener('submit', function(e) {
+        const method = paymentMethodSelect.options[paymentMethodSelect.selectedIndex].text;
+        const amount = '{{ total_amount|floatformat:0 }}';
+        const count = '{{ invoices|length }}';
+        
+        if (!confirm(`¿Confirmas el pago de $${amount} para ${count} cuotas mediante ${method}?\n\nEsta acción procesará todos los pagos de forma simultánea.`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

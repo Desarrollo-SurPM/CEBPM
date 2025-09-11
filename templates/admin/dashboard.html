@@ -28,18 +28,57 @@
     
     <div class="col-md-3 mb-4">
         <div class="stat-card warning">
-            <div class="stat-number">{{ pending_registrations }}</div>
+            <div class="stat-number">${{ total_pending_quotas|floatformat:0 }}</div>
             <div class="stat-label">
-                <i class="bi bi-clock me-2"></i>Registros Pendientes
+                <i class="bi bi-clock me-2"></i>Cuotas Pendientes
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
         <div class="stat-card danger">
-            <div class="stat-number">{{ total_payments }}</div>
+            <div class="stat-number">${{ total_funds|floatformat:0 }}</div>
             <div class="stat-label">
-                <i class="bi bi-cash-stack me-2"></i>Pagos Completados
+                <i class="bi bi-cash-stack me-2"></i>Fondos Totales
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Segunda fila de estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="stat-card success">
+            <div class="stat-number">${{ total_paid_quotas|floatformat:0 }}</div>
+            <div class="stat-label">
+                <i class="bi bi-check-circle me-2"></i>Cuotas Pagadas
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="stat-card danger">
+            <div class="stat-number">${{ total_overdue_quotas|floatformat:0 }}</div>
+            <div class="stat-label">
+                <i class="bi bi-exclamation-triangle me-2"></i>Cuotas Atrasadas
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="stat-card info">
+            <div class="stat-number">{{ active_sponsors }}</div>
+            <div class="stat-label">
+                <i class="bi bi-building me-2"></i>Auspiciadores Activos
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="stat-card warning">
+            <div class="stat-number">{{ pending_registrations }}</div>
+            <div class="stat-label">
+                <i class="bi bi-person-plus me-2"></i>Registros Pendientes
             </div>
         </div>
     </div>
@@ -193,6 +232,16 @@
                 <div class="col-md-3 mb-2">
                     <a href="{% url 'admin_panel:finances' %}" class="btn btn-outline-warning w-100">
                         <i class="bi bi-cash-stack me-2"></i>Ver Finanzas
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{% url 'admin_sponsors' %}" class="btn btn-outline-success w-100">
+                        <i class="bi bi-building me-2"></i>Gestionar Auspiciadores
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{% url 'admin_player_cards' %}" class="btn btn-outline-info w-100">
+                        <i class="bi bi-person-badge me-2"></i>Fichas de Jugadores
                     </a>
                 </div>
             </div>

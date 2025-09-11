@@ -21,4 +21,10 @@ urlpatterns = [
     # Communications
     path('communications/', admin_views.admin_communications, name='communications'),
     path('communications/send-notification/', admin_views.admin_send_notification, name='send_notification'),
+    
+    # Sponsors management
+    path('sponsors/', admin_views.admin_sponsors, name='admin_sponsors'),
+    
+    # Player cards by category
+    path('player-cards/', admin_views.admin_player_cards, name='admin_player_cards'),
 ]

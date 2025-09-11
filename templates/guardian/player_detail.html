@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ player.get_full_name }} - Ficha del Jugador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-person-badge me-2"></i>Ficha de {{ player.get_full_name }}</h2>
+                <a href="{% url 'guardian_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Información del Jugador -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-person me-2"></i>Información Personal</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <!-- Foto del jugador -->
+                            {% if player.photo %}
+                                <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" 
+                                     class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3" 
+                                     style="width: 120px; height: 120px; margin: 0 auto;">
+                                    <i class="bi bi-person text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <h4 class="mb-3">{{ player.get_full_name }}</h4>
+                            
+                            <div class="row g-3 text-start">
+                                <div class="col-12">
+                                    <strong>RUT:</strong><br>
+                                    <span class="text-muted">{{ player.rut|default:"No registrado" }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Edad:</strong><br>
+                                    <span class="text-muted">{{ player.age|default:"No registrada" }} años</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Estado:</strong><br>
+                                    <span class="badge {% if player.status == 'active' %}bg-success{% elif player.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
+                                        {{ player.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="col-12">
+                                    <strong>Categoría:</strong><br>
+                                    <span class="text-muted">{{ player.category.name|default:"Sin categoría" }}</span>
+                                </div>
+                                <div class="col-12">
+                                    <strong>Equipo:</strong><br>
+                                    <span class="text-muted">{{ player.team|default:"Sin equipo" }}</span>
+                                </div>
+                                <div class="col-12">
+                                    <strong>Posición:</strong><br>
+                                    <span class="text-muted">{{ player.position|default:"No definida" }}</span>
+                                </div>
+                                <div class="col-12">
+                                    <strong>Fecha de registro:</strong><br>
+                                    <span class="text-muted">{{ player.created_at|date:"d/m/Y" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas de Pagos -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Estado de Cuotas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <div class="stat-card success">
+                                        <div class="stat-number">${{ total_paid|floatformat:0 }}</div>
+                                        <div class="stat-label">
+                                            <i class="bi bi-check-circle me-2"></i>Pagado ({{ paid_invoices_count }})
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card warning">
+                                        <div class="stat-number">${{ total_pending|floatformat:0 }}</div>
+                                        <div class="stat-label">
+                                            <i class="bi bi-clock me-2"></i>Pendiente ({{ pending_invoices_count }})
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card danger">
+                                        <div class="stat-number">${{ total_overdue|floatformat:0 }}</div>
+                                        <div class="stat-label">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>Atrasado ({{ overdue_invoices_count }})
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Últimas Facturas -->
+                            <h6 class="mb-3">Últimas Facturas</h6>
+                            {% if invoices %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Concepto</th>
+                                                <th>Vencimiento</th>
+                                                <th>Monto</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for invoice in invoices %}
+                                                <tr>
+                                                    <td>{{ invoice.fee_definition.name }}</td>
+                                                    <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
+                                                    <td>${{ invoice.amount|floatformat:0 }}</td>
+                                                    <td>
+                                                        <span class="badge {% if invoice.status == 'pagada' %}bg-success{% elif invoice.status == 'pendiente' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ invoice.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'guardian_quotas_paid' %}?player={{ player.id }}" class="btn btn-outline-primary me-2">
+                                        <i class="bi bi-list me-2"></i>Ver Todas las Cuotas
+                                    </a>
+                                    <a href="{% url 'guardian_quotas_upcoming' %}" class="btn btn-outline-warning">
+                                        <i class="bi bi-clock me-2"></i>Cuotas Pendientes
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <i class="bi bi-receipt text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mt-2">No hay facturas registradas</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Próximos Eventos -->
+            <div class="row">
+                <!-- Próximos Partidos -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Próximos Partidos</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if upcoming_matches %}
+                                {% for match in upcoming_matches %}
+                                    <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                                        <div>
+                                            <strong>{{ match.home_team }} vs {{ match.away_team }}</strong><br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>{{ match.date|date:"d/m/Y" }}
+                                                {% if match.time %}<i class="bi bi-clock ms-2 me-1"></i>{{ match.time }}{% endif %}
+                                            </small>
+                                        </div>
+                                        {% if match.location %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-geo-alt me-1"></i>{{ match.location }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'guardian_schedule' %}" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-calendar me-2"></i>Ver Calendario Completo
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mt-2">No hay partidos programados</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Próximos Entrenamientos -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Próximos Entrenamientos</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if upcoming_trainings %}
+                                {% for training in upcoming_trainings %}
+                                    <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                                        <div>
+                                            <strong>{{ training.title|default:"Entrenamiento" }}</strong><br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>{{ training.date|date:"d/m/Y" }}
+                                                {% if training.time %}<i class="bi bi-clock ms-2 me-1"></i>{{ training.time }}{% endif %}
+                                            </small>
+                                        </div>
+                                        {% if training.location %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-geo-alt me-1"></i>{{ training.location }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <i class="bi bi-trophy text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mt-2">No hay entrenamientos programados</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

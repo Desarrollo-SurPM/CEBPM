@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pagar Cuota - {{ invoice.fee_definition.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-credit-card me-2"></i>Pagar Cuota</h2>
+                <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Información de la Cuota -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Detalle de la Cuota</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Información del Jugador -->
+                            <div class="d-flex align-items-center mb-3">
+                                {% if player.photo %}
+                                    <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" 
+                                         class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 60px; height: 60px;">
+                                        <i class="bi bi-person text-muted" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="mb-1">{{ player.get_full_name }}</h5>
+                                    <small class="text-muted">{{ player.category.name|default:"Sin categoría" }}</small>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Detalles de la Cuota -->
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <strong>Concepto:</strong><br>
+                                    <span class="text-muted">{{ invoice.fee_definition.name }}</span>
+                                </div>
+                                {% if invoice.fee_definition.description %}
+                                    <div class="col-12">
+                                        <strong>Descripción:</strong><br>
+                                        <span class="text-muted">{{ invoice.fee_definition.description }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="col-6">
+                                    <strong>Fecha de vencimiento:</strong><br>
+                                    <span class="text-muted">{{ invoice.due_date|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Estado:</strong><br>
+                                    {% if invoice.due_date < today %}
+                                        <span class="badge bg-danger">Atrasada</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-12">
+                                    <strong>Monto a pagar:</strong><br>
+                                    <h3 class="text-primary mb-0">${{ invoice.amount|floatformat:0 }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Pago -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Información de Pago</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" id="paymentForm">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="payment_method" class="form-label">Método de Pago *</label>
+                                    <select name="payment_method" id="payment_method" class="form-select" required>
+                                        <option value="">Selecciona un método</option>
+                                        <option value="transferencia">Transferencia Bancaria</option>
+                                        <option value="efectivo">Efectivo</option>
+                                        <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                                        <option value="tarjeta_debito">Tarjeta de Débito</option>
+                                        <option value="cheque">Cheque</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_number" class="form-label">Número de Referencia</label>
+                                    <input type="text" name="reference_number" id="reference_number" 
+                                           class="form-control" placeholder="Ej: Número de transferencia, comprobante, etc.">
+                                    <div class="form-text">Opcional: Ingresa el número de comprobante o referencia del pago</div>
+                                </div>
+
+                                <!-- Información bancaria para transferencias -->
+                                <div id="bank_info" class="alert alert-info" style="display: none;">
+                                    <h6><i class="bi bi-bank me-2"></i>Datos para Transferencia</h6>
+                                    <p class="mb-1"><strong>Banco:</strong> Banco Estado</p>
+                                    <p class="mb-1"><strong>Cuenta Corriente:</strong> 12345678-9</p>
+                                    <p class="mb-1"><strong>RUT:</strong> 12.345.678-9</p>
+                                    <p class="mb-0"><strong>Titular:</strong> Club Deportes Puerto Montt</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="confirm_payment" required>
+                                        <label class="form-check-label" for="confirm_payment">
+                                            Confirmo que he realizado el pago por ${{ invoice.amount|floatformat:0 }}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                                        <i class="bi bi-check-circle me-2"></i>Confirmar Pago
+                                    </button>
+                                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-info-circle me-2"></i>Información Importante</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success me-2"></i>El pago será procesado inmediatamente</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Recibirás una confirmación por email</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Podrás descargar el comprobante desde tu historial</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-telephone me-2"></i>¿Necesitas Ayuda?</h6>
+                            <p class="mb-1">Contacta con nosotros:</p>
+                            <p class="mb-1"><i class="bi bi-envelope me-2"></i>finanzas@deportespuertomontt.cl</p>
+                            <p class="mb-0"><i class="bi bi-phone me-2"></i>+56 9 1234 5678</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethodSelect = document.getElementById('payment_method');
+    const bankInfo = document.getElementById('bank_info');
+    const confirmCheckbox = document.getElementById('confirm_payment');
+    const submitBtn = document.getElementById('submitBtn');
+    const paymentForm = document.getElementById('paymentForm');
+
+    // Mostrar información bancaria para transferencias
+    paymentMethodSelect.addEventListener('change', function() {
+        if (this.value === 'transferencia') {
+            bankInfo.style.display = 'block';
+        } else {
+            bankInfo.style.display = 'none';
+        }
+        checkFormValidity();
+    });
+
+    // Habilitar/deshabilitar botón de envío
+    function checkFormValidity() {
+        const methodSelected = paymentMethodSelect.value !== '';
+        const confirmed = confirmCheckbox.checked;
+        
+        submitBtn.disabled = !(methodSelected && confirmed);
+    }
+
+    confirmCheckbox.addEventListener('change', checkFormValidity);
+    paymentMethodSelect.addEventListener('change', checkFormValidity);
+
+    // Confirmación antes de enviar
+    paymentForm.addEventListener('submit', function(e) {
+        const method = paymentMethodSelect.options[paymentMethodSelect.selectedIndex].text;
+        const amount = '{{ invoice.amount|floatformat:0 }}';
+        
+        if (!confirm(`¿Confirmas el pago de $${amount} mediante ${method}?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

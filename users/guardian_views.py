@@ -387,3 +387,269 @@ def payment_detail(request, payment_id):
         'success': True,
         'html': render(request, 'guardian/payment_detail.html', {'payment': payment}).content.decode()
     })
+
+
+@login_required
+def guardian_player_detail(request, player_id):
+    """Vista detallada de la ficha del jugador"""
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('pages:home')
+    
+    # Verificar que el jugador pertenece al apoderado
+    player = get_object_or_404(Player, id=player_id, guardian=request.user)
+    
+    # Obtener pagos del jugador
+    from finance.models import Invoice
+    invoices = Invoice.objects.filter(player=player).order_by('-due_date')
+    
+    # Estadísticas de pagos
+    paid_invoices = invoices.filter(status='pagada')
+    pending_invoices = invoices.filter(status='pendiente')
+    overdue_invoices = invoices.filter(status='atrasada')
+    
+    total_paid = paid_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    total_pending = pending_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    total_overdue = overdue_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Próximos partidos
+    upcoming_matches = Match.objects.filter(
+        Q(home_team=player.team) | Q(away_team=player.team),
+        date__gte=timezone.now().date()
+    ).order_by('date')[:5]
+    
+    # Entrenamientos próximos (si existe el modelo)
+    try:
+        from schedules.models import Training
+        upcoming_trainings = Training.objects.filter(
+            team=player.team,
+            date__gte=timezone.now().date()
+        ).order_by('date')[:5]
+    except ImportError:
+        upcoming_trainings = []
+    
+    context = {
+        'player': player,
+        'invoices': invoices[:10],  # Últimas 10 facturas
+        'paid_invoices_count': paid_invoices.count(),
+        'pending_invoices_count': pending_invoices.count(),
+        'overdue_invoices_count': overdue_invoices.count(),
+        'total_paid': total_paid,
+        'total_pending': total_pending,
+        'total_overdue': total_overdue,
+        'upcoming_matches': upcoming_matches,
+        'upcoming_trainings': upcoming_trainings,
+    }
+    
+    return render(request, 'guardian/player_detail.html', context)
+
+
+@login_required
+def guardian_quotas_paid(request):
+    """Vista de cuotas pagadas del apoderado"""
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('pages:home')
+    
+    # Obtener jugadores del apoderado
+    players = Player.objects.filter(guardian=request.user)
+    
+    # Filtros
+    player_filter = request.GET.get('player')
+    year_filter = request.GET.get('year')
+    
+    from finance.models import Invoice
+    paid_invoices = Invoice.objects.filter(
+        player__in=players,
+        status='pagada'
+    ).select_related('player', 'fee_definition').order_by('-due_date')
+    
+    if player_filter:
+        paid_invoices = paid_invoices.filter(player_id=player_filter)
+    
+    if year_filter:
+        paid_invoices = paid_invoices.filter(due_date__year=year_filter)
+    
+    # Paginación
+    paginator = Paginator(paid_invoices, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Total pagado
+    total_paid = paid_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Años disponibles para filtro
+    years = paid_invoices.dates('due_date', 'year', order='DESC')
+    
+    context = {
+        'page_obj': page_obj,
+        'players': players,
+        'player_filter': player_filter,
+        'year_filter': year_filter,
+        'years': years,
+        'total_paid': total_paid,
+    }
+    
+    return render(request, 'guardian/quotas_paid.html', context)
+
+
+@login_required
+def guardian_quotas_upcoming(request):
+    """Vista de cuotas próximas a pagar"""
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('pages:home')
+    
+    # Obtener jugadores del apoderado
+    players = Player.objects.filter(guardian=request.user)
+    
+    from finance.models import Invoice
+    from datetime import date, timedelta
+    
+    # Cuotas pendientes y próximas a vencer (próximos 30 días)
+    today = date.today()
+    next_month = today + timedelta(days=30)
+    
+    upcoming_invoices = Invoice.objects.filter(
+        player__in=players,
+        status__in=['pendiente', 'atrasada'],
+        due_date__lte=next_month
+    ).select_related('player', 'fee_definition').order_by('due_date')
+    
+    # Separar por urgencia
+    overdue_invoices = upcoming_invoices.filter(due_date__lt=today)
+    due_soon_invoices = upcoming_invoices.filter(
+        due_date__gte=today,
+        due_date__lte=today + timedelta(days=7)
+    )
+    pending_invoices = upcoming_invoices.filter(
+        due_date__gt=today + timedelta(days=7)
+    )
+    
+    # Totales
+    total_overdue = overdue_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    total_due_soon = due_soon_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    total_pending = pending_invoices.aggregate(total=Sum('amount'))['total'] or 0
+    
+    context = {
+        'overdue_invoices': overdue_invoices,
+        'due_soon_invoices': due_soon_invoices,
+        'pending_invoices': pending_invoices,
+        'total_overdue': total_overdue,
+        'total_due_soon': total_due_soon,
+        'total_pending': total_pending,
+        'total_all': total_overdue + total_due_soon + total_pending,
+    }
+    
+    return render(request, 'guardian/quotas_upcoming.html', context)
+
+@login_required
+def guardian_pay_quota(request, invoice_id):
+    """Vista para pagar una cuota específica"""
+    try:
+        invoice = Invoice.objects.get(id=invoice_id, guardian=request.user)
+        
+        if invoice.status == 'pagada':
+            messages.warning(request, 'Esta cuota ya ha sido pagada.')
+            return redirect('guardian:guardian_quotas_paid')
+        
+        if request.method == 'POST':
+            payment_method = request.POST.get('payment_method')
+            reference_number = request.POST.get('reference_number', '')
+            
+            # Crear el pago
+            payment = Payment.objects.create(
+                invoice=invoice,
+                amount=invoice.amount,
+                method=payment_method,
+                status='completado',
+                reference_number=reference_number
+            )
+            
+            # Actualizar el estado de la factura
+            invoice.status = 'pagada'
+            invoice.save()
+            
+            messages.success(request, f'Pago de ${invoice.amount:,.0f} realizado exitosamente.')
+            return redirect('guardian:guardian_quotas_paid')
+        
+        context = {
+            'invoice': invoice,
+            'player': invoice.player,
+        }
+        
+        return render(request, 'guardian/pay_quota.html', context)
+        
+    except Invoice.DoesNotExist:
+        messages.error(request, 'La cuota solicitada no existe o no tienes permisos para acceder a ella.')
+        return redirect('guardian:guardian_quotas_upcoming')
+
+@login_required
+def guardian_pay_multiple(request):
+    """Vista para pagar múltiples cuotas"""
+    if request.method == 'GET':
+        invoice_ids = request.GET.get('invoices', '').split(',')
+        invoice_ids = [id for id in invoice_ids if id.isdigit()]
+        
+        if not invoice_ids:
+            messages.error(request, 'No se seleccionaron cuotas para pagar.')
+            return redirect('guardian:guardian_quotas_upcoming')
+        
+        invoices = Invoice.objects.filter(
+            id__in=invoice_ids,
+            guardian=request.user,
+            status='pendiente'
+        )
+        
+        if not invoices.exists():
+            messages.error(request, 'No se encontraron cuotas válidas para pagar.')
+            return redirect('guardian:guardian_quotas_upcoming')
+        
+        total_amount = invoices.aggregate(total=Sum('amount'))['total'] or 0
+        
+        context = {
+            'invoices': invoices,
+            'total_amount': total_amount,
+        }
+        
+        return render(request, 'guardian/pay_multiple.html', context)
+    
+    elif request.method == 'POST':
+        invoice_ids = request.POST.getlist('invoice_ids')
+        payment_method = request.POST.get('payment_method')
+        reference_number = request.POST.get('reference_number', '')
+        
+        invoices = Invoice.objects.filter(
+            id__in=invoice_ids,
+            guardian=request.user,
+            status='pendiente'
+        )
+        
+        if not invoices.exists():
+            messages.error(request, 'No se encontraron cuotas válidas para pagar.')
+            return redirect('guardian:guardian_quotas_upcoming')
+        
+        total_amount = 0
+        payments_created = 0
+        
+        for invoice in invoices:
+            # Crear el pago
+            payment = Payment.objects.create(
+                invoice=invoice,
+                amount=invoice.amount,
+                method=payment_method,
+                status='completado',
+                reference_number=f"{reference_number}-{invoice.id}" if reference_number else ''
+            )
+            
+            # Actualizar el estado de la factura
+            invoice.status = 'pagada'
+            invoice.save()
+            
+            total_amount += invoice.amount
+            payments_created += 1
+        
+        messages.success(request, f'Se procesaron {payments_created} pagos por un total de ${total_amount:,.0f}.')
+        return redirect('guardian:guardian_quotas_paid')
+    
+    return redirect('guardian:guardian_quotas_upcoming')

@@ -24,4 +24,15 @@ urlpatterns = [
     
     # Perfil
     path('profile/', guardian_views.guardian_profile, name='profile'),
+    
+    # Player detail view
+    path('player/<int:player_id>/', guardian_views.guardian_player_detail, name='guardian_player_detail'),
+    
+    # Quotas management
+    path('quotas/paid/', guardian_views.guardian_quotas_paid, name='guardian_quotas_paid'),
+    path('quotas/upcoming/', guardian_views.guardian_quotas_upcoming, name='guardian_quotas_upcoming'),
+    
+    # Payment functionality
+    path('pay/<int:invoice_id>/', guardian_views.guardian_pay_quota, name='guardian_pay_quota'),
+    path('pay/multiple/', guardian_views.guardian_pay_multiple, name='guardian_pay_multiple'),
 ]

@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cuotas Pagadas{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-check-circle me-2"></i>Cuotas Pagadas</h2>
+                <a href="{% url 'guardian_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
+                </a>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="player" class="form-label">Jugador</label>
+                            <select name="player" id="player" class="form-select">
+                                <option value="">Todos los jugadores</option>
+                                {% for player in players %}
+                                    <option value="{{ player.id }}" {% if request.GET.player == player.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ player.get_full_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="year" class="form-label">Año</label>
+                            <select name="year" id="year" class="form-select">
+                                <option value="">Todos los años</option>
+                                {% for year in years %}
+                                    <option value="{{ year }}" {% if request.GET.year == year|stringformat:"s" %}selected{% endif %}>
+                                        {{ year }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="month" class="form-label">Mes</label>
+                            <select name="month" id="month" class="form-select">
+                                <option value="">Todos los meses</option>
+                                <option value="1" {% if request.GET.month == "1" %}selected{% endif %}>Enero</option>
+                                <option value="2" {% if request.GET.month == "2" %}selected{% endif %}>Febrero</option>
+                                <option value="3" {% if request.GET.month == "3" %}selected{% endif %}>Marzo</option>
+                                <option value="4" {% if request.GET.month == "4" %}selected{% endif %}>Abril</option>
+                                <option value="5" {% if request.GET.month == "5" %}selected{% endif %}>Mayo</option>
+                                <option value="6" {% if request.GET.month == "6" %}selected{% endif %}>Junio</option>
+                                <option value="7" {% if request.GET.month == "7" %}selected{% endif %}>Julio</option>
+                                <option value="8" {% if request.GET.month == "8" %}selected{% endif %}>Agosto</option>
+                                <option value="9" {% if request.GET.month == "9" %}selected{% endif %}>Septiembre</option>
+                                <option value="10" {% if request.GET.month == "10" %}selected{% endif %}>Octubre</option>
+                                <option value="11" {% if request.GET.month == "11" %}selected{% endif %}>Noviembre</option>
+                                <option value="12" {% if request.GET.month == "12" %}selected{% endif %}>Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-funnel me-2"></i>Filtrar
+                            </button>
+                            <a href="{% url 'guardian_quotas_paid' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumen -->
+            {% if invoices %}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card success">
+                            <div class="stat-number">{{ invoices|length }}</div>
+                            <div class="stat-label">
+                                <i class="bi bi-receipt me-2"></i>Cuotas Pagadas
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card info">
+                            <div class="stat-number">${{ total_amount|floatformat:0 }}</div>
+                            <div class="stat-label">
+                                <i class="bi bi-cash-stack me-2"></i>Total Pagado
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card primary">
+                            <div class="stat-number">${{ average_amount|floatformat:0 }}</div>
+                            <div class="stat-label">
+                                <i class="bi bi-graph-up me-2"></i>Promedio por Cuota
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Lista de Cuotas Pagadas -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Historial de Pagos</h5>
+                </div>
+                <div class="card-body">
+                    {% if invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Jugador</th>
+                                        <th>Concepto</th>
+                                        <th>Fecha de Pago</th>
+                                        <th>Fecha de Vencimiento</th>
+                                        <th>Monto</th>
+                                        <th>Método de Pago</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in invoices %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if invoice.player.photo %}
+                                                        <img src="{{ invoice.player.photo.url }}" alt="{{ invoice.player.get_full_name }}" 
+                                                             class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
+                                                             style="width: 32px; height: 32px;">
+                                                            <i class="bi bi-person text-muted"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ invoice.player.get_full_name }}</strong><br>
+                                                        <small class="text-muted">{{ invoice.player.category.name|default:"Sin categoría" }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong>{{ invoice.fee_definition.name }}</strong><br>
+                                                <small class="text-muted">{{ invoice.fee_definition.description|default:"" }}</small>
+                                            </td>
+                                            <td>
+                                                {% if invoice.payment_set.first %}
+                                                    {{ invoice.payment_set.first.created_at|date:"d/m/Y H:i" }}
+                                                {% else %}
+                                                    <span class="text-muted">No registrado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ invoice.due_date|date:"d/m/Y" }}
+                                                {% if invoice.due_date < today %}
+                                                    <br><small class="text-success"><i class="bi bi-check-circle me-1"></i>Pagado a tiempo</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">${{ invoice.amount|floatformat:0 }}</strong>
+                                            </td>
+                                            <td>
+                                                {% if invoice.payment_set.first %}
+                                                    <span class="badge bg-info">
+                                                        {{ invoice.payment_set.first.get_method_display }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">No especificado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                            data-bs-toggle="modal" data-bs-target="#invoiceModal{{ invoice.id }}">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    {% if invoice.payment_set.first %}
+                                                        <a href="#" class="btn btn-outline-success btn-sm" title="Descargar Comprobante">
+                                                            <i class="bi bi-download"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        {% if is_paginated %}
+                            <nav aria-label="Paginación de cuotas pagadas">
+                                <ul class="pagination justify-content-center mt-4">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-receipt text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">No hay cuotas pagadas</h4>
+                            <p class="text-muted">No se encontraron cuotas pagadas con los filtros seleccionados.</p>
+                            <a href="{% url 'guardian_quotas_upcoming' %}" class="btn btn-primary">
+                                <i class="bi bi-clock me-2"></i>Ver Cuotas Pendientes
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales para detalles de facturas -->
+{% for invoice in invoices %}
+    <div class="modal fade" id="invoiceModal{{ invoice.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalle de Cuota - {{ invoice.fee_definition.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Información del Jugador</h6>
+                            <p><strong>Nombre:</strong> {{ invoice.player.get_full_name }}</p>
+                            <p><strong>Categoría:</strong> {{ invoice.player.category.name|default:"Sin categoría" }}</p>
+                            <p><strong>Equipo:</strong> {{ invoice.player.team|default:"Sin equipo" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Información de la Cuota</h6>
+                            <p><strong>Concepto:</strong> {{ invoice.fee_definition.name }}</p>
+                            <p><strong>Descripción:</strong> {{ invoice.fee_definition.description|default:"Sin descripción" }}</p>
+                            <p><strong>Monto:</strong> ${{ invoice.amount|floatformat:0 }}</p>
+                            <p><strong>Fecha de vencimiento:</strong> {{ invoice.due_date|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    {% if invoice.payment_set.first %}
+                        <hr>
+                        <h6>Información del Pago</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Fecha de pago:</strong> {{ invoice.payment_set.first.created_at|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Método:</strong> {{ invoice.payment_set.first.get_method_display }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Estado:</strong> 
+                                    <span class="badge bg-success">{{ invoice.payment_set.first.get_status_display }}</span>
+                                </p>
+                                {% if invoice.payment_set.first.reference_number %}
+                                    <p><strong>Número de referencia:</strong> {{ invoice.payment_set.first.reference_number }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    {% if invoice.payment_set.first %}
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-download me-2"></i>Descargar Comprobante
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

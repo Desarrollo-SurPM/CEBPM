@@ -93,7 +93,9 @@
                                                 <i class="bi bi-person-circle text-primary"></i>
                                             </div>
                                             <div>
-                                                <div class="fw-bold">{{ player.get_full_name }}</div>
+                                                <div class="fw-bold">
+                                                    <a href="{% url 'guardian:guardian_player_detail' player.id %}" class="text-decoration-none">{{ player.get_full_name }}</a>
+                                                </div>
                                                 <small class="text-muted">{{ player.rut }}</small>
                                             </div>
                                         </div>
@@ -284,6 +286,14 @@
                     <a href="{% url 'guardian:payments' %}" class="btn btn-outline-success">
                         <i class="bi bi-credit-card me-2"></i>
                         Ver Pagos
+                    </a>
+                    <a href="{% url 'guardian:guardian_quotas_paid' %}" class="btn btn-outline-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Cuotas Pagadas
+                    </a>
+                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-warning">
+                        <i class="bi bi-clock me-2"></i>
+                        Próximas Cuotas
                     </a>
                     <a href="{% url 'guardian:schedule' %}" class="btn btn-outline-info">
                         <i class="bi bi-calendar-event me-2"></i>

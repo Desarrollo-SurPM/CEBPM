@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
+from django.db import models
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
@@ -9,10 +10,9 @@ from datetime import datetime, timedelta
 
 from .models import User, GuardianProfile, AdminProfile
 from players.models import Player, GuardianPlayer
-from finance.models import Payment, FeeDefinition
+from finance.models import Payment, FeeDefinition, Invoice, Sponsor
 from schedules.models import Match, Activity
 from communications.models import BulkEmail, EmailRecipient
-# from sponsors.models import Sponsor  # No models defined yet
 
 
 def is_admin(user):
@@ -27,8 +27,35 @@ def admin_dashboard(request):
     # Get statistics
     total_players = Player.objects.count()
     total_guardians = GuardianProfile.objects.count()
-    total_payments = Payment.objects.filter(status='completed').count()
-    pending_registrations = PlayerRegistration.objects.filter(status='pending').count()
+    total_payments = Payment.objects.filter(status='completado').count()
+    
+    # Cuotas statistics
+    total_paid_quotas = Invoice.objects.filter(status='pagada').aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    
+    total_pending_quotas = Invoice.objects.filter(status='pendiente').aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    
+    total_overdue_quotas = Invoice.objects.filter(status='atrasada').aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    
+    # Total funds (completed payments)
+    total_funds = Payment.objects.filter(status='completado').aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    
+    # Active sponsors count
+    active_sponsors = Sponsor.objects.filter(active=True).count()
+    
+    # Pending registrations (assuming this model exists)
+    try:
+        from players.models import PlayerRegistration
+        pending_registrations = PlayerRegistration.objects.filter(status='pending').count()
+    except ImportError:
+        pending_registrations = 0
     
     # Recent activities
     recent_registrations = PlayerRegistration.objects.order_by('-created_at')[:5]
@@ -50,6 +77,11 @@ def admin_dashboard(request):
         'total_guardians': total_guardians,
         'total_payments': total_payments,
         'pending_registrations': pending_registrations,
+        'total_paid_quotas': total_paid_quotas,
+        'total_pending_quotas': total_pending_quotas,
+        'total_overdue_quotas': total_overdue_quotas,
+        'total_funds': total_funds,
+        'active_sponsors': active_sponsors,
         'recent_registrations': recent_registrations,
         'recent_payments': recent_payments,
         'upcoming_matches': upcoming_matches,
@@ -276,3 +308,70 @@ def admin_send_notification(request):
         return redirect('admin_communications')
     
     return render(request, 'admin/send_notification.html')
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_sponsors(request):
+    """Manage sponsors"""
+    sponsors = Sponsor.objects.all().order_by('-created_at')
+    
+    # Filtros
+    status_filter = request.GET.get('status')
+    if status_filter == 'active':
+        sponsors = sponsors.filter(active=True)
+    elif status_filter == 'inactive':
+        sponsors = sponsors.filter(active=False)
+    
+    # Paginación
+    paginator = Paginator(sponsors, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'admin/sponsors.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_player_cards(request):
+    """View player cards by category"""
+    from players.models import Category
+    
+    category_filter = request.GET.get('category')
+    search_query = request.GET.get('search', '')
+    
+    players = Player.objects.all()
+    
+    if category_filter:
+        players = players.filter(category_id=category_filter)
+    
+    if search_query:
+        players = players.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(rut__icontains=search_query)
+        )
+    
+    players = players.select_related('category', 'guardian').order_by('category__name', 'last_name')
+    
+    # Paginación
+    paginator = Paginator(players, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Categorías para filtro
+    categories = Category.objects.all().order_by('name')
+    
+    context = {
+        'page_obj': page_obj,
+        'categories': categories,
+        'category_filter': category_filter,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'admin/player_cards.html', context)
