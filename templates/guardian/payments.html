@@ -137,8 +137,8 @@
                                         <i class="bi bi-person-circle text-primary"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold">{{ payment.player.get_full_name }}</div>
-                                        <small class="text-muted">{{ payment.player.team.name|default:"Sin equipo" }}</small>
+                                        <div class="fw-bold">{{ payment.invoice.player.get_full_name }}</div>
+                        <small class="text-muted">{{ payment.invoice.player.category.name|default:"Sin categoría" }}</small>
                                     </div>
                                 </div>
                             </td>

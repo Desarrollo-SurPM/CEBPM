@@ -363,7 +363,7 @@ def admin_player_cards(request):
             Q(rut__icontains=search_query)
         )
     
-    players = players.select_related('category', 'guardian').order_by('category__name', 'last_name')
+    players = players.select_related('category').order_by('category__name', 'last_name')
     
     # Paginación
     paginator = Paginator(players, 12)

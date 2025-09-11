@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
+from users.views import home_redirect
 
 # Vista simple para manejar solicitudes de Vite
 def vite_client_handler(request):
@@ -26,7 +27,8 @@ def vite_client_handler(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('pages.urls')),
+    path('', home_redirect, name='home'),
+    path('pages/', include('pages.urls')),
     path('auth/', include('users.urls')),
     path('admin-panel/', include('users.admin_urls')),
     

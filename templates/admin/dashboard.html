@@ -187,7 +187,7 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <div>
                                     <strong>${{ payment.amount|floatformat:0 }}</strong><br>
-                                    <small class="text-muted">{{ payment.player.first_name }} {{ payment.player.last_name }} - {{ payment.created_at|date:"d/m/Y" }}</small>
+                                    <small class="text-muted">{{ payment.invoice.player.first_name }} {{ payment.invoice.player.last_name }} - {{ payment.created_at|date:"d/m/Y" }}</small>
                                 </div>
                                 <span class="badge bg-success">Completado</span>
                             </div>

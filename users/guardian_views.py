@@ -31,32 +31,33 @@ def guardian_dashboard(request):
     """Dashboard principal para apoderados"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
     # Obtener jugadores del apoderado
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
     # Estadísticas generales
     total_players = players.count()
-    active_players = players.filter(status='active').count()
+    active_players = players.filter(is_active=True).count()
     
     # Pagos pendientes
     pending_payments = Payment.objects.filter(
-        player__in=players,
+        invoice__player__in=players,
         status='pending'
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     # Próximos partidos y entrenamientos
     today = timezone.now().date()
+    player_categories = [p.category for p in players]
     upcoming_matches = Match.objects.filter(
-        Q(home_team__in=[p.team for p in players]) | 
-        Q(away_team__in=[p.team for p in players]),
-        date__gte=today
-    ).order_by('date')[:5]
+        category__in=player_categories,
+        starts_at__date__gte=today
+    ).order_by('starts_at')[:5]
     
     # upcoming_trainings = Training.objects.filter(
-    #     team__in=[p.team for p in players],
-    #     date__gte=today
+    #     category__in=player_categories,
+    #     starts_at__date__gte=today
     # ).order_by('date')[:5]
     upcoming_trainings = []
     
@@ -73,7 +74,7 @@ def guardian_dashboard(request):
     
     # Actividad reciente
     recent_payments = Payment.objects.filter(
-        player__in=players
+        invoice__player__in=players
     ).order_by('-created_at')[:5]
     
     context = {
@@ -94,9 +95,10 @@ def guardian_players(request):
     """Gestión de jugadores del apoderado"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
     # Filtros
     team_filter = request.GET.get('team')
@@ -125,10 +127,11 @@ def guardian_payments(request):
     """Historial de pagos del apoderado"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
-    players = Player.objects.filter(guardian=request.user)
-    payments = Payment.objects.filter(player__in=players)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
+    payments = Payment.objects.filter(invoice__player__in=players)
     
     # Filtros
     status_filter = request.GET.get('status')
@@ -139,18 +142,18 @@ def guardian_payments(request):
     if status_filter:
         payments = payments.filter(status=status_filter)
     if player_filter:
-        payments = payments.filter(player_id=player_filter)
+        payments = payments.filter(invoice__player_id=player_filter)
     if date_from:
-        payments = payments.filter(due_date__gte=date_from)
+        payments = payments.filter(invoice__due_date__gte=date_from)
     if date_to:
-        payments = payments.filter(due_date__lte=date_to)
+        payments = payments.filter(invoice__due_date__lte=date_to)
     
     # Estadísticas
     total_paid = payments.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 0
     total_pending = payments.filter(status='pending').aggregate(total=Sum('amount'))['total'] or 0
     total_overdue = payments.filter(
         status='pending',
-        due_date__lt=timezone.now().date()
+        invoice__due_date__lt=timezone.now().date()
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     # Paginación
@@ -177,9 +180,10 @@ def guardian_schedule(request):
     """Calendario de partidos y entrenamientos"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     teams = [p.team for p in players]
     
     # Filtros
@@ -228,9 +232,10 @@ def guardian_messages(request):
     """Centro de mensajes para apoderados"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     teams = [p.team for p in players]
     
     # Obtener mensajes dirigidos al apoderado
@@ -283,7 +288,7 @@ def guardian_profile(request):
     """Perfil del apoderado"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
     if request.method == 'POST':
         # Actualizar perfil
@@ -350,7 +355,8 @@ def message_detail(request, message_id):
     if not is_guardian(request.user):
         return JsonResponse({'success': False, 'error': 'Sin permisos'})
     
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     teams = [p.team for p in players]
     
     message = get_object_or_404(Message, 
@@ -386,9 +392,11 @@ def payment_detail(request, payment_id):
     if not is_guardian(request.user):
         return JsonResponse({'success': False, 'error': 'Sin permisos'})
     
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    player_ids = guardian_players.values_list('player_id', flat=True)
     payment = get_object_or_404(Payment, 
         id=payment_id,
-        player__guardian=request.user
+        player_id__in=player_ids
     )
     
     return JsonResponse({
@@ -402,10 +410,11 @@ def guardian_player_detail(request, player_id):
     """Vista detallada de la ficha del jugador"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
     # Verificar que el jugador pertenece al apoderado
-    player = get_object_or_404(Player, id=player_id, guardian=request.user)
+    guardian_player = get_object_or_404(GuardianPlayer, guardian=request.user, player_id=player_id)
+    player = guardian_player.player
     
     # Obtener pagos del jugador
     from finance.models import Invoice
@@ -457,10 +466,11 @@ def guardian_quotas_paid(request):
     """Vista de cuotas pagadas del apoderado"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
     # Obtener jugadores del apoderado
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
     # Filtros
     player_filter = request.GET.get('player')
@@ -506,10 +516,11 @@ def guardian_quotas_upcoming(request):
     """Vista de cuotas próximas a pagar"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('pages:home')
+        return redirect('pages:landing')
     
     # Obtener jugadores del apoderado
-    players = Player.objects.filter(guardian=request.user)
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
     from finance.models import Invoice
     from datetime import date, timedelta
@@ -555,7 +566,9 @@ def guardian_quotas_upcoming(request):
 def guardian_pay_quota(request, invoice_id):
     """Vista para pagar una cuota específica"""
     try:
-        invoice = Invoice.objects.get(id=invoice_id, guardian=request.user)
+        guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+        player_ids = guardian_players.values_list('player_id', flat=True)
+        invoice = Invoice.objects.get(id=invoice_id, player_id__in=player_ids)
         
         if invoice.status == 'pagada':
             messages.warning(request, 'Esta cuota ya ha sido pagada.')
@@ -603,9 +616,11 @@ def guardian_pay_multiple(request):
             messages.error(request, 'No se seleccionaron cuotas para pagar.')
             return redirect('guardian:guardian_quotas_upcoming')
         
+        guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+        player_ids = guardian_players.values_list('player_id', flat=True)
         invoices = Invoice.objects.filter(
             id__in=invoice_ids,
-            guardian=request.user,
+            player_id__in=player_ids,
             status='pendiente'
         )
         
@@ -627,9 +642,11 @@ def guardian_pay_multiple(request):
         payment_method = request.POST.get('payment_method')
         reference_number = request.POST.get('reference_number', '')
         
+        guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+        player_ids = guardian_players.values_list('player_id', flat=True)
         invoices = Invoice.objects.filter(
             id__in=invoice_ids,
-            guardian=request.user,
+            player_id__in=player_ids,
             status='pendiente'
         )
         

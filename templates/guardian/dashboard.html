@@ -231,7 +231,7 @@
                             <tbody>
                                 {% for payment in recent_payments %}
                                 <tr>
-                                    <td>{{ payment.player.get_full_name }}</td>
+                                    <td>{{ payment.invoice.player.get_full_name }}</td>
                                     <td>{{ payment.concept }}</td>
                                     <td>${{ payment.amount|floatformat:0 }}</td>
                                     <td>{{ payment.due_date|date:"d/m/Y" }}</td>
