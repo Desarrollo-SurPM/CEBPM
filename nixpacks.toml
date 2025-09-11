@@ -7,10 +7,5 @@ cmds = [
     '. /opt/venv/bin/activate && pip install -r requirements.txt'
 ]
 
-[phases.build]
-cmds = [
-    '. /opt/venv/bin/activate && python manage.py collectstatic --noinput'
-]
-
 [start]
 cmd = '. /opt/venv/bin/activate && gunicorn club.wsgi --log-file -'
