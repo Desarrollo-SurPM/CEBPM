@@ -10,15 +10,21 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-from .models import User
+from .models import User, GuardianProfile
 from players.models import Player, GuardianPlayer
-from finance.models import Payment
+from finance.models import Payment, Invoice
 from schedules.models import Match, Activity
 from communications.models import BulkEmail, EmailRecipient
 
 def is_guardian(user):
     """Verificar si el usuario es un apoderado"""
-    return user.is_authenticated and user.user_type == 'guardian'
+    if not user.is_authenticated:
+        return False
+    try:
+        user.guardian_profile
+        return True
+    except GuardianProfile.DoesNotExist:
+        return False
 
 @login_required
 def guardian_dashboard(request):
@@ -48,20 +54,22 @@ def guardian_dashboard(request):
         date__gte=today
     ).order_by('date')[:5]
     
-    upcoming_trainings = Training.objects.filter(
-        team__in=[p.team for p in players],
-        date__gte=today
-    ).order_by('date')[:5]
+    # upcoming_trainings = Training.objects.filter(
+    #     team__in=[p.team for p in players],
+    #     date__gte=today
+    # ).order_by('date')[:5]
+    upcoming_trainings = []
     
     # Mensajes no leídos
-    unread_messages = Message.objects.filter(
-        Q(audience='all_guardians') |
-        Q(audience='team_guardians', team__in=[p.team for p in players]) |
-        Q(recipients=request.user),
-        status='sent'
-    ).exclude(
-        messageread__user=request.user
-    ).count()
+    # unread_messages = Message.objects.filter(
+    #     Q(audience='all_guardians') |
+    #     Q(audience='team_guardians', team__in=[p.team for p in players]) |
+    #     Q(recipients=request.user),
+    #     status='sent'
+    # ).exclude(
+    #     messageread__user=request.user
+    # ).count()
+    unread_messages = 0
     
     # Actividad reciente
     recent_payments = Payment.objects.filter(

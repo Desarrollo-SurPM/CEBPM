@@ -132,8 +132,8 @@ PAYMENTS_PROVIDER = config('PAYMENTS_PROVIDER', default='dummy')
 SITE_DOMAIN = config('SITE_DOMAIN', default='http://localhost:8000')
 
 # Login/Logout URLs
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/auth/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Configuración de formularios

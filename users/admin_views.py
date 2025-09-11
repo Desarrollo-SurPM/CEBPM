@@ -17,7 +17,13 @@ from communications.models import BulkEmail, EmailRecipient
 
 def is_admin(user):
     """Check if user is an admin"""
-    return user.is_authenticated and hasattr(user, 'adminprofile')
+    if not user.is_authenticated:
+        return False
+    try:
+        user.admin_profile
+        return True
+    except AdminProfile.DoesNotExist:
+        return False
 
 
 @login_required

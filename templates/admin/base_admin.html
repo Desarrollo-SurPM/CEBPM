@@ -218,9 +218,12 @@
                         <a class="nav-link" href="{% url 'pages:landing' %}">
                             <i class="bi bi-house"></i> Sitio Web
                         </a>
-                        <a class="nav-link" href="{% url 'logout' %}">
-                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                        </a>
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                             {% csrf_token %}
+                             <button type="submit" class="nav-link border-0 bg-transparent">
+                                 <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                             </button>
+                         </form>
                     </nav>
                 </div>
             </div>

@@ -18,6 +18,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
+
+# Vista simple para manejar solicitudes de Vite
+def vite_client_handler(request):
+    return HttpResponse('', status=204)  # No Content
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +32,9 @@ urlpatterns = [
     
     # Guardian panel
     path('guardian/', include('users.guardian_urls')),
+    
+    # Manejar solicitudes de Vite para evitar errores 404
+    path('@vite/client', vite_client_handler, name='vite_client'),
 ]
 
 # Servir archivos media en desarrollo
