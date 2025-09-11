@@ -57,22 +57,24 @@ def admin_dashboard(request):
     active_sponsors = Sponsor.objects.filter(active=True).count()
     
     # Pending registrations (assuming this model exists)
+    # Monthly statistics
+    current_month = timezone.now().replace(day=1)
+    
     try:
         from players.models import PlayerRegistration
         pending_registrations = PlayerRegistration.objects.filter(status='pending').count()
+        # Recent activities
+        recent_registrations = PlayerRegistration.objects.order_by('-created_at')[:5]
+        monthly_registrations = PlayerRegistration.objects.filter(
+            created_at__gte=current_month
+        ).count()
     except ImportError:
         pending_registrations = 0
+        recent_registrations = []
+        monthly_registrations = 0
     
-    # Recent activities
-    recent_registrations = PlayerRegistration.objects.order_by('-created_at')[:5]
     recent_payments = Payment.objects.filter(status='completed').order_by('-created_at')[:5]
-    upcoming_matches = Match.objects.filter(date__gte=timezone.now()).order_by('date')[:5]
-    
-    # Monthly statistics
-    current_month = timezone.now().replace(day=1)
-    monthly_registrations = PlayerRegistration.objects.filter(
-        created_at__gte=current_month
-    ).count()
+    upcoming_matches = Match.objects.filter(starts_at__gte=timezone.now()).order_by('starts_at')[:5]
     monthly_payments = Payment.objects.filter(
         created_at__gte=current_month,
         status='completed'
@@ -116,7 +118,7 @@ def admin_players(request):
         )
     
     if team_filter:
-        players = players.filter(team=team_filter)
+        players = players.filter(category=team_filter)
     
     if status_filter:
         players = players.filter(status=status_filter)
@@ -129,7 +131,7 @@ def admin_players(request):
     page_obj = paginator.get_page(page_number)
     
     # Get unique teams for filter
-    teams = Player.objects.values_list('team', flat=True).distinct()
+    teams = Player.objects.values_list('category__name', flat=True).distinct()
     
     context = {
         'page_obj': page_obj,
@@ -185,7 +187,7 @@ def admin_approve_registration(request, registration_id):
                 first_name=registration.first_name,
                 last_name=registration.last_name,
                 rut=registration.rut,
-                birth_date=registration.birth_date,
+                birthdate=registration.birth_date,
                 team=registration.team,
                 guardian=registration.guardian,
                 status='active'
@@ -229,7 +231,7 @@ def admin_finances(request):
     pending_payments = Payment.objects.filter(status='pending').count()
     overdue_payments = Payment.objects.filter(
         status='pending',
-        due_date__lt=timezone.now().date()
+        invoice__due_date__lt=timezone.now().date()
     ).count()
     
     # Recent payments

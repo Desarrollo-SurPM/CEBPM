@@ -330,7 +330,7 @@ def register_player(request):
             player_first_name=data.get('first_name'),
             player_last_name=data.get('last_name'),
             player_rut=data.get('rut'),
-            player_birth_date=data.get('birth_date'),
+            player_birth_date=data.get('birthdate'),
             team=data.get('team'),
             emergency_contact=data.get('emergency_contact'),
             emergency_phone=data.get('emergency_phone'),
