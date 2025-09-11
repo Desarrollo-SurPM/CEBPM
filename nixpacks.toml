@@ -7,5 +7,11 @@ cmds = [
     '. /opt/venv/bin/activate && pip install -r requirements.txt'
 ]
 
+[phases.build]
+cmds = []
+
 [start]
 cmd = '. /opt/venv/bin/activate && gunicorn club.wsgi --log-file -'
+
+[variables]
+DISABLE_COLLECTSTATIC = '1'
