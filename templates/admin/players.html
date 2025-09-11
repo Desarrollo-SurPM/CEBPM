@@ -1,0 +1,246 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Jugadores - Panel de Administración{% endblock %}
+
+{% block page_title %}Gestión de Jugadores{% endblock %}
+{% block page_subtitle %}Administrar jugadores del club{% endblock %}
+
+{% block content %}
+<!-- Filters and Search -->
+<div class="admin-card p-4 mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="search" class="form-label">Buscar Jugador</label>
+            <input type="text" class="form-control" id="search" name="search" 
+                   value="{{ search_query }}" placeholder="Nombre, apellido o RUT">
+        </div>
+        <div class="col-md-3">
+            <label for="team" class="form-label">Equipo</label>
+            <select class="form-select" id="team" name="team">
+                <option value="">Todos los equipos</option>
+                {% for team in teams %}
+                    <option value="{{ team }}" {% if team_filter == team %}selected{% endif %}>
+                        {{ team }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="status" class="form-label">Estado</label>
+            <select class="form-select" id="status" name="status">
+                <option value="">Todos los estados</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activo</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactivo</option>
+                <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspendido</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-admin me-2">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+            <a href="{% url 'admin_panel:players' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Players Table -->
+<div class="admin-card">
+    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-people text-primary me-2"></i>Lista de Jugadores
+        </h5>
+        <div>
+            <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                <i class="bi bi-person-plus"></i> Agregar Jugador
+            </button>
+            <button class="btn btn-outline-primary btn-sm" onclick="exportPlayers()">
+                <i class="bi bi-download"></i> Exportar
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-admin mb-0">
+                    <thead>
+                        <tr>
+                            <th>Jugador</th>
+                            <th>RUT</th>
+                            <th>Edad</th>
+                            <th>Equipo</th>
+                            <th>Apoderado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in page_obj %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            {{ player.first_name.0 }}{{ player.last_name.0 }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ player.first_name }} {{ player.last_name }}</strong><br>
+                                            <small class="text-muted">{{ player.position|default:"Sin posición" }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ player.rut }}</td>
+                                <td>{{ player.age }} años</td>
+                                <td>
+                                    <span class="badge bg-info">{{ player.team }}</span>
+                                </td>
+                                <td>
+                                    {% if player.guardian %}
+                                        {{ player.guardian.user.get_full_name }}<br>
+                                        <small class="text-muted">{{ player.guardian.phone }}</small>
+                                    {% else %}
+                                        <span class="text-muted">Sin apoderado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if player.status == 'active' %}
+                                        <span class="badge badge-status bg-success">Activo</span>
+                                    {% elif player.status == 'inactive' %}
+                                        <span class="badge badge-status bg-secondary">Inactivo</span>
+                                    {% else %}
+                                        <span class="badge badge-status bg-danger">Suspendido</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="viewPlayer('{{ player.id }}')" title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                onclick="editPlayer('{{ player.id }}')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        {% if player.status == 'active' %}
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="suspendPlayer('{{ player.id }}')" title="Suspender">
+                                                <i class="bi bi-pause"></i>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="activatePlayer('{{ player.id }}')" title="Activar">
+                                                <i class="bi bi-play"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="card-footer bg-transparent">
+                    <nav aria-label="Navegación de jugadores">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people display-1 text-muted"></i>
+                <h4 class="mt-3">No se encontraron jugadores</h4>
+                <p class="text-muted">No hay jugadores que coincidan con los criterios de búsqueda.</p>
+                <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                    <i class="bi bi-person-plus"></i> Agregar Primer Jugador
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--admin-accent);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function viewPlayer(playerId) {
+        // Implement view player details
+        alert('Ver detalles del jugador ID: ' + playerId);
+    }
+    
+    function editPlayer(playerId) {
+        // Implement edit player
+        alert('Editar jugador ID: ' + playerId);
+    }
+    
+    function suspendPlayer(playerId) {
+        if (confirm('¿Está seguro de que desea suspender a este jugador?')) {
+            // Implement suspend player
+            alert('Suspender jugador ID: ' + playerId);
+        }
+    }
+    
+    function activatePlayer(playerId) {
+        if (confirm('¿Está seguro de que desea activar a este jugador?')) {
+            // Implement activate player
+            alert('Activar jugador ID: ' + playerId);
+        }
+    }
+    
+    function exportPlayers() {
+        // Implement export functionality
+        alert('Exportar jugadores (funcionalidad por implementar)');
+    }
+</script>
+{% endblock %}

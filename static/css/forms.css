@@ -1,0 +1,135 @@
+/* Estilos personalizados para formularios Django */
+
+/* Campos de formulario */
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Etiquetas de formulario */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Texto de ayuda */
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Errores de formulario */
+.errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.errorlist li {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.errorlist li:before {
+    content: "⚠ ";
+    margin-right: 0.25rem;
+}
+
+/* Campos con errores */
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+/* Botones */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Tarjetas */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+    font-weight: 600;
+}
+
+/* Alertas */
+.alert {
+    border-radius: 0.75rem;
+    border: none;
+}
+
+/* Navegación */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        margin: 0.5rem;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+}
+
+/* Utilidades */
+.text-gradient {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-custom {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}

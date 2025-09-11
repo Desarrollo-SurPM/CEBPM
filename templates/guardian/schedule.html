@@ -1,0 +1,474 @@
+{% extends 'guardian/base_guardian.html' %}
+
+{% block title %}Calendario - Panel de Apoderado{% endblock %}
+{% block page_title %}Calendario de Eventos{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    Próximos Eventos
+                </h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('list')" id="listViewBtn">
+                        <i class="bi bi-list"></i> Lista
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('calendar')" id="calendarViewBtn">
+                        <i class="bi bi-calendar"></i> Calendario
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filtros -->
+                <form method="get" class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <select name="team" class="form-select">
+                            <option value="">Todos los equipos</option>
+                            {% for team in teams %}
+                                <option value="{{ team.id }}" {% if team_filter == team.id|stringformat:'s' %}selected{% endif %}>
+                                    {{ team.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="month" name="month" class="form-control" value="{{ month_filter }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-funnel me-1"></i>
+                            Filtrar
+                        </button>
+                        <a href="{% url 'guardian:schedule' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Vista de Lista -->
+                <div id="listView">
+                    {% if matches or trainings %}
+                        <div class="row">
+                            <!-- Partidos -->
+                            <div class="col-md-6 mb-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-trophy me-2"></i>
+                                    Partidos
+                                </h6>
+                                {% if matches %}
+                                    <div class="list-group">
+                                        {% for match in matches %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 text-primary">
+                                                        {{ match.home_team.name }} vs {{ match.away_team.name }}
+                                                    </h6>
+                                                    <p class="mb-1">
+                                                        <i class="bi bi-calendar me-1"></i>
+                                                        {{ match.date|date:"l, d \d\e F \d\e Y" }}
+                                                    </p>
+                                                    <p class="mb-1">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        {{ match.time|time:"H:i" }}
+                                                    </p>
+                                                    {% if match.location %}
+                                                        <p class="mb-1">
+                                                            <i class="bi bi-geo-alt me-1"></i>
+                                                            {{ match.location }}
+                                                        </p>
+                                                    {% endif %}
+                                                    {% if match.description %}
+                                                        <small class="text-muted">{{ match.description|truncatewords:10 }}</small>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-primary">Partido</span>
+                                                    {% if match.date == today %}
+                                                        <br><small class="text-success fw-bold">Hoy</small>
+                                                    {% elif match.date == tomorrow %}
+                                                        <br><small class="text-warning fw-bold">Mañana</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="bi bi-trophy text-muted" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mt-2">No hay partidos programados</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Entrenamientos -->
+                            <div class="col-md-6 mb-4">
+                                <h6 class="text-success mb-3">
+                                    <i class="bi bi-person-workspace me-2"></i>
+                                    Entrenamientos
+                                </h6>
+                                {% if trainings %}
+                                    <div class="list-group">
+                                        {% for training in trainings %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 text-success">
+                                                        {{ training.team.name }}
+                                                    </h6>
+                                                    <p class="mb-1">
+                                                        <i class="bi bi-calendar me-1"></i>
+                                                        {{ training.date|date:"l, d \d\e F \d\e Y" }}
+                                                    </p>
+                                                    <p class="mb-1">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        {{ training.time|time:"H:i" }}
+                                                    </p>
+                                                    {% if training.location %}
+                                                        <p class="mb-1">
+                                                            <i class="bi bi-geo-alt me-1"></i>
+                                                            {{ training.location }}
+                                                        </p>
+                                                    {% endif %}
+                                                    {% if training.description %}
+                                                        <small class="text-muted">{{ training.description|truncatewords:10 }}</small>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-success">Entrenamiento</span>
+                                                    {% if training.date == today %}
+                                                        <br><small class="text-success fw-bold">Hoy</small>
+                                                    {% elif training.date == tomorrow %}
+                                                        <br><small class="text-warning fw-bold">Mañana</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="bi bi-person-workspace text-muted" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mt-2">No hay entrenamientos programados</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">No hay eventos programados</h4>
+                            <p class="text-muted">Los eventos aparecerán aquí cuando sean programados</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Vista de Calendario -->
+                <div id="calendarView" style="display: none;">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+        <!-- Resumen del mes -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-calendar-month me-2"></i>
+                    Resumen del Mes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary mb-0">{{ matches.count }}</h4>
+                            <small class="text-muted">Partidos</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success mb-0">{{ trainings.count }}</h4>
+                        <small class="text-muted">Entrenamientos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Próximos eventos destacados -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-star me-2"></i>
+                    Próximos Destacados
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if matches %}
+                    {% for match in matches|slice:":3" %}
+                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="me-2">
+                                <i class="bi bi-trophy text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">{{ match.home_team.name }} vs {{ match.away_team.name }}</div>
+                                <small class="text-muted">{{ match.date|date:"d/m" }} - {{ match.time|time:"H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if trainings %}
+                    {% for training in trainings|slice:":3" %}
+                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="me-2">
+                                <i class="bi bi-person-workspace text-success"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">{{ training.team.name }}</div>
+                                <small class="text-muted">{{ training.date|date:"d/m" }} - {{ training.time|time:"H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if not matches and not trainings %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No hay eventos próximos</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Información útil -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información Útil
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary mb-2">
+                        <i class="bi bi-clock me-1"></i>
+                        Horarios Habituales
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><strong>Entrenamientos:</strong> Martes y Jueves 18:00</li>
+                        <li><strong>Partidos:</strong> Sábados y Domingos</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-success mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        Ubicaciones
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><strong>Cancha Principal:</strong> Estadio Municipal</li>
+                        <li><strong>Entrenamientos:</strong> Complejo Deportivo</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info small mb-0">
+                    <i class="bi bi-bell me-1"></i>
+                    <strong>Recordatorio:</strong> Llegar 30 minutos antes del evento.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js'></script>
+
+<script>
+    let calendar;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCalendar();
+    });
+    
+    function initializeCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        
+        // Preparar eventos para el calendario
+        const events = [];
+        
+        // Agregar partidos
+        {% for match in matches %}
+        events.push({
+            title: '{{ match.home_team.name|escapejs }} vs {{ match.away_team.name|escapejs }}',
+            start: '{{ match.date|date:"Y-m-d" }}T{{ match.time|time:"H:i" }}',
+            backgroundColor: '#3b82f6',
+            borderColor: '#1e40af',
+            textColor: '#ffffff',
+            extendedProps: {
+                type: 'match',
+                location: '{{ match.location|default:""|escapejs }}',
+                description: '{{ match.description|default:""|escapejs }}'
+            }
+        });
+        {% endfor %}
+        
+        // Agregar entrenamientos
+        {% for training in trainings %}
+        events.push({
+            title: 'Entrenamiento - {{ training.team.name|escapejs }}',
+            start: '{{ training.date|date:"Y-m-d" }}T{{ training.time|time:"H:i" }}',
+            backgroundColor: '#10b981',
+            borderColor: '#059669',
+            textColor: '#ffffff',
+            extendedProps: {
+                type: 'training',
+                location: '{{ training.location|default:""|escapejs }}',
+                description: '{{ training.description|default:""|escapejs }}'
+            }
+        });
+        {% endfor %}
+        
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek'
+            },
+            events: events,
+            eventClick: function(info) {
+                showEventDetails(info.event);
+            },
+            height: 'auto',
+            eventDisplay: 'block',
+            dayMaxEvents: 3
+        });
+        
+        calendar.render();
+    }
+    
+    function toggleView(viewType) {
+        const listView = document.getElementById('listView');
+        const calendarView = document.getElementById('calendarView');
+        const listBtn = document.getElementById('listViewBtn');
+        const calendarBtn = document.getElementById('calendarViewBtn');
+        
+        if (viewType === 'list') {
+            listView.style.display = 'block';
+            calendarView.style.display = 'none';
+            listBtn.classList.add('active');
+            calendarBtn.classList.remove('active');
+        } else {
+            listView.style.display = 'none';
+            calendarView.style.display = 'block';
+            listBtn.classList.remove('active');
+            calendarBtn.classList.add('active');
+            
+            // Renderizar calendario si no está visible
+            if (calendar) {
+                setTimeout(() => {
+                    calendar.render();
+                }, 100);
+            }
+        }
+    }
+    
+    function showEventDetails(event) {
+        const props = event.extendedProps;
+        const eventType = props.type === 'match' ? 'Partido' : 'Entrenamiento';
+        const icon = props.type === 'match' ? 'bi-trophy' : 'bi-person-workspace';
+        
+        let content = `
+            <div class="modal fade" id="eventDetailModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi ${icon} me-2"></i>
+                                ${eventType}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h6 class="text-primary">${event.title}</h6>
+                            <p class="mb-2">
+                                <i class="bi bi-calendar me-2"></i>
+                                <strong>Fecha:</strong> ${event.start.toLocaleDateString('es-CL', { 
+                                    weekday: 'long', 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                })}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-clock me-2"></i>
+                                <strong>Hora:</strong> ${event.start.toLocaleTimeString('es-CL', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                })}
+                            </p>
+        `;
+        
+        if (props.location) {
+            content += `
+                <p class="mb-2">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    <strong>Ubicación:</strong> ${props.location}
+                </p>
+            `;
+        }
+        
+        if (props.description) {
+            content += `
+                <p class="mb-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Descripción:</strong> ${props.description}
+                </p>
+            `;
+        }
+        
+        content += `
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remover modal anterior si existe
+        const existingModal = document.getElementById('eventDetailModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Agregar nuevo modal
+        document.body.insertAdjacentHTML('beforeend', content);
+        
+        // Mostrar modal
+        const modal = new bootstrap.Modal(document.getElementById('eventDetailModal'));
+        modal.show();
+        
+        // Limpiar modal cuando se cierre
+        document.getElementById('eventDetailModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,546 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Gestión Financiera - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Gestión Financiera</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportFinances()">
+                <i class="bi bi-download"></i> Exportar
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                <i class="bi bi-plus"></i> Registrar Pago
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen financiero -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">${{ total_income|floatformat:0 }}</h5>
+                <p class="card-text">Ingresos Totales</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">${{ total_expenses|floatformat:0 }}</h5>
+                <p class="card-text">Gastos Totales</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">${{ pending_payments|floatformat:0 }}</h5>
+                <p class="card-text">Pagos Pendientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">${{ balance|floatformat:0 }}</h5>
+                <p class="card-text">Balance</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de ingresos/gastos mensuales -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ingresos vs Gastos (Últimos 12 meses)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="financialChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Distribución de Ingresos</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeChart" width="200" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <select class="form-select" id="typeFilter">
+            <option value="">Todos los tipos</option>
+            <option value="income">Ingresos</option>
+            <option value="expense">Gastos</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" id="categoryFilter">
+            <option value="">Todas las categorías</option>
+            <option value="mensualidad">Mensualidades</option>
+            <option value="inscripcion">Inscripciones</option>
+            <option value="equipamiento">Equipamiento</option>
+            <option value="transporte">Transporte</option>
+            <option value="arbitraje">Arbitraje</option>
+            <option value="otros">Otros</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="date" class="form-control" id="dateFrom" placeholder="Desde">
+    </div>
+    <div class="col-md-2">
+        <input type="date" class="form-control" id="dateTo" placeholder="Hasta">
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Buscar por descripción...">
+    </div>
+    <div class="col-md-1">
+        <button class="btn btn-primary w-100" onclick="filterTransactions()">
+            <i class="bi bi-search"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Tabla de transacciones -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Historial de Transacciones</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Jugador/Concepto</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.date|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if transaction.type == 'income' %}
+                                <span class="badge bg-success">Ingreso</span>
+                            {% else %}
+                                <span class="badge bg-danger">Gasto</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ transaction.category|capfirst }}</span>
+                        </td>
+                        <td>{{ transaction.description }}</td>
+                        <td>
+                            {% if transaction.player %}
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-2">
+                                        {% if transaction.player.photo %}
+                                            <img src="{{ transaction.player.photo.url }}" alt="{{ transaction.player.first_name }}" class="rounded-circle">
+                                        {% else %}
+                                            <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                                {{ transaction.player.first_name|first }}{{ transaction.player.last_name|first }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <small>{{ transaction.player.first_name }} {{ transaction.player.last_name }}</small>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong class="{% if transaction.type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                {% if transaction.type == 'income' %}+{% else %}-{% endif %}
+                                ${{ transaction.amount|floatformat:0 }}
+                            </strong>
+                        </td>
+                        <td>
+                            {% if transaction.status == 'completed' %}
+                                <span class="badge bg-success">Completado</span>
+                            {% elif transaction.status == 'pending' %}
+                                <span class="badge bg-warning">Pendiente</span>
+                            {% else %}
+                                <span class="badge bg-danger">Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="viewTransaction('{{ transaction.id }}')" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if transaction.status == 'pending' %}
+                                    <button class="btn btn-sm btn-outline-warning" 
+                                            onclick="editTransaction('{{ transaction.id }}')" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="cancelTransaction('{{ transaction.id }}')" title="Cancelar">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-receipt display-4 text-muted"></i>
+                            <p class="mt-2 text-muted">No hay transacciones registradas</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if transactions.has_other_pages %}
+        <nav aria-label="Paginación de transacciones">
+            <ul class="pagination justify-content-center">
+                {% if transactions.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.previous_page_number }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in transactions.paginator.page_range %}
+                    {% if transactions.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if transactions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.next_page_number }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para agregar pago -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Nueva Transacción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addPaymentForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="transactionType" class="form-label">Tipo</label>
+                        <select class="form-select" id="transactionType" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="income">Ingreso</option>
+                            <option value="expense">Gasto</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transactionCategory" class="form-label">Categoría</label>
+                        <select class="form-select" id="transactionCategory" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="mensualidad">Mensualidad</option>
+                            <option value="inscripcion">Inscripción</option>
+                            <option value="equipamiento">Equipamiento</option>
+                            <option value="transporte">Transporte</option>
+                            <option value="arbitraje">Arbitraje</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transactionDescription" class="form-label">Descripción</label>
+                        <input type="text" class="form-control" id="transactionDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transactionAmount" class="form-label">Monto</label>
+                        <input type="number" class="form-control" id="transactionAmount" min="0" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transactionDate" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="transactionDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transactionPlayer" class="form-label">Jugador (opcional)</label>
+                        <select class="form-select" id="transactionPlayer">
+                            <option value="">Sin jugador asociado</option>
+                            {% for player in players %}
+                                <option value="{{ player.id }}">{{ player.first_name }} {{ player.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar-sm {
+    width: 30px;
+    height: 30px;
+}
+
+.avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 30px;
+    height: 30px;
+    background-color: #6c757d;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.btn-group .btn {
+    border-radius: 0.25rem;
+    margin-right: 2px;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Inicializar gráficos
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    
+    // Establecer fecha actual por defecto
+    document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+});
+
+function initializeCharts() {
+    // Gráfico de ingresos vs gastos
+    const ctx1 = document.getElementById('financialChart').getContext('2d');
+    const monthlyLabels = JSON.parse('{{ monthly_labels|escapejs }}' || '[]');
+    const monthlyIncome = JSON.parse('{{ monthly_income|escapejs }}' || '[]');
+    const monthlyExpenses = JSON.parse('{{ monthly_expenses|escapejs }}' || '[]');
+    
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Ingresos',
+                data: monthlyIncome,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }, {
+                label: 'Gastos',
+                data: monthlyExpenses,
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Gráfico de distribución de ingresos
+    const ctx2 = document.getElementById('incomeChart').getContext('2d');
+    const incomeCategories = JSON.parse('{{ income_categories|escapejs }}' || '[]');
+    const incomeAmounts = JSON.parse('{{ income_amounts|escapejs }}' || '[]');
+    
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: incomeCategories,
+            datasets: [{
+                data: incomeAmounts,
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function filterTransactions() {
+    const type = document.getElementById('typeFilter').value;
+    const category = document.getElementById('categoryFilter').value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    const search = document.getElementById('searchInput').value;
+    
+    const params = new URLSearchParams();
+    if (type) params.append('type', type);
+    if (category) params.append('category', category);
+    if (dateFrom) params.append('date_from', dateFrom);
+    if (dateTo) params.append('date_to', dateTo);
+    if (search) params.append('search', search);
+    
+    window.location.href = '?' + params.toString();
+}
+
+function viewTransaction(transactionId) {
+    // Implementar vista de detalles
+    alert('Ver detalles de transacción: ' + transactionId);
+}
+
+function editTransaction(transactionId) {
+    // Implementar edición
+    alert('Editar transacción: ' + transactionId);
+}
+
+function cancelTransaction(transactionId) {
+    if (confirm('¿Está seguro de que desea cancelar esta transacción?')) {
+        fetch(`/admin-panel/finances/transaction/${transactionId}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al cancelar la transacción');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cancelar la transacción');
+        });
+    }
+}
+
+function exportFinances() {
+    const params = new URLSearchParams(window.location.search);
+    params.append('export', 'true');
+    window.location.href = '?' + params.toString();
+}
+
+// Manejo del formulario de nueva transacción
+document.getElementById('addPaymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        type: document.getElementById('transactionType').value,
+        category: document.getElementById('transactionCategory').value,
+        description: document.getElementById('transactionDescription').value,
+        amount: document.getElementById('transactionAmount').value,
+        date: document.getElementById('transactionDate').value,
+        player: document.getElementById('transactionPlayer').value || null
+    };
+    
+    fetch('/admin-panel/finances/add/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error al registrar la transacción');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al registrar la transacción');
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Filtros en tiempo real
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        filterTransactions();
+    }
+});
+
+document.getElementById('typeFilter').addEventListener('change', filterTransactions);
+document.getElementById('categoryFilter').addEventListener('change', filterTransactions);
+</script>
+{% endblock %}

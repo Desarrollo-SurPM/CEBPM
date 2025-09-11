@@ -1,0 +1,291 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel de Administración - Deportes Puerto Montt{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link href="{% static 'css/forms.css' %}" rel="stylesheet">
+    
+    <style>
+        :root {
+            --admin-primary: #2c3e50;
+            --admin-secondary: #34495e;
+            --admin-accent: #3498db;
+            --admin-success: #27ae60;
+            --admin-warning: #f39c12;
+            --admin-danger: #e74c3c;
+            --admin-light: #ecf0f1;
+            --admin-dark: #2c3e50;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-sidebar {
+            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+            min-height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .admin-sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        
+        .admin-header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--admin-accent), #5dade2);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, var(--admin-success), #58d68d);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, var(--admin-warning), #f7dc6f);
+        }
+        
+        .stat-card.danger {
+            background: linear-gradient(135deg, var(--admin-danger), #ec7063);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .btn-admin {
+            background: var(--admin-accent);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-admin:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            color: white;
+        }
+        
+        .table-admin {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .table-admin thead {
+            background: var(--admin-primary);
+            color: white;
+        }
+        
+        .table-admin tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .sidebar-brand {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-brand h4 {
+            color: white;
+            margin: 0;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            padding: 0 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                position: fixed;
+                top: 0;
+                left: -250px;
+                width: 250px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .admin-sidebar.show {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 0 15px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="admin-sidebar">
+                    <div class="sidebar-brand">
+                        <h4>Admin Panel</h4>
+                        <small class="text-light">Deportes Puerto Montt</small>
+                    </div>
+                    
+                    <nav class="nav flex-column">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'admin_panel:dashboard' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'players' %}active{% endif %}" href="{% url 'admin_panel:players' %}">
+                            <i class="bi bi-people"></i> Jugadores
+                        </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'registrations' %}active{% endif %}" href="{% url 'admin_panel:registrations' %}">
+                            <i class="bi bi-person-plus"></i> Registros
+                        </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'finances' %}active{% endif %}" href="{% url 'admin_panel:finances' %}">
+                            <i class="bi bi-cash-stack"></i> Finanzas
+                        </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'communications' %}active{% endif %}" href="{% url 'admin_panel:communications' %}">
+                            <i class="bi bi-chat-dots"></i> Comunicaciones
+                        </a>
+                        
+                        <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
+                        
+                        <a class="nav-link" href="{% url 'pages:landing' %}">
+                            <i class="bi bi-house"></i> Sitio Web
+                        </a>
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <!-- Header -->
+                <div class="admin-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0">{% block page_title %}Panel de Administración{% endblock %}</h2>
+                        <small class="text-muted">{% block page_subtitle %}Gestión del club deportivo{% endblock %}</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3">Bienvenido, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
+                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggle">
+                            <i class="bi bi-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Messages -->
+                {% if messages %}
+                    <div class="main-content">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Page Content -->
+                <div class="main-content">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.querySelector('.admin-sidebar').classList.toggle('show');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !toggle.contains(e.target) && 
+                sidebar.classList.contains('show')) {
+                sidebar.classList.remove('show');
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

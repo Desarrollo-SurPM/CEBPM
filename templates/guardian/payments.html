@@ -1,0 +1,423 @@
+{% extends 'guardian/base_guardian.html' %}
+
+{% block title %}Pagos - Panel de Apoderado{% endblock %}
+{% block page_title %}Gestión de Pagos{% endblock %}
+
+{% block content %}
+<!-- Estadísticas de pagos -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="ms-3">
+                    <h4 class="mb-0">${{ total_paid|floatformat:0 }}</h4>
+                    <p class="text-muted mb-0">Total Pagado</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="ms-3">
+                    <h4 class="mb-0">${{ total_pending|floatformat:0 }}</h4>
+                    <p class="text-muted mb-0">Pendiente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="ms-3">
+                    <h4 class="mb-0">${{ total_overdue|floatformat:0 }}</h4>
+                    <p class="text-muted mb-0">Vencido</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1e40af);">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div class="ms-3">
+                    <h4 class="mb-0">{{ payments.paginator.count }}</h4>
+                    <p class="text-muted mb-0">Total Registros</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-credit-card me-2"></i>
+            Historial de Pagos
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Pagado</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
+                    <option value="overdue" {% if status_filter == 'overdue' %}selected{% endif %}>Vencido</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="player" class="form-select">
+                    <option value="">Todos los jugadores</option>
+                    {% for player in players %}
+                        <option value="{{ player.id }}" {% if player_filter == player.id|stringformat:'s' %}selected{% endif %}>
+                            {{ player.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}" placeholder="Desde">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}" placeholder="Hasta">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filtrar
+                </button>
+                <a href="{% url 'guardian:payments' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Limpiar
+                </a>
+                <button type="button" class="btn btn-outline-success" onclick="exportPayments()">
+                    <i class="bi bi-download me-1"></i>
+                    Exportar
+                </button>
+            </div>
+        </form>
+        
+        <!-- Tabla de pagos -->
+        {% if payments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Jugador</th>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Fecha Vencimiento</th>
+                            <th>Estado</th>
+                            <th>Fecha Pago</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-2">
+                                        <i class="bi bi-person-circle text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ payment.player.get_full_name }}</div>
+                                        <small class="text-muted">{{ payment.player.team.name|default:"Sin equipo" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ payment.concept }}</div>
+                                {% if payment.description %}
+                                    <small class="text-muted">{{ payment.description|truncatewords:5 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="fw-bold">${{ payment.amount|floatformat:0 }}</span>
+                            </td>
+                            <td>
+                                {{ payment.due_date|date:"d/m/Y" }}
+                                {% if payment.status == 'pending' and payment.due_date < today %}
+                                    <br><small class="text-danger">Vencido</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if payment.status == 'paid' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Pagado
+                                    </span>
+                                {% elif payment.status == 'pending' %}
+                                    {% if payment.due_date < today %}
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Vencido
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock me-1"></i>
+                                            Pendiente
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if payment.paid_date %}
+                                    {{ payment.paid_date|date:"d/m/Y" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="viewPayment('{{ payment.id }}')" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if payment.status == 'pending' %}
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                onclick="paymentInstructions('{{ payment.id }}')" title="Instrucciones de pago">
+                                            <i class="bi bi-credit-card"></i>
+                                        </button>
+                                    {% endif %}
+                                    {% if payment.receipt %}
+                                        <a href="{{ payment.receipt.url }}" target="_blank" 
+                                           class="btn btn-outline-info btn-sm" title="Ver comprobante">
+                                            <i class="bi bi-receipt"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            {% if payments.has_other_pages %}
+                <nav aria-label="Paginación de pagos">
+                    <ul class="pagination justify-content-center">
+                        {% if payments.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ payments.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if player_filter %}&player={{ player_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">
+                                    Anterior
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in payments.paginator.page_range %}
+                            {% if payments.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if player_filter %}&player={{ player_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if payments.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ payments.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if player_filter %}&player={{ player_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">
+                                    Siguiente
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-credit-card text-muted" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mt-3">No hay pagos registrados</h4>
+                <p class="text-muted">Los pagos aparecerán aquí cuando sean generados por el administrador</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para ver detalles del pago -->
+<div class="modal fade" id="paymentDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-receipt me-2"></i>
+                    Detalles del Pago
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="paymentDetailContent">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para instrucciones de pago -->
+<div class="modal fade" id="paymentInstructionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Instrucciones de Pago
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Métodos de Pago Disponibles</strong>
+                </div>
+                
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-bank me-2"></i>
+                    Transferencia Bancaria
+                </h6>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Banco:</strong></div>
+                    <div class="col-sm-8">Banco Estado</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Cuenta Corriente:</strong></div>
+                    <div class="col-sm-8">12345678-9</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>RUT:</strong></div>
+                    <div class="col-sm-8">12.345.678-9</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Titular:</strong></div>
+                    <div class="col-sm-8">Club Deportivo Puerto Montt</div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-credit-card me-2"></i>
+                    Pago Presencial
+                </h6>
+                <p class="mb-2">
+                    <strong>Dirección:</strong> Av. Principal 123, Puerto Montt
+                </p>
+                <p class="mb-2">
+                    <strong>Horarios:</strong> Lunes a Viernes 9:00 - 18:00
+                </p>
+                <p class="mb-3">
+                    <strong>Teléfono:</strong> +56 9 1234 5678
+                </p>
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Importante:</strong> Envía el comprobante de pago por WhatsApp o email para confirmar tu pago.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="contactAdmin()">
+                    <i class="bi bi-whatsapp me-1"></i>
+                    Contactar por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-sm {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para ver detalles del pago
+    function viewPayment(paymentId) {
+        const modal = new bootstrap.Modal(document.getElementById('paymentDetailModal'));
+        document.getElementById('paymentDetailContent').innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        `;
+        modal.show();
+        
+        // Cargar detalles del pago
+        fetch(`{% url 'guardian:payment_detail' 0 %}`.replace('0', paymentId))
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('paymentDetailContent').innerHTML = data.html;
+                } else {
+                    document.getElementById('paymentDetailContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Error al cargar los detalles: ${data.error}
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('paymentDetailContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error al cargar los detalles del pago.
+                    </div>
+                `;
+            });
+    }
+    
+    // Función para mostrar instrucciones de pago
+    function paymentInstructions(paymentId) {
+        const modal = new bootstrap.Modal(document.getElementById('paymentInstructionsModal'));
+        modal.show();
+    }
+    
+    // Función para contactar al administrador
+    function contactAdmin() {
+        const message = encodeURIComponent('Hola, necesito ayuda con un pago del club deportivo.');
+        const whatsappUrl = `https://wa.me/56912345678?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+    }
+    
+    // Función para exportar pagos
+    function exportPayments() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', 'csv');
+        window.location.href = `{% url 'guardian:payments' %}?${params.toString()}`;
+    }
+</script>
+{% endblock %}

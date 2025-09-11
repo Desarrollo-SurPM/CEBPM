@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    color: white;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+    background-size: 50px 50px;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-10px);
+}
+
+.stats-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.section-title {
+    position: relative;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    border-radius: 2px;
+}
+
+.match-card, .activity-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border-left: 5px solid #0d6efd;
+}
+
+.match-card:hover, .activity-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.sponsor-logo {
+    max-height: 80px;
+    max-width: 150px;
+    object-fit: contain;
+    filter: grayscale(100%);
+    transition: all 0.3s ease;
+}
+
+.sponsor-logo:hover {
+    filter: grayscale(0%);
+    transform: scale(1.1);
+}
+
+.cta-section {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.floating-ball {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-ball:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+.floating-ball:nth-child(2) { top: 60%; right: 15%; animation-delay: 2s; }
+.floating-ball:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 4s; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.btn-custom {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="floating-ball"></div>
+    <div class="floating-ball"></div>
+    <div class="floating-ball"></div>
+    
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4 fade-in">
+                    <i class="fas fa-futbol me-3"></i>
+                    Club Deportivo Puerto Montt
+                </h1>
+                <p class="lead mb-4 fade-in">
+                    Formando campeones desde 1950. Únete a nuestra familia deportiva y vive la pasión del fútbol en cada entrenamiento y partido.
+                </p>
+                <div class="fade-in">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-user-plus me-2"></i>Únete al Club
+                    </a>
+                    <a href="{% url 'pages:about' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-info-circle me-2"></i>Conoce Más
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image fade-in">
+                    <i class="fas fa-futbol" style="font-size: 15rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5" style="background: #f8f9fa;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="stats-card fade-in">
+                    <div class="stats-number">{{ total_players }}</div>
+                    <h5 class="text-muted">Jugadores Activos</h5>
+                    <i class="fas fa-users fa-2x text-primary mt-2"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card fade-in">
+                    <div class="stats-number">{{ total_categories }}</div>
+                    <h5 class="text-muted">Categorías</h5>
+                    <i class="fas fa-trophy fa-2x text-primary mt-2"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card fade-in">
+                    <div class="stats-number">75</div>
+                    <h5 class="text-muted">Años de Historia</h5>
+                    <i class="fas fa-calendar fa-2x text-primary mt-2"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card fade-in">
+                    <div class="stats-number">{{ sponsors.count }}</div>
+                    <h5 class="text-muted">Patrocinadores</h5>
+                    <i class="fas fa-handshake fa-2x text-primary mt-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Próximos Partidos -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Próximos Partidos</h2>
+        <div class="row">
+            {% for match in recent_matches %}
+            <div class="col-md-4">
+                <div class="match-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-primary">{{ match.category.name }}</span>
+                        <small class="text-muted">{{ match.starts_at|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <h5 class="mb-2">{{ match.title }}</h5>
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ match.location|default:"Por confirmar" }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>vs {{ match.opponent }}</strong>
+                    </p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay partidos programados</h5>
+                    <p class="text-muted">Los próximos partidos aparecerán aquí pronto.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if recent_matches %}
+        <div class="text-center mt-4">
+            <a href="{% url 'pages:schedule' %}" class="btn btn-custom">
+                <i class="fas fa-calendar me-2"></i>Ver Calendario Completo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Actividades -->
+{% if recent_activities %}
+<section class="py-5" style="background: #f8f9fa;">
+    <div class="container">
+        <h2 class="section-title">Próximas Actividades</h2>
+        <div class="row">
+            {% for activity in recent_activities %}
+            <div class="col-md-4">
+                <div class="activity-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-success">{{ activity.get_activity_type_display }}</span>
+                        <small class="text-muted">{{ activity.starts_at|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <h5 class="mb-2">{{ activity.title }}</h5>
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ activity.location|default:"Por confirmar" }}
+                    </p>
+                    {% if activity.duration %}
+                    <p class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Duración: {{ activity.duration }} minutos
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Patrocinadores -->
+{% if sponsors %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Nuestros Patrocinadores</h2>
+        <div class="row g-4 justify-content-center">
+            {% for sponsor in sponsors %}
+            <div class="col-md-2 col-sm-4 col-6 text-center">
+                {% if sponsor.logo %}
+                    <img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" class="sponsor-logo">
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center" style="height: 80px; background: #f8f9fa; border-radius: 10px;">
+                        <strong class="text-muted">{{ sponsor.name }}</strong>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'pages:sponsors' %}" class="btn btn-outline-primary">
+                <i class="fas fa-handshake me-2"></i>Ver Todos los Patrocinadores
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-5 fw-bold mb-4">¿Listo para Unirte?</h2>
+                <p class="lead mb-4">
+                    Forma parte de la familia del Club Deportivo Puerto Montt. Registra a tu hijo y comienza su camino hacia el éxito deportivo.
+                </p>
+                <a href="{% url 'register' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Registrarse Ahora
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animación de fade-in al hacer scroll
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Aplicar animación a elementos con clase fade-in
+    document.querySelectorAll('.fade-in').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease';
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}

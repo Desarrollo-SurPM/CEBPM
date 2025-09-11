@@ -1,0 +1,418 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Gestión de Inscripciones - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Gestión de Inscripciones</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportRegistrations()">
+                <i class="bi bi-download"></i> Exportar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <select class="form-select" id="statusFilter">
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendientes</option>
+            <option value="approved">Aprobadas</option>
+            <option value="rejected">Rechazadas</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="teamFilter">
+            <option value="">Todos los equipos</option>
+            <option value="primer_equipo">Primer Equipo</option>
+            <option value="sub_21">Sub 21</option>
+            <option value="sub_19">Sub 19</option>
+            <option value="sub_17">Sub 17</option>
+            <option value="sub_15">Sub 15</option>
+            <option value="escuela">Escuela de Fútbol</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <input type="text" class="form-control" id="searchInput" placeholder="Buscar por nombre o RUT...">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" onclick="filterRegistrations()">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">{{ pending_count }}</h5>
+                <p class="card-text">Pendientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">{{ approved_count }}</h5>
+                <p class="card-text">Aprobadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-danger">{{ rejected_count }}</h5>
+                <p class="card-text">Rechazadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">{{ total_count }}</h5>
+                <p class="card-text">Total</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de inscripciones -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Lista de Inscripciones</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Jugador</th>
+                        <th>RUT</th>
+                        <th>Edad</th>
+                        <th>Equipo</th>
+                        <th>Apoderado</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registration in registrations %}
+                    <tr>
+                        <td>{{ registration.created_at|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2">
+                                    {% if registration.player.photo %}
+                                        <img src="{{ registration.player.photo.url }}" alt="{{ registration.player.first_name }}" class="rounded-circle">
+                                    {% else %}
+                                        <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                            {{ registration.player.first_name|first }}{{ registration.player.last_name|first }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong>{{ registration.player.first_name }} {{ registration.player.last_name }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ registration.player.rut }}</td>
+                        <td>{{ registration.player.age }} años</td>
+                        <td>
+                            <span class="badge bg-primary">{{ registration.team|capfirst }}</span>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ registration.guardian.first_name }} {{ registration.guardian.last_name }}</strong><br>
+                                <small class="text-muted">{{ registration.guardian.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            {% if registration.status == 'pending' %}
+                                <span class="badge bg-warning">Pendiente</span>
+                            {% elif registration.status == 'approved' %}
+                                <span class="badge bg-success">Aprobada</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rechazada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="viewRegistration('{{ registration.id }}')" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if registration.status == 'pending' %}
+                                    <button class="btn btn-sm btn-success" 
+                                            onclick="approveRegistration('{{ registration.id }}')" title="Aprobar">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" 
+                                            onclick="rejectRegistration('{{ registration.id }}')" title="Rechazar">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <p class="mt-2 text-muted">No hay inscripciones registradas</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if registrations.has_other_pages %}
+        <nav aria-label="Paginación de inscripciones">
+            <ul class="pagination justify-content-center">
+                {% if registrations.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ registrations.previous_page_number }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in registrations.paginator.page_range %}
+                    {% if registrations.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if registrations.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ registrations.next_page_number }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para ver detalles de inscripción -->
+<div class="modal fade" id="registrationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de Inscripción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="registrationModalBody">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalTitle">Confirmar Acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmModalBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+}
+
+.avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    background-color: #6c757d;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.btn-group .btn {
+    border-radius: 0.25rem;
+    margin-right: 2px;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterRegistrations() {
+    const status = document.getElementById('statusFilter').value;
+    const team = document.getElementById('teamFilter').value;
+    const search = document.getElementById('searchInput').value;
+    
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (team) params.append('team', team);
+    if (search) params.append('search', search);
+    
+    window.location.href = '?' + params.toString();
+}
+
+function viewRegistration(registrationId) {
+    fetch(`/admin-panel/registrations/${registrationId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('registrationModalBody').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('registrationModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los detalles de la inscripción');
+        });
+}
+
+function approveRegistration(registrationId) {
+    showConfirmModal(
+        'Aprobar Inscripción',
+        '¿Está seguro de que desea aprobar esta inscripción?',
+        () => {
+            fetch(`/admin-panel/registrations/${registrationId}/approve/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al aprobar la inscripción');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al aprobar la inscripción');
+            });
+        }
+    );
+}
+
+function rejectRegistration(registrationId) {
+    showConfirmModal(
+        'Rechazar Inscripción',
+        '¿Está seguro de que desea rechazar esta inscripción?',
+        () => {
+            fetch(`/admin-panel/registrations/${registrationId}/reject/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al rechazar la inscripción');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al rechazar la inscripción');
+            });
+        }
+    );
+}
+
+function exportRegistrations() {
+    const params = new URLSearchParams(window.location.search);
+    params.append('export', 'true');
+    window.location.href = '?' + params.toString();
+}
+
+function showConfirmModal(title, message, callback) {
+    document.getElementById('confirmModalTitle').textContent = title;
+    document.getElementById('confirmModalBody').textContent = message;
+    
+    const confirmButton = document.getElementById('confirmButton');
+    confirmButton.onclick = () => {
+        callback();
+        bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+    };
+    
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Filtros en tiempo real
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        filterRegistrations();
+    }
+});
+
+document.getElementById('statusFilter').addEventListener('change', filterRegistrations);
+document.getElementById('teamFilter').addEventListener('change', filterRegistrations);
+</script>
+{% endblock %}

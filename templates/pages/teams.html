@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Equipos - Club Deportes Puerto Montt{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <section class="hero-section bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-4">Nuestros Equipos</h1>
+                    <p class="lead mb-4">Desde las divisiones menores hasta el primer equipo, formamos jugadores integrales con proyección profesional.</p>
+                </div>
+                <div class="col-lg-4">
+                    <div class="text-center">
+                        <i class="fas fa-users" style="font-size: 8rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Equipos Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Primer Equipo -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="fas fa-star me-2"></i>Primer Equipo</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-muted mb-3">Plantel Profesional</h6>
+                                    <p class="mb-3">Nuestro equipo principal compite en la Primera B del fútbol chileno, representando con orgullo los colores de Puerto Montt.</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 25</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cuerpo Técnico: 8</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>División: Primera B</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light rounded-circle p-4 mb-3">
+                                        <i class="fas fa-trophy text-warning" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub 21 -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0"><i class="fas fa-running me-2"></i>Sub 21</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-muted mb-3">Formación Avanzada</h6>
+                                    <p class="mb-3">Jugadores en proceso de transición al fútbol profesional, con entrenamientos de alto nivel.</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 22</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 3</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Torneos: Regionales</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light rounded-circle p-4 mb-3">
+                                        <i class="fas fa-medal text-success" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub 19 -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0"><i class="fas fa-futbol me-2"></i>Sub 19</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-muted mb-3">Juveniles</h6>
+                                    <p class="mb-3">Desarrollo técnico y táctico avanzado para jugadores con proyección profesional.</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 20</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 2</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Campeonatos: ANFP</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light rounded-circle p-4 mb-3">
+                                        <i class="fas fa-graduation-cap text-info" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub 17 -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="mb-0"><i class="fas fa-child me-2"></i>Sub 17</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-muted mb-3">Cadetes</h6>
+                                    <p class="mb-3">Formación integral con énfasis en fundamentos técnicos y valores deportivos.</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 18</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 2</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Enfoque: Formativo</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light rounded-circle p-4 mb-3">
+                                        <i class="fas fa-seedling text-warning" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub 15 -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header bg-secondary text-white">
+                            <h4 class="mb-0"><i class="fas fa-baby me-2"></i>Sub 15</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-muted mb-3">Infantiles</h6>
+                                    <p class="mb-3">Iniciación al fútbol competitivo con metodologías adaptadas a la edad.</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 16</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 2</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Modalidad: Recreativa</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light rounded-circle p-4 mb-3">
+                                        <i class="fas fa-heart text-danger" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Escuela de Fútbol -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header bg-danger text-white">
+                            <h4 class="mb-0"><i class="fas fa-school me-2"></i>Escuela de Fútbol</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-muted mb-3">Iniciación Deportiva</h6>
+                                    <p class="mb-3">Programa de formación para niños de 6 a 12 años, enfocado en diversión y aprendizaje.</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Niños: 40+</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Profesores: 4</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Edades: 6-12 años</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light rounded-circle p-4 mb-3">
+                                        <i class="fas fa-smile text-primary" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cuerpo Técnico Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Cuerpo Técnico</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card text-center border-0 shadow">
+                        <div class="card-body p-4">
+                            <div class="bg-primary rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user-tie text-white" style="font-size: 2rem;"></i>
+                            </div>
+                            <h5 class="card-title">Director Técnico</h5>
+                            <p class="text-muted">Liderazgo y planificación estratégica del proyecto deportivo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-0 shadow">
+                        <div class="card-body p-4">
+                            <div class="bg-success rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-clipboard-list text-white" style="font-size: 2rem;"></i>
+                            </div>
+                            <h5 class="card-title">Entrenadores</h5>
+                            <p class="text-muted">Profesionales especializados en cada categoría</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-0 shadow">
+                        <div class="card-body p-4">
+                            <div class="bg-info rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-heartbeat text-white" style="font-size: 2rem;"></i>
+                            </div>
+                            <h5 class="card-title">Área Médica</h5>
+                            <p class="text-muted">Kinesiología y medicina deportiva</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="mb-4">¿Quieres ser parte de nuestro club?</h2>
+            <p class="lead mb-4">Únete a nuestra familia deportiva y desarrolla tu potencial futbolístico</p>
+            <a href="{% url 'pages:contact' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-envelope me-2"></i>Contáctanos
+            </a>
+        </div>
+    </section>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #0056b3 100%);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.card-header {
+    border-bottom: none;
+}
+</style>
+{% endblock %}

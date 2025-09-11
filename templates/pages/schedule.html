@@ -1,0 +1,390 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendario - Club Deportes Puerto Montt{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <section class="hero-section bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-4">Calendario Deportivo</h1>
+                    <p class="lead mb-4">Mantente al día con todos los partidos, entrenamientos y eventos del club.</p>
+                </div>
+                <div class="col-lg-4">
+                    <div class="text-center">
+                        <i class="fas fa-calendar-alt" style="font-size: 8rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filtros -->
+    <section class="py-4 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Equipo:</label>
+                                    <select class="form-select" id="teamFilter">
+                                        <option value="all">Todos los equipos</option>
+                                        <option value="primer-equipo">Primer Equipo</option>
+                                        <option value="sub21">Sub 21</option>
+                                        <option value="sub19">Sub 19</option>
+                                        <option value="sub17">Sub 17</option>
+                                        <option value="sub15">Sub 15</option>
+                                        <option value="escuela">Escuela de Fútbol</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Tipo:</label>
+                                    <select class="form-select" id="typeFilter">
+                                        <option value="all">Todos</option>
+                                        <option value="partido">Partidos</option>
+                                        <option value="entrenamiento">Entrenamientos</option>
+                                        <option value="evento">Eventos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Mes:</label>
+                                    <select class="form-select" id="monthFilter">
+                                        <option value="all">Todos los meses</option>
+                                        <option value="01">Enero</option>
+                                        <option value="02">Febrero</option>
+                                        <option value="03">Marzo</option>
+                                        <option value="04">Abril</option>
+                                        <option value="05">Mayo</option>
+                                        <option value="06">Junio</option>
+                                        <option value="07">Julio</option>
+                                        <option value="08">Agosto</option>
+                                        <option value="09">Septiembre</option>
+                                        <option value="10">Octubre</option>
+                                        <option value="11">Noviembre</option>
+                                        <option value="12">Diciembre</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">&nbsp;</label>
+                                    <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                        <i class="fas fa-filter me-2"></i>Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Próximos Partidos -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="mb-4"><i class="fas fa-futbol me-2 text-primary"></i>Próximos Partidos</h2>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-lg match-card">
+                        <div class="card-header bg-primary text-white">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h6 class="mb-0">Primera B - Fecha 15</h6>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-light text-dark">Domingo 15/12</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row align-items-center text-center">
+                                <div class="col-4">
+                                    <div class="team-logo mb-2">
+                                        <i class="fas fa-shield-alt text-primary" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="mb-0">Deportes Puerto Montt</h6>
+                                    <small class="text-muted">Local</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="match-time">
+                                        <h4 class="text-primary mb-1">15:30</h4>
+                                        <small class="text-muted">Estadio Chinquihue</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="team-logo mb-2">
+                                        <i class="fas fa-shield-alt text-secondary" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="mb-0">Deportes Temuco</h6>
+                                    <small class="text-muted">Visita</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-lg match-card">
+                        <div class="card-header bg-success text-white">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h6 class="mb-0">Sub 19 - Torneo Regional</h6>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-light text-dark">Sábado 21/12</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row align-items-center text-center">
+                                <div class="col-4">
+                                    <div class="team-logo mb-2">
+                                        <i class="fas fa-shield-alt text-warning" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="mb-0">Osorno FC</h6>
+                                    <small class="text-muted">Local</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="match-time">
+                                        <h4 class="text-success mb-1">11:00</h4>
+                                        <small class="text-muted">Estadio Osorno</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="team-logo mb-2">
+                                        <i class="fas fa-shield-alt text-primary" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="mb-0">Puerto Montt Sub 19</h6>
+                                    <small class="text-muted">Visita</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Horarios de Entrenamientos -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="mb-4"><i class="fas fa-running me-2 text-success"></i>Horarios de Entrenamientos</h2>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Primer Equipo</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="training-schedule">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Lunes</span>
+                                    <span class="badge bg-primary">09:00 - 11:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Miércoles</span>
+                                    <span class="badge bg-primary">09:00 - 11:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Viernes</span>
+                                    <span class="badge bg-primary">09:00 - 11:00</span>
+                                </div>
+                                <hr>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>Estadio Chinquihue</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Divisiones Menores</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="training-schedule">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Martes</span>
+                                    <span class="badge bg-success">16:00 - 18:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Jueves</span>
+                                    <span class="badge bg-success">16:00 - 18:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Sábado</span>
+                                    <span class="badge bg-success">09:00 - 11:00</span>
+                                </div>
+                                <hr>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>Complejo Deportivo</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Escuela de Fútbol</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="training-schedule">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Sábado</span>
+                                    <span class="badge bg-warning text-dark">10:00 - 12:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-calendar-day me-2"></i>Domingo</span>
+                                    <span class="badge bg-warning text-dark">10:00 - 12:00</span>
+                                </div>
+                                <hr>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>Cancha Sintética</small>
+                                <br>
+                                <small class="text-info"><i class="fas fa-info-circle me-1"></i>Edades: 6-12 años</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eventos Especiales -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="mb-4"><i class="fas fa-star me-2 text-warning"></i>Eventos Especiales</h2>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-lg event-card">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="date-box bg-primary text-white text-center rounded p-3">
+                                        <div class="h4 mb-0">25</div>
+                                        <small>DIC</small>
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <h5 class="card-title">Cena de Fin de Año</h5>
+                                    <p class="text-muted mb-2">Celebración anual con todo el plantel y familias</p>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-clock text-primary me-2"></i>
+                                        <span class="me-3">20:00 hrs</span>
+                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                        <span>Salón de Eventos</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-lg event-card">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="date-box bg-success text-white text-center rounded p-3">
+                                        <div class="h4 mb-0">05</div>
+                                        <small>ENE</small>
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <h5 class="card-title">Inicio Pretemporada</h5>
+                                    <p class="text-muted mb-2">Comienzo de la preparación para la nueva temporada</p>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-clock text-success me-2"></i>
+                                        <span class="me-3">08:00 hrs</span>
+                                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                        <span>Estadio Chinquihue</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="mb-4">¿Quieres recibir notificaciones?</h2>
+            <p class="lead mb-4">Mantente informado sobre todos los eventos y partidos del club</p>
+            <a href="{% url 'pages:contact' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-bell me-2"></i>Suscribirse
+            </a>
+        </div>
+    </section>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #0056b3 100%);
+}
+
+.match-card, .event-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.match-card:hover, .event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.team-logo {
+    transition: transform 0.3s ease;
+}
+
+.team-logo:hover {
+    transform: scale(1.1);
+}
+
+.date-box {
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.training-schedule {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .match-time h4 {
+        font-size: 1.2rem;
+    }
+    
+    .team-logo i {
+        font-size: 2rem !important;
+    }
+}
+</style>
+
+<script>
+function applyFilters() {
+    const team = document.getElementById('teamFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    const month = document.getElementById('monthFilter').value;
+    
+    // Aquí se implementaría la lógica de filtrado
+    console.log('Filtros aplicados:', { team, type, month });
+    
+    // Mostrar mensaje temporal
+    alert('Filtros aplicados correctamente');
+}
+
+// Establecer el mes actual por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    const currentMonth = new Date().getMonth() + 1;
+    const monthSelect = document.getElementById('monthFilter');
+    monthSelect.value = currentMonth.toString().padStart(2, '0');
+});
+</script>
+{% endblock %}

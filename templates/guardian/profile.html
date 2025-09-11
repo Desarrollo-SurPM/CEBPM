@@ -1,0 +1,462 @@
+{% extends 'guardian/base_guardian.html' %}
+
+{% block title %}Mi Perfil - Panel de Apoderado{% endblock %}
+{% block page_title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Información Personal -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person me-2"></i>
+                    Información Personal
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="profileForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">Nombres *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ user.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Apellidos *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ user.last_name }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ user.profile.phone|default:'' }}" placeholder="+56 9 1234 5678">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="rut" class="form-label">RUT</label>
+                            <input type="text" class="form-control" id="rut" name="rut" 
+                                   value="{{ user.profile.rut|default:'' }}" placeholder="12.345.678-9" 
+                                   onkeyup="formatRUT(this)">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="birth_date" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="birth_date" name="birth_date" 
+                                   value="{{ user.profile.birth_date|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Dirección</label>
+                        <textarea class="form-control" id="address" name="address" rows="2" 
+                                  placeholder="Ingresa tu dirección completa">{{ user.profile.address|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="emergency_contact_name" class="form-label">Contacto de Emergencia</label>
+                            <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name" 
+                                   value="{{ user.profile.emergency_contact_name|default:'' }}" placeholder="Nombre completo">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="emergency_contact_phone" class="form-label">Teléfono de Emergencia</label>
+                            <input type="tel" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone" 
+                                   value="{{ user.profile.emergency_contact_phone|default:'' }}" placeholder="+56 9 1234 5678">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check me-1"></i>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Cambiar Contraseña -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    Cambiar Contraseña
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="passwordForm" action="{% url 'guardian:change_password' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Contraseña Actual *</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="new_password" class="form-label">Nueva Contraseña *</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <div class="form-text">
+                                Mínimo 8 caracteres, debe incluir letras y números.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña *</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Cambiar Contraseña
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Preferencias de Notificaciones -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bell me-2"></i>
+                    Preferencias de Notificaciones
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="notificationsForm" action="{% url 'guardian:update_notifications' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <h6 class="text-primary mb-3">Recibir notificaciones por:</h6>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" 
+                                   {% if user.profile.email_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="email_notifications">
+                                <i class="bi bi-envelope me-1"></i>
+                                Email
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications" 
+                                   {% if user.profile.sms_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="sms_notifications">
+                                <i class="bi bi-phone me-1"></i>
+                                SMS
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary mb-3">Tipos de notificaciones:</h6>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="payment_notifications" name="payment_notifications" 
+                                   {% if user.profile.payment_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="payment_notifications">
+                                <i class="bi bi-credit-card me-1"></i>
+                                Recordatorios de pagos
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="schedule_notifications" name="schedule_notifications" 
+                                   {% if user.profile.schedule_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="schedule_notifications">
+                                <i class="bi bi-calendar me-1"></i>
+                                Cambios en el calendario
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="general_notifications" name="general_notifications" 
+                                   {% if user.profile.general_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="general_notifications">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Noticias y anuncios generales
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check me-1"></i>
+                            Guardar Preferencias
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+        <!-- Resumen del perfil -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-person-circle me-2"></i>
+                    Resumen del Perfil
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <span class="text-white" style="font-size: 2rem; font-weight: bold;">
+                            {{ user.first_name.0|default:'U' }}{{ user.last_name.0|default:'' }}
+                        </span>
+                    </div>
+                    <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted mb-0">{{ user.email }}</p>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary mb-0">{{ user.guardian_players.count }}</h4>
+                            <small class="text-muted">Jugadores</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success mb-0">{{ user.date_joined|timesince }}</h4>
+                        <small class="text-muted">Miembro desde</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mis Jugadores -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-people me-2"></i>
+                    Mis Jugadores
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if user.guardian_players.all %}
+                    {% for player in user.guardian_players.all %}
+                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="me-2">
+                                <div class="avatar-sm" style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span class="text-white small fw-bold">
+                                        {{ player.first_name.0 }}{{ player.last_name.0 }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">{{ player.get_full_name }}</div>
+                                <small class="text-muted">{{ player.team.name|default:'Sin equipo' }}</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-{% if player.status == 'active' %}success{% elif player.status == 'inactive' %}secondary{% else %}warning{% endif %}">
+                                    {% if player.status == 'active' %}
+                                        Activo
+                                    {% elif player.status == 'inactive' %}
+                                        Inactivo
+                                    {% else %}
+                                        Pendiente
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-person-plus text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No tienes jugadores registrados</p>
+                        <a href="{% url 'guardian:players' %}" class="btn btn-outline-primary btn-sm mt-2">
+                            <i class="bi bi-plus me-1"></i>
+                            Registrar Jugador
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Información de Cuenta -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información de Cuenta
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">Usuario:</small>
+                    <strong>{{ user.username }}</strong>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted d-block">Miembro desde:</small>
+                    <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted d-block">Último acceso:</small>
+                    <strong>{{ user.last_login|date:"d/m/Y H:i"|default:'Nunca' }}</strong>
+                </div>
+                
+                <div class="alert alert-info small mb-0">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Tu cuenta está verificada y activa.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Formatear RUT
+    function formatRUT(input) {
+        let value = input.value.replace(/[^0-9kK]/g, '');
+        
+        if (value.length > 1) {
+            let rut = value.slice(0, -1);
+            let dv = value.slice(-1);
+            
+            // Formatear con puntos
+            rut = rut.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+            input.value = rut + '-' + dv;
+        } else {
+            input.value = value;
+        }
+    }
+    
+    // Validar formulario de perfil
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "guardian:profile" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Perfil actualizado correctamente', 'success');
+            } else {
+                showAlert('Error al actualizar el perfil: ' + (data.error || 'Error desconocido'), 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error al actualizar el perfil', 'danger');
+        });
+    });
+    
+    // Validar formulario de contraseña
+    document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (newPassword !== confirmPassword) {
+            showAlert('Las contraseñas no coinciden', 'danger');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            showAlert('La contraseña debe tener al menos 8 caracteres', 'danger');
+            return;
+        }
+        
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Contraseña cambiada correctamente', 'success');
+                this.reset();
+            } else {
+                showAlert('Error al cambiar la contraseña: ' + (data.error || 'Error desconocido'), 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error al cambiar la contraseña', 'danger');
+        });
+    });
+    
+    // Validar formulario de notificaciones
+    document.getElementById('notificationsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Preferencias de notificaciones actualizadas', 'success');
+            } else {
+                showAlert('Error al actualizar las preferencias: ' + (data.error || 'Error desconocido'), 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error al actualizar las preferencias', 'danger');
+        });
+    });
+    
+    // Función para mostrar alertas
+    function showAlert(message, type) {
+        // Remover alertas anteriores
+        const existingAlerts = document.querySelectorAll('.alert-floating');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Crear nueva alerta
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-floating`;
+        alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}
