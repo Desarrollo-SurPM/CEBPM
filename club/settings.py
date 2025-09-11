@@ -14,6 +14,14 @@ DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app', '.up.railway.app']
 
+# CSRF trusted origins for Railway deployment
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
