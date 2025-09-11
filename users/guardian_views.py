@@ -105,7 +105,7 @@ def guardian_players(request):
     status_filter = request.GET.get('status')
     
     if team_filter:
-        players = players.filter(team=team_filter)
+        players = players.filter(category=team_filter)
     if status_filter:
         players = players.filter(status=status_filter)
     
@@ -184,7 +184,7 @@ def guardian_schedule(request):
     
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
-    teams = [p.team for p in players]
+    teams = [p.category for p in players]
     
     # Filtros
     team_filter = request.GET.get('team')
@@ -192,17 +192,16 @@ def guardian_schedule(request):
     
     # Partidos
     matches = Match.objects.filter(
-        Q(home_team__in=teams) | Q(away_team__in=teams)
+        category__in=teams
     )
     
     # Entrenamientos
-    trainings = Training.objects.filter(team__in=teams)
+    trainings = []
     
     if team_filter:
         matches = matches.filter(
-            Q(home_team=team_filter) | Q(away_team=team_filter)
+            category=team_filter
         )
-        trainings = trainings.filter(team=team_filter)
     
     if month_filter:
         try:
@@ -236,12 +235,12 @@ def guardian_messages(request):
     
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
-    teams = [p.team for p in players]
+    teams = [p.category for p in players]
     
     # Obtener mensajes dirigidos al apoderado
-    messages_query = Message.objects.filter(
+    messages_query = BulkEmail.objects.filter(
         Q(audience='all_guardians') |
-        Q(audience='team_guardians', team__in=teams) |
+        Q(audience='team_guardians', category__in=teams) |
         Q(recipients=request.user),
         status='sent'
     ).distinct()
@@ -269,8 +268,8 @@ def guardian_messages(request):
     
     # Marcar mensajes como leídos cuando se visualizan
     for message in messages_page:
-        MessageRead.objects.get_or_create(
-            message=message,
+        EmailRecipient.objects.get_or_create(
+            email=message,
             user=request.user,
             defaults={'read_at': timezone.now()}
         )
@@ -357,9 +356,9 @@ def message_detail(request, message_id):
     
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
-    teams = [p.team for p in players]
+    teams = [p.category for p in players]
     
-    message = get_object_or_404(Message, 
+    message = get_object_or_404(BulkEmail, 
         id=message_id,
         status='sent'
     )
@@ -367,7 +366,7 @@ def message_detail(request, message_id):
     # Verificar que el apoderado puede ver este mensaje
     can_view = (
         message.audience == 'all_guardians' or
-        (message.audience == 'team_guardians' and message.team in teams) or
+        (message.audience == 'team_guardians' and message.category in teams) or
         request.user in message.recipients.all()
     )
     
@@ -375,8 +374,8 @@ def message_detail(request, message_id):
         return JsonResponse({'success': False, 'error': 'Sin permisos para ver este mensaje'})
     
     # Marcar como leído
-    MessageRead.objects.get_or_create(
-        message=message,
+    EmailRecipient.objects.get_or_create(
+        email=message,
         user=request.user,
         defaults={'read_at': timezone.now()}
     )
@@ -431,19 +430,12 @@ def guardian_player_detail(request, player_id):
     
     # Próximos partidos
     upcoming_matches = Match.objects.filter(
-        Q(home_team=player.team) | Q(away_team=player.team),
-        date__gte=timezone.now().date()
-    ).order_by('date')[:5]
+        category=player.category,
+        starts_at__gte=timezone.now()
+    ).order_by('starts_at')[:5]
     
     # Entrenamientos próximos (si existe el modelo)
-    try:
-        from schedules.models import Training
-        upcoming_trainings = Training.objects.filter(
-            team=player.team,
-            date__gte=timezone.now().date()
-        ).order_by('date')[:5]
-    except ImportError:
-        upcoming_trainings = []
+    upcoming_trainings = []
     
     context = {
         'player': player,

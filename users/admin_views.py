@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-from .models import User, GuardianProfile, AdminProfile
+from .models import User, GuardianProfile, AdminProfile, Registration
 from players.models import Player, GuardianPlayer
 from finance.models import Payment, FeeDefinition, Invoice, Sponsor
 from schedules.models import Match, Activity
@@ -60,18 +60,12 @@ def admin_dashboard(request):
     # Monthly statistics
     current_month = timezone.now().replace(day=1)
     
-    try:
-        from players.models import PlayerRegistration
-        pending_registrations = PlayerRegistration.objects.filter(status='pending').count()
-        # Recent activities
-        recent_registrations = PlayerRegistration.objects.order_by('-created_at')[:5]
-        monthly_registrations = PlayerRegistration.objects.filter(
-            created_at__gte=current_month
-        ).count()
-    except ImportError:
-        pending_registrations = 0
-        recent_registrations = []
-        monthly_registrations = 0
+    pending_registrations = Registration.objects.filter(status='pending').count()
+    # Recent activities
+    recent_registrations = Registration.objects.order_by('-created_at')[:5]
+    monthly_registrations = Registration.objects.filter(
+        created_at__gte=current_month
+    ).count()
     
     recent_payments = Payment.objects.filter(status='completed').order_by('-created_at')[:5]
     upcoming_matches = Match.objects.filter(starts_at__gte=timezone.now()).order_by('starts_at')[:5]
@@ -150,7 +144,7 @@ def admin_registrations(request):
     """Manage player registrations"""
     status_filter = request.GET.get('status', 'pending')
     
-    registrations = PlayerRegistration.objects.all()
+    registrations = Registration.objects.all()
     
     if status_filter:
         registrations = registrations.filter(status=status_filter)
@@ -175,7 +169,7 @@ def admin_registrations(request):
 def admin_approve_registration(request, registration_id):
     """Approve a player registration"""
     if request.method == 'POST':
-        registration = get_object_or_404(PlayerRegistration, id=registration_id)
+        registration = get_object_or_404(Registration, id=registration_id)
         registration.status = 'approved'
         registration.approved_by = request.user
         registration.approved_at = timezone.now()
@@ -206,7 +200,7 @@ def admin_approve_registration(request, registration_id):
 def admin_reject_registration(request, registration_id):
     """Reject a player registration"""
     if request.method == 'POST':
-        registration = get_object_or_404(PlayerRegistration, id=registration_id)
+        registration = get_object_or_404(Registration, id=registration_id)
         rejection_reason = request.POST.get('reason', '')
         
         registration.status = 'rejected'
