@@ -8,8 +8,8 @@
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #06236B;
+    box-shadow: 0 0 0 0.2rem rgba(6, 35, 107, 0.25);
 }
 
 /* Etiquetas de formulario */
@@ -45,7 +45,7 @@
 
 /* Campos con errores */
 .form-control.is-invalid, .form-select.is-invalid {
-    border-color: #dc3545;
+    border-color: #E46618;
 }
 
 /* Botones */
@@ -124,7 +124,7 @@ footer {
 
 /* Utilidades */
 .text-gradient {
-    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    background: linear-gradient(45deg, #06236B, #13623D);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

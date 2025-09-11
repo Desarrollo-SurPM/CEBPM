@@ -1,0 +1,228 @@
+/* Paleta de colores personalizada para Club Deportes Puerto Montt */
+/* Azul Marino: #06236B, Verde Oscuro: #13623D, Verde Claro: #2E9841, Naranja: #E46618, Blanco: #FFFFFF */
+
+:root {
+    --bs-primary: #06236B;
+    --bs-primary-rgb: 6, 35, 107;
+    --bs-secondary: #13623D;
+    --bs-secondary-rgb: 19, 98, 61;
+    --bs-success: #2E9841;
+    --bs-success-rgb: 46, 152, 65;
+    --bs-warning: #E46618;
+    --bs-warning-rgb: 228, 102, 24;
+    --bs-info: #06236B;
+    --bs-info-rgb: 6, 35, 107;
+    --bs-danger: #E46618;
+    --bs-danger-rgb: 228, 102, 24;
+    --bs-light: #FFFFFF;
+    --bs-light-rgb: 255, 255, 255;
+    --bs-dark: #06236B;
+    --bs-dark-rgb: 6, 35, 107;
+}
+
+/* Colores de fondo */
+.bg-primary {
+    background-color: #06236B !important;
+}
+
+.bg-secondary {
+    background-color: #13623D !important;
+}
+
+.bg-success {
+    background-color: #2E9841 !important;
+}
+
+.bg-warning {
+    background-color: #E46618 !important;
+}
+
+.bg-info {
+    background-color: #06236B !important;
+}
+
+.bg-danger {
+    background-color: #E46618 !important;
+}
+
+.bg-light {
+    background-color: #FFFFFF !important;
+}
+
+.bg-dark {
+    background-color: #06236B !important;
+}
+
+/* Colores de texto */
+.text-primary {
+    color: #06236B !important;
+}
+
+.text-secondary {
+    color: #13623D !important;
+}
+
+.text-success {
+    color: #2E9841 !important;
+}
+
+.text-warning {
+    color: #E46618 !important;
+}
+
+.text-info {
+    color: #06236B !important;
+}
+
+.text-danger {
+    color: #E46618 !important;
+}
+
+.text-light {
+    color: #FFFFFF !important;
+}
+
+.text-dark {
+    color: #06236B !important;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: #06236B;
+    border-color: #06236B;
+}
+
+.btn-primary:hover {
+    background-color: #041a52;
+    border-color: #041a52;
+}
+
+.btn-secondary {
+    background-color: #13623D;
+    border-color: #13623D;
+}
+
+.btn-secondary:hover {
+    background-color: #0f4d30;
+    border-color: #0f4d30;
+}
+
+.btn-success {
+    background-color: #2E9841;
+    border-color: #2E9841;
+}
+
+.btn-success:hover {
+    background-color: #267a36;
+    border-color: #267a36;
+}
+
+.btn-warning {
+    background-color: #E46618;
+    border-color: #E46618;
+    color: #FFFFFF;
+}
+
+.btn-warning:hover {
+    background-color: #c55614;
+    border-color: #c55614;
+    color: #FFFFFF;
+}
+
+.btn-info {
+    background-color: #06236B;
+    border-color: #06236B;
+}
+
+.btn-info:hover {
+    background-color: #041a52;
+    border-color: #041a52;
+}
+
+.btn-danger {
+    background-color: #E46618;
+    border-color: #E46618;
+}
+
+.btn-danger:hover {
+    background-color: #c55614;
+    border-color: #c55614;
+}
+
+/* Badges */
+.badge.bg-primary {
+    background-color: #06236B !important;
+}
+
+.badge.bg-secondary {
+    background-color: #13623D !important;
+}
+
+.badge.bg-success {
+    background-color: #2E9841 !important;
+}
+
+.badge.bg-warning {
+    background-color: #E46618 !important;
+    color: #FFFFFF !important;
+}
+
+.badge.bg-info {
+    background-color: #06236B !important;
+}
+
+.badge.bg-danger {
+    background-color: #E46618 !important;
+}
+
+/* Enlaces */
+a {
+    color: #06236B;
+}
+
+a:hover {
+    color: #041a52;
+}
+
+/* Gradientes personalizados */
+.gradient-primary {
+    background: linear-gradient(135deg, #06236B 0%, #13623D 100%);
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, #2E9841 0%, #13623D 100%);
+}
+
+.gradient-warning {
+    background: linear-gradient(135deg, #E46618 0%, #06236B 100%);
+}
+
+/* Bordes */
+.border-primary {
+    border-color: #06236B !important;
+}
+
+.border-secondary {
+    border-color: #13623D !important;
+}
+
+.border-success {
+    border-color: #2E9841 !important;
+}
+
+.border-warning {
+    border-color: #E46618 !important;
+}
+
+/* Sombras personalizadas */
+.shadow-primary {
+    box-shadow: 0 0.5rem 1rem rgba(6, 35, 107, 0.15) !important;
+}
+
+.shadow-success {
+    box-shadow: 0 0.5rem 1rem rgba(46, 152, 65, 0.15) !important;
+}
+
+.shadow-warning {
+    box-shadow: 0 0.5rem 1rem rgba(228, 102, 24, 0.15) !important;
+}
