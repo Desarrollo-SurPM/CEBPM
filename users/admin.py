@@ -120,6 +120,6 @@ admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
 # Personalizar el sitio de administración
-admin.site.site_header = 'Administración - Club Deportes Puerto Montt'
+admin.site.site_header = 'Administración - CEB FEM'
 admin.site.site_title = 'Admin Club Deportes'
 admin.site.index_title = 'Panel de Administración'

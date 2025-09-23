@@ -1,4 +1,4 @@
-# Club Deportes Puerto Montt - Sistema de Gestión
+# CEB FEM - Sistema de Gestión
 
 Sistema de gestión integral para el club deportivo, desarrollado en Django.
 
