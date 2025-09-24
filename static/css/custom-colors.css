@@ -1,48 +1,48 @@
-/* Paleta de colores personalizada para CEB FEM */
-/* Azul Marino: #06236B, Verde Oscuro: #13623D, Verde Claro: #2E9841, Naranja: #E46618, Blanco: #FFFFFF */
+/* Nueva paleta de colores personalizada para CEBPm */
+/* Púrpura: #C67ACE, Verde Lima: #D8F8B7, Coral: #FF9A8C, Rosa Fucsia: #CE1F6A */
 
 :root {
-    --bs-primary: #06236B;
-    --bs-primary-rgb: 6, 35, 107;
-    --bs-secondary: #13623D;
-    --bs-secondary-rgb: 19, 98, 61;
-    --bs-success: #2E9841;
-    --bs-success-rgb: 46, 152, 65;
-    --bs-warning: #E46618;
-    --bs-warning-rgb: 228, 102, 24;
-    --bs-info: #06236B;
-    --bs-info-rgb: 6, 35, 107;
-    --bs-danger: #E46618;
-    --bs-danger-rgb: 228, 102, 24;
+    --bs-primary: #C67ACE;
+    --bs-primary-rgb: 198, 122, 206;
+    --bs-secondary: #CE1F6A;
+    --bs-secondary-rgb: 206, 31, 106;
+    --bs-success: #D8F8B7;
+    --bs-success-rgb: 216, 248, 183;
+    --bs-warning: #FF9A8C;
+    --bs-warning-rgb: 255, 154, 140;
+    --bs-info: #C67ACE;
+    --bs-info-rgb: 198, 122, 206;
+    --bs-danger: #CE1F6A;
+    --bs-danger-rgb: 206, 31, 106;
     --bs-light: #FFFFFF;
     --bs-light-rgb: 255, 255, 255;
-    --bs-dark: #06236B;
-    --bs-dark-rgb: 6, 35, 107;
+    --bs-dark: #CE1F6A;
+    --bs-dark-rgb: 206, 31, 106;
 }
 
 /* Colores de fondo */
 .bg-primary {
-    background-color: #06236B !important;
+    background-color: #C67ACE !important;
 }
 
 .bg-secondary {
-    background-color: #13623D !important;
+    background-color: #CE1F6A !important;
 }
 
 .bg-success {
-    background-color: #2E9841 !important;
+    background-color: #D8F8B7 !important;
 }
 
 .bg-warning {
-    background-color: #E46618 !important;
+    background-color: #FF9A8C !important;
 }
 
 .bg-info {
-    background-color: #06236B !important;
+    background-color: #C67ACE !important;
 }
 
 .bg-danger {
-    background-color: #E46618 !important;
+    background-color: #CE1F6A !important;
 }
 
 .bg-light {
@@ -50,32 +50,32 @@
 }
 
 .bg-dark {
-    background-color: #06236B !important;
+    background-color: #CE1F6A !important;
 }
 
 /* Colores de texto */
 .text-primary {
-    color: #06236B !important;
+    color: #C67ACE !important;
 }
 
 .text-secondary {
-    color: #13623D !important;
+    color: #CE1F6A !important;
 }
 
 .text-success {
-    color: #2E9841 !important;
+    color: #D8F8B7 !important;
 }
 
 .text-warning {
-    color: #E46618 !important;
+    color: #FF9A8C !important;
 }
 
 .text-info {
-    color: #06236B !important;
+    color: #C67ACE !important;
 }
 
 .text-danger {
-    color: #E46618 !important;
+    color: #CE1F6A !important;
 }
 
 .text-light {
@@ -83,70 +83,72 @@
 }
 
 .text-dark {
-    color: #06236B !important;
+    color: #CE1F6A !important;
 }
 
 /* Botones */
 .btn-primary {
-    background-color: #06236B;
-    border-color: #06236B;
+    background-color: #C67ACE;
+    border-color: #C67ACE;
 }
 
 .btn-primary:hover {
-    background-color: #041a52;
-    border-color: #041a52;
+    background-color: #b366bb;
+    border-color: #b366bb;
 }
 
 .btn-secondary {
-    background-color: #13623D;
-    border-color: #13623D;
+    background-color: #CE1F6A;
+    border-color: #CE1F6A;
 }
 
 .btn-secondary:hover {
-    background-color: #0f4d30;
-    border-color: #0f4d30;
+    background-color: #b01b5c;
+    border-color: #b01b5c;
 }
 
 .btn-success {
-    background-color: #2E9841;
-    border-color: #2E9841;
+    background-color: #D8F8B7;
+    border-color: #D8F8B7;
+    color: #333333;
 }
 
 .btn-success:hover {
-    background-color: #267a36;
-    border-color: #267a36;
+    background-color: #cef5a3;
+    border-color: #cef5a3;
+    color: #333333;
 }
 
 .btn-warning {
-    background-color: #E46618;
-    border-color: #E46618;
+    background-color: #FF9A8C;
+    border-color: #FF9A8C;
     color: #FFFFFF;
 }
 
 .btn-warning:hover {
-    background-color: #c55614;
-    border-color: #c55614;
+    background-color: #ff8470;
+    border-color: #ff8470;
     color: #FFFFFF;
 }
 
 .btn-info {
-    background-color: #06236B;
-    border-color: #06236B;
+    background-color: #C67ACE;
+    border-color: #C67ACE;
 }
 
 .btn-info:hover {
-    background-color: #041a52;
-    border-color: #041a52;
+    background-color: #b366bb;
+    border-color: #b366bb;
 }
 
 .btn-danger {
-    background-color: #E46618;
-    border-color: #E46618;
+    background-color: #CE1F6A;
+    border-color: #CE1F6A;
 }
 
 .btn-danger:hover {
-    background-color: #c55614;
-    border-color: #c55614;
+    background-color: #b01b5c;
+    border-color: #b01b5c;
 }
 
 /* Badges */
@@ -186,15 +188,19 @@ a:hover {
 
 /* Gradientes personalizados */
 .gradient-primary {
-    background: linear-gradient(135deg, #06236B 0%, #13623D 100%);
+    background: linear-gradient(135deg, #C67ACE 0%, #CE1F6A 100%);
 }
 
 .gradient-success {
-    background: linear-gradient(135deg, #2E9841 0%, #13623D 100%);
+    background: linear-gradient(135deg, #D8F8B7 0%, #C67ACE 100%);
 }
 
 .gradient-warning {
-    background: linear-gradient(135deg, #E46618 0%, #06236B 100%);
+    background: linear-gradient(135deg, #FF9A8C 0%, #CE1F6A 100%);
+}
+
+.gradient-hero {
+    background: linear-gradient(135deg, #C67ACE 0%, #CE1F6A 50%, #FF9A8C 100%);
 }
 
 /* Bordes */

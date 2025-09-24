@@ -5,134 +5,711 @@
 
 {% block extra_css %}
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #06236B 0%, #13623D 100%);
-    color: white;
-    padding: 100px 0;
-    position: relative;
-    overflow: hidden;
+/* Variables de colores del equipo */
+:root {
+    --primary-color: #C67ACE;
+    --secondary-color: #CE1F6A;
+    --accent-color: #FF9A8C;
+    --light-green: #D8F8B7;
+    --dark-bg: #1a1a2e;
+    --light-bg: #f8f9fa;
 }
 
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
-    background-size: 50px 50px;
+/* Hero Section Estilo Estadio */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><rect fill="%23C67ACE" width="1920" height="1080"/><path fill="%23CE1F6A" d="M0 540h960v540H0z"/><path fill="%23FF9A8C" d="M960 540h960v540H960z"/><circle cx="960" cy="540" r="200" fill="none" stroke="%23ffffff" stroke-width="3" opacity="0.3"/><line x1="0" y1="540" x2="1920" y2="540" stroke="%23ffffff" stroke-width="3" opacity="0.3"/><line x1="960" y1="0" x2="960" y2="1080" stroke="%23ffffff" stroke-width="3" opacity="0.3"/><rect x="860" y="440" width="200" height="200" fill="none" stroke="%23ffffff" stroke-width="2" opacity="0.2"/></svg>');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
 }
 
 .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
-.stats-card {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
+.hero-title {
+    font-size: 5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    background: linear-gradient(45deg, #ffffff, var(--light-green));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    animation: titlePulse 2s ease-in-out infinite;
 }
 
-.stats-card:hover {
-    transform: translateY(-10px);
+@keyframes titlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
 }
 
-.stats-number {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #06236B;
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: var(--light-green);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 2rem;
 }
 
-.section-title {
+.hero-buttons .btn {
+    padding: 15px 40px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
     position: relative;
-    text-align: center;
-    margin-bottom: 3rem;
+    overflow: hidden;
 }
 
-.section-title::after {
+.btn-primary-hero {
+    background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+    border: none;
+    color: white;
+    box-shadow: 0 4px 15px rgba(206, 31, 106, 0.4);
+}
+
+.btn-primary-hero:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(206, 31, 106, 0.6);
+    color: white;
+}
+
+.btn-outline-hero {
+    background: transparent;
+    border: 2px solid var(--light-green);
+    color: var(--light-green);
+}
+
+.btn-outline-hero:hover {
+    background: var(--light-green);
+    color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+/* Estadio visual */
+.stadium-visual {
+    position: relative;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.field-graphic {
+    width: 100%;
+    max-width: 500px;
+    height: 300px;
+    background: linear-gradient(90deg,
+        #22a822 0%, #2fb82f 10%, #22a822 20%,
+        #2fb82f 30%, #22a822 40%, #2fb82f 50%,
+        #22a822 60%, #2fb82f 70%, #22a822 80%,
+        #2fb82f 90%, #22a822 100%);
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(198, 122, 206, 0.3);
+    overflow: hidden;
+    border: 3px solid white;
+}
+
+.field-graphic::before {
     content: '';
     position: absolute;
-    bottom: -10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border: 3px solid white;
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+.field-graphic::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    background: white;
+    opacity: 0.8;
+}
+
+/* Match Ticker */
+.match-ticker {
+    background: var(--dark-bg);
+    padding: 20px 0;
+    border-top: 3px solid var(--secondary-color);
+    border-bottom: 3px solid var(--secondary-color);
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.ticker-content {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    animation: scroll 30s linear infinite;
+    white-space: nowrap;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white;
+    font-weight: 600;
+}
+
+.ticker-item .badge {
+    background: var(--secondary-color);
+    padding: 5px 15px;
+    border-radius: 20px;
+}
+
+/* Stats Section Moderno */
+.stats-section {
+    background: linear-gradient(135deg, var(--light-green) 0%, #ffffff 100%);
+    padding: 100px 0;
+    position: relative;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--secondary-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.stat-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.stat-number {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+}
+
+/* Next Match Card */
+.next-match-section {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 80px 0;
+    color: white;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.next-match-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 50px;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.match-versus {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 30px;
+}
+
+.team-block {
+    text-align: center;
+}
+
+.team-logo {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 3rem;
+    color: var(--primary-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.team-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.vs-divider {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--light-green);
+}
+
+.match-details {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.match-date {
+    font-size: 1.3rem;
+    color: var(--light-green);
+    margin-bottom: 10px;
+}
+
+.match-location {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* News/Highlights Section */
+.news-section {
+    padding: 100px 0;
+    background: white;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+}
+
+.section-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
     left: 50%;
     transform: translateX(-50%);
-    width: 80px;
+    width: 100px;
     height: 4px;
-    background: linear-gradient(45deg, #06236B, #13623D);
-    border-radius: 2px;
+    background: var(--secondary-color);
 }
 
-.match-card, .activity-card {
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+.news-card {
     background: white;
-    border-radius: 15px;
-    padding: 25px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.news-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.news-image {
+    height: 250px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: white;
+}
+
+.news-content {
+    padding: 30px;
+}
+
+.news-category {
+    display: inline-block;
+    background: var(--secondary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+.news-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    line-height: 1.3;
+}
+
+.news-excerpt {
+    color: #666;
+    line-height: 1.6;
     margin-bottom: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* Fixtures Table */
+.fixtures-section {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #ffffff 100%);
+    padding: 100px 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.fixtures-table {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.fixtures-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 20px 30px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.fixture-row {
+    display: grid;
+    grid-template-columns: 150px 1fr auto 1fr 150px;
+    padding: 20px 30px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
     transition: all 0.3s ease;
-    border-left: 5px solid #06236B;
 }
 
-.match-card:hover, .activity-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+.fixture-row:hover {
+    background: var(--light-bg);
 }
 
-.sponsor-logo {
-    max-height: 80px;
-    max-width: 150px;
-    object-fit: contain;
+.fixture-date {
+    color: #666;
+    font-weight: 600;
+}
+
+.fixture-team {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.fixture-vs {
+    padding: 0 20px;
+    color: #999;
+    font-weight: 600;
+}
+
+.fixture-competition {
+    text-align: right;
+}
+
+.competition-badge {
+    display: inline-block;
+    background: var(--secondary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+/* Players Showcase */
+.players-section {
+    padding: 100px 0;
+    background: linear-gradient(to bottom, white, var(--light-green));
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.players-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.player-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.player-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.player-image {
+    height: 300px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+}
+
+.player-number {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: white;
+    color: var(--primary-color);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.player-silhouette {
+    font-size: 10rem;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: -20px;
+}
+
+.player-info {
+    padding: 25px;
+}
+
+.player-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.player-position {
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Sponsors Section Mejorado */
+.sponsors-section {
+    background: white;
+    padding: 80px 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.sponsors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    align-items: center;
+}
+
+.sponsor-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    padding: 20px;
     filter: grayscale(100%);
+    opacity: 0.6;
     transition: all 0.3s ease;
 }
 
-.sponsor-logo:hover {
+.sponsor-item:hover {
     filter: grayscale(0%);
+    opacity: 1;
     transform: scale(1.1);
 }
 
+.sponsor-logo {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+/* CTA Section */
 .cta-section {
-    background: linear-gradient(135deg, #2E9841 0%, #13623D 100%);
-    color: white;
-    padding: 80px 0;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    padding: 100px 0;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 
-.floating-ball {
+.cta-section::before {
+    content: '';
     position: absolute;
-    width: 60px;
-    height: 60px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    animation: float 6s ease-in-out infinite;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,0.05) 10px,
+        rgba(255,255,255,0.05) 20px
+    );
+    animation: slide 20s linear infinite;
 }
 
-.floating-ball:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
-.floating-ball:nth-child(2) { top: 60%; right: 15%; animation-delay: 2s; }
-.floating-ball:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 4s; }
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+@keyframes slide {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
 }
 
-.btn-custom {
-    background: linear-gradient(45deg, #0d6efd, #6610f2);
-    border: none;
+.cta-content {
+    position: relative;
+    z-index: 1;
+}
+
+.cta-title {
+    font-size: 3rem;
+    font-weight: 900;
     color: white;
-    padding: 12px 30px;
-    border-radius: 25px;
-    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.cta-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 40px;
+}
+
+.cta-button {
+    display: inline-block;
+    background: white;
+    color: var(--primary-color);
+    padding: 20px 50px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
     transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.btn-custom:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
-    color: white;
+.cta-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .match-versus {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .vs-divider {
+        margin: 20px 0;
+    }
+
+    .news-grid,
+    .players-carousel {
+        grid-template-columns: 1fr;
+    }
+
+    .fixture-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 10px;
+    }
+}
+
+/* Animations */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 </style>
 {% endblock %}
@@ -140,169 +717,311 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
-    <div class="floating-ball"></div>
-    <div class="floating-ball"></div>
-    <div class="floating-ball"></div>
-    
-    <div class="container hero-content">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4 fade-in">
-                    <i class="fas fa-futbol me-3"></i>
-                    CEBPm
-                </h1>
-                <p class="lead mb-4 fade-in">
-                    Formando campeones desde 1950. Únete a nuestra familia deportiva y vive la pasión del fútbol en cada entrenamiento y partido.
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6 hero-content">
+                <h6 class="hero-subtitle fade-in">Club Deportivo</h6>
+                <h1 class="hero-title fade-in">CEBPm</h1>
+                <p class="lead text-white mb-4 fade-in">
+                    Formando campeones desde 1950. La pasión por el fútbol corre por nuestras venas.
                 </p>
-                <div class="fade-in">
-                    <a href="{% url 'register' %}" class="btn btn-light btn-lg me-3">
-                        <i class="fas fa-user-plus me-2"></i>Únete al Club
+                <div class="hero-buttons fade-in">
+                    <a href="{% url 'register' %}" class="btn btn-primary-hero me-3">
+                        <i class="fas fa-trophy me-2"></i>Únete al Club
                     </a>
-                    <a href="{% url 'pages:about' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-info-circle me-2"></i>Conoce Más
+                    <a href="{% url 'pages:about' %}" class="btn btn-outline-hero">
+                        <i class="fas fa-play-circle me-2"></i>Ver Video
                     </a>
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <div class="hero-image fade-in">
-                    <i class="fas fa-futbol" style="font-size: 15rem; opacity: 0.3;"></i>
+            <div class="col-lg-6">
+                <div class="stadium-visual fade-in">
+                    <div class="field-graphic">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: rgba(255,255,255,0.9); z-index: 1;">
+                            <i class="fas fa-futbol"></i>
+                        </div>
+                        <!-- Áreas del campo -->
+                        <div style="position: absolute; top: 20px; left: 20px; right: 20px; height: 60px; border: 2px solid rgba(255,255,255,0.6); border-bottom: none;"></div>
+                        <div style="position: absolute; bottom: 20px; left: 20px; right: 20px; height: 60px; border: 2px solid rgba(255,255,255,0.6); border-top: none;"></div>
+                        <!-- Áreas pequeñas -->
+                        <div style="position: absolute; top: 40px; left: 120px; right: 120px; height: 30px; border: 2px solid rgba(255,255,255,0.6); border-bottom: none;"></div>
+                        <div style="position: absolute; bottom: 40px; left: 120px; right: 120px; height: 30px; border: 2px solid rgba(255,255,255,0.6); border-top: none;"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Match Ticker -->
+<div class="match-ticker">
+    <div class="ticker-content">
+        {% for i in "123456" %}
+        <div class="ticker-item">
+            <span class="badge">⚽ PRÓXIMO</span>
+            <span>CEBPm vs Rival FC - Sábado 15:00</span>
+        </div>
+        <div class="ticker-item">
+            <span class="badge">🏆 VICTORIA</span>
+            <span>CEBPm 3-1 Deportivo Sur</span>
+        </div>
+        <div class="ticker-item">
+            <span class="badge">📅 FIXTURE</span>
+            <span>CEBPm vs Regional - Domingo 18:00</span>
+        </div>
+        <div class="ticker-item">
+            <span class="badge">⚽ GOL</span>
+            <span>¡Gol de Capitán en el minuto 85!</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 <!-- Stats Section -->
-<section class="py-5" style="background: #f8f9fa;">
+<section class="stats-section">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="stats-card fade-in">
-                    <div class="stats-number">{{ total_players }}</div>
-                    <h5 class="text-muted">Jugadores Activos</h5>
-                    <i class="fas fa-users fa-2x text-primary mt-2"></i>
+        <div class="stats-grid">
+            <div class="stat-card fade-in">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" data-count="{{ total_players|default:150 }}">0</div>
+                <div class="stat-label">Jugadores Activos</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-number" data-count="{{ total_categories|default:8 }}">0</div>
+                <div class="stat-label">Categorías</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <div class="stat-number" data-count="25">0</div>
+                <div class="stat-label">Campeonatos</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="stat-number" data-count="74">0</div>
+                <div class="stat-label">Años de Historia</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Next Match -->
+{% if recent_matches %}
+<section class="next-match-section">
+    <div class="container">
+        <div class="section-header mb-5">
+            <h2 class="text-white">Próximo Partido</h2>
+        </div>
+        {% with match=recent_matches.0 %}
+        <div class="next-match-card">
+            <div class="match-versus">
+                <div class="team-block">
+                    <div class="team-logo">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="team-name">CEBPm</div>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="team-block">
+                    <div class="team-logo">
+                        <i class="fas fa-futbol"></i>
+                    </div>
+                    <div class="team-name">{{ match.opponent|default:"Rival FC" }}</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card fade-in">
-                    <div class="stats-number">{{ total_categories }}</div>
-                    <h5 class="text-muted">Categorías</h5>
-                    <i class="fas fa-trophy fa-2x text-primary mt-2"></i>
+            <div class="match-details">
+                <div class="match-date">
+                    <i class="far fa-calendar me-2"></i>
+                    {{ match.starts_at|date:"l d F, H:i" }}
+                </div>
+                <div class="match-location">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    {{ match.location|default:"Estadio Municipal" }}
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card fade-in">
-                    <div class="stats-number">75</div>
-                    <h5 class="text-muted">Años de Historia</h5>
-                    <i class="fas fa-calendar fa-2x text-primary mt-2"></i>
+        </div>
+        {% endwith %}
+    </div>
+</section>
+{% endif %}
+
+<!-- News/Highlights -->
+<section class="news-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Últimas Noticias</h2>
+        </div>
+        <div class="news-grid">
+            <div class="news-card fade-in">
+                <div class="news-image">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-category">🏆 Victoria</span>
+                    <h3 class="news-title">Gran victoria 3-0 en el clásico regional</h3>
+                    <p class="news-excerpt">El equipo mostró un juego sólido y contundente ante nuestro rival histórico con goles espectaculares...</p>
+                    <div class="news-meta">
+                        <span>⏰ Hace 2 días</span>
+                        <span><i class="fas fa-futbol"></i></span>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card fade-in">
-                    <div class="stats-number">{{ sponsors.count }}</div>
-                    <h5 class="text-muted">Patrocinadores</h5>
-                    <i class="fas fa-handshake fa-2x text-primary mt-2"></i>
+            <div class="news-card fade-in">
+                <div class="news-image">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-category">⚽ Fichajes</span>
+                    <h3 class="news-title">Nuevos talentos se suman a las categorías juveniles</h3>
+                    <p class="news-excerpt">Cinco promesas del fútbol regional refuerzan nuestras divisiones menores para la nueva temporada...</p>
+                    <div class="news-meta">
+                        <span>⏰ Hace 5 días</span>
+                        <span><i class="fas fa-star"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="news-card fade-in">
+                <div class="news-image">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-category">👩‍⚽ Academia</span>
+                    <h3 class="news-title">Inauguramos nueva escuela de fútbol femenino</h3>
+                    <p class="news-excerpt">CEBPm apuesta fuerte por el desarrollo del fútbol femenino en la región con instalaciones de primer nivel...</p>
+                    <div class="news-meta">
+                        <span>⏰ Hace 1 semana</span>
+                        <span><i class="fas fa-futbol"></i></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Próximos Partidos -->
-<section class="py-5">
+<!-- Fixtures Table -->
+<section class="fixtures-section">
     <div class="container">
-        <h2 class="section-title">Próximos Partidos</h2>
-        <div class="row">
-            {% for match in recent_matches %}
-            <div class="col-md-4">
-                <div class="match-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge bg-primary">{{ match.category.name }}</span>
-                        <small class="text-muted">{{ match.starts_at|date:"d/m/Y H:i" }}</small>
-                    </div>
-                    <h5 class="mb-2">{{ match.title }}</h5>
-                    <p class="text-muted mb-2">
-                        <i class="fas fa-map-marker-alt me-2"></i>{{ match.location|default:"Por confirmar" }}
-                    </p>
-                    <p class="mb-0">
-                        <strong>vs {{ match.opponent }}</strong>
-                    </p>
+        <div class="section-header">
+            <h2>Calendario</h2>
+        </div>
+        <div class="fixtures-table">
+            <div class="fixtures-header">
+                Próximos Partidos
+            </div>
+            {% for match in recent_matches|slice:":5" %}
+            <div class="fixture-row">
+                <div class="fixture-date">{{ match.starts_at|date:"d M" }}</div>
+                <div class="fixture-team text-end">CEBPm</div>
+                <div class="fixture-vs">vs</div>
+                <div class="fixture-team">{{ match.opponent|default:"Por confirmar" }}</div>
+                <div class="fixture-competition">
+                    <span class="competition-badge">{{ match.category.name }}</span>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12">
-                <div class="text-center py-5">
-                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No hay partidos programados</h5>
-                    <p class="text-muted">Los próximos partidos aparecerán aquí pronto.</p>
+            <div class="fixture-row">
+                <div class="text-center w-100 py-4">
+                    <p class="text-muted mb-0">No hay partidos programados</p>
                 </div>
             </div>
             {% endfor %}
         </div>
-        
         {% if recent_matches %}
         <div class="text-center mt-4">
-            <a href="{% url 'pages:schedule' %}" class="btn btn-custom">
-                <i class="fas fa-calendar me-2"></i>Ver Calendario Completo
+            <a href="{% url 'pages:schedule' %}" class="btn btn-primary-hero">
+                Ver Calendario Completo
             </a>
         </div>
         {% endif %}
     </div>
 </section>
 
-<!-- Actividades -->
-{% if recent_activities %}
-<section class="py-5" style="background: #f8f9fa;">
+<!-- Players Showcase -->
+<section class="players-section">
     <div class="container">
-        <h2 class="section-title">Próximas Actividades</h2>
-        <div class="row">
-            {% for activity in recent_activities %}
-            <div class="col-md-4">
-                <div class="activity-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge bg-success">{{ activity.get_activity_type_display }}</span>
-                        <small class="text-muted">{{ activity.starts_at|date:"d/m/Y H:i" }}</small>
+        <div class="section-header">
+            <h2>Nuestros Jugadores</h2>
+        </div>
+        <div class="players-carousel">
+            <div class="player-card fade-in">
+                <div class="player-image">
+                    <div class="player-number">10</div>
+                    <div class="player-silhouette">
+                        <i class="fas fa-user"></i>
                     </div>
-                    <h5 class="mb-2">{{ activity.title }}</h5>
-                    <p class="text-muted mb-2">
-                        <i class="fas fa-map-marker-alt me-2"></i>{{ activity.location|default:"Por confirmar" }}
-                    </p>
-                    {% if activity.duration %}
-                    <p class="mb-0">
-                        <i class="fas fa-clock me-2"></i>Duración: {{ activity.duration }} minutos
-                    </p>
-                    {% endif %}
+                </div>
+                <div class="player-info">
+                    <div class="player-name">Capitán del Equipo</div>
+                    <div class="player-position">Mediocampista</div>
                 </div>
             </div>
-            {% endfor %}
+            <div class="player-card fade-in">
+                <div class="player-image">
+                    <div class="player-number">9</div>
+                    <div class="player-silhouette">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">Goleador</div>
+                    <div class="player-position">Delantero</div>
+                </div>
+            </div>
+            <div class="player-card fade-in">
+                <div class="player-image">
+                    <div class="player-number">1</div>
+                    <div class="player-silhouette">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">Guardameta</div>
+                    <div class="player-position">Portero</div>
+                </div>
+            </div>
+            <div class="player-card fade-in">
+                <div class="player-image">
+                    <div class="player-number">4</div>
+                    <div class="player-silhouette">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">Defensa Central</div>
+                    <div class="player-position">Defensor</div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
-{% endif %}
 
-<!-- Patrocinadores -->
+<!-- Sponsors -->
 {% if sponsors %}
-<section class="py-5">
+<section class="sponsors-section">
     <div class="container">
-        <h2 class="section-title">Nuestros Patrocinadores</h2>
-        <div class="row g-4 justify-content-center">
+        <div class="section-header">
+            <h2>Patrocinadores Oficiales</h2>
+        </div>
+        <div class="sponsors-grid">
             {% for sponsor in sponsors %}
-            <div class="col-md-2 col-sm-4 col-6 text-center">
+            <div class="sponsor-item">
                 {% if sponsor.logo %}
                     <img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" class="sponsor-logo">
                 {% else %}
-                    <div class="d-flex align-items-center justify-content-center" style="height: 80px; background: #f8f9fa; border-radius: 10px;">
-                        <strong class="text-muted">{{ sponsor.name }}</strong>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">
+                        {{ sponsor.name }}
                     </div>
                 {% endif %}
             </div>
             {% endfor %}
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="{% url 'pages:sponsors' %}" class="btn btn-outline-primary">
-                <i class="fas fa-handshake me-2"></i>Ver Todos los Patrocinadores
-            </a>
         </div>
     </div>
 </section>
@@ -310,46 +1029,78 @@
 
 <!-- CTA Section -->
 <section class="cta-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="display-5 fw-bold mb-4">¿Listo para Unirte?</h2>
-                <p class="lead mb-4 fade-in">
-                    Forma parte de la familia del CEBPm. Registra a tu hijo y comienza su camino hacia el éxito deportivo.
-                </p>
-                <a href="{% url 'register' %}" class="btn btn-light btn-lg">
-                    <i class="fas fa-user-plus me-2"></i>Registrarse Ahora
-                </a>
-            </div>
-        </div>
+    <div class="container cta-content">
+        <h2 class="cta-title">Sé Parte del Equipo</h2>
+        <p class="cta-subtitle">
+            Únete a CEBPm y forma parte de una tradición ganadora
+        </p>
+        <a href="{% url 'register' %}" class="cta-button">
+            <i class="fas fa-star me-2"></i>
+            Inscríbete Ahora
+        </a>
     </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Animación de fade-in al hacer scroll
+// Animación contador de números
 document.addEventListener('DOMContentLoaded', function() {
+    const counters = document.querySelectorAll('.stat-number');
+    const speed = 200;
+
+    const countUp = (counter) => {
+        const target = +counter.getAttribute('data-count');
+        const count = +counter.innerText;
+        const increment = target / speed;
+
+        if (count < target) {
+            counter.innerText = Math.ceil(count + increment);
+            setTimeout(() => countUp(counter), 10);
+        } else {
+            counter.innerText = target;
+        }
+    };
+
+    // Intersection Observer para animaciones
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
-    
+
     const observer = new IntersectionObserver(function(entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                entry.target.classList.add('visible');
+
+                // Si es un contador, iniciar animación
+                if (entry.target.classList.contains('stat-card')) {
+                    const counter = entry.target.querySelector('.stat-number');
+                    if (counter && counter.innerText === '0') {
+                        countUp(counter);
+                    }
+                }
             }
         });
     }, observerOptions);
-    
-    // Aplicar animación a elementos con clase fade-in
-    document.querySelectorAll('.fade-in').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'all 0.6s ease';
+
+    // Observar elementos con animación
+    document.querySelectorAll('.fade-in, .stat-card').forEach(el => {
         observer.observe(el);
+    });
+
+    // Smooth scroll para anchors
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
     });
 });
 </script>
