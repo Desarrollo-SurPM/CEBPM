@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Plantel de Jugadores - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2><i class="fas fa-users me-2"></i>Plantel de Jugadores</h2>
+        <p class="lead text-muted">Conoce a los talentos que defienden nuestros colores.</p>
+    </div>
+
+    <form method="get" class="row justify-content-center mb-4">
+        <div class="col-md-4">
+            <select name="category" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Selecciona una categoría --</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category.id == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    {% if selected_category %}
+    <h3 class="mb-3">Categoría: {{ selected_category.name }}</h3>
+    <div class="row">
+        {% for player in players %}
+        <div class="col-md-4 col-lg-3 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    {% if player.photo %}
+                        <img src="{{ player.photo.url }}" class="rounded-circle mb-3" width="100" height="100" alt="{{ player.get_full_name }}">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                    {% endif %}
+                    <h5 class="card-title">{{ player.get_full_name }}</h5>
+                    <p class="card-text text-primary fw-bold">{{ player.get_position_display|default:"Sin posición" }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No hay jugadores activos en esta categoría.</p>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-muted">Por favor, selecciona una categoría para ver los jugadores.</p>
+    {% endif %}
+</div>
+{% endblock %}

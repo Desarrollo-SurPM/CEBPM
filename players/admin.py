@@ -13,7 +13,7 @@ class CategoryAdmin(admin.ModelAdmin):
     ordering = ('name',)
     
     def get_player_count(self, obj):
-        count = obj.player_set.filter(is_active=True).count()
+        count = obj.player_set.count()
         return f'{count} jugadores'
     get_player_count.short_description = 'Jugadores Activos'
 
@@ -21,19 +21,19 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
     list_display = (
-        'get_full_name', 'category', 'get_age', 'is_active', 'created_at'
+        'get_full_name', 'category', 'get_age', 'status', 'created_at'
     )
-    list_filter = ('category', 'is_active', 'created_at')
-    search_fields = ('first_name', 'last_name')
+    list_filter = ('category', 'status', 'created_at')
+    search_fields = ('first_name', 'last_name', 'rut')
     ordering = ('last_name', 'first_name')
     actions = ['activate_players', 'deactivate_players']
     
     fieldsets = (
         ('Información Personal', {
-            'fields': ('first_name', 'last_name', 'birthdate', 'photo')
+            'fields': ('first_name', 'last_name', 'rut', 'birthdate', 'photo')
         }),
         ('Información Deportiva', {
-            'fields': ('category', 'is_active')
+            'fields': ('category', 'position', 'status')
         })
     )
     
@@ -45,16 +45,18 @@ class PlayerAdmin(admin.ModelAdmin):
     get_full_name.admin_order_field = 'last_name'
     
     def get_age(self, obj):
+        if obj.age is None:
+            return "N/A"
         return f'{obj.age} años'
     get_age.short_description = 'Edad'
     
     def activate_players(self, request, queryset):
-        updated = queryset.update(is_active=True)
+        updated = queryset.update(status='active')
         self.message_user(request, f'{updated} jugadores activados exitosamente.')
     activate_players.short_description = 'Activar jugadores seleccionados'
     
     def deactivate_players(self, request, queryset):
-        updated = queryset.update(is_active=False)
+        updated = queryset.update(status='inactive')
         self.message_user(request, f'{updated} jugadores desactivados exitosamente.')
     deactivate_players.short_description = 'Desactivar jugadores seleccionados'
 

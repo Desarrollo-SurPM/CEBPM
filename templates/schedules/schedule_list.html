@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendario de Eventos - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2><i class="fas fa-calendar-alt me-2"></i>Calendario de Eventos</h2>
+        <p class="lead text-muted">Aquí encontrarás los próximos partidos y actividades del club.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h3 class="mb-3">Próximos Partidos</h3>
+            <div class="list-group">
+                {% for match in upcoming_matches %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ match.title }} ({{ match.category.name }})</h5>
+                        <small>{{ match.starts_at|date:"D, d M Y" }}</small>
+                    </div>
+                    <p class="mb-1"><strong>Rival:</strong> {{ match.opponent }}</p>
+                    <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ match.location }} | {{ match.starts_at|time:"H:i" }} hrs</small>
+                </a>
+                {% empty %}
+                <div class="list-group-item">
+                    <p class="text-muted mb-0">No hay partidos programados próximamente.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h3 class="my-4">Próximas Actividades</h3>
+            <div class="list-group">
+                {% for activity in upcoming_activities %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ activity.title }}</h5>
+                        <small>{{ activity.starts_at|date:"D, d M Y" }}</small>
+                    </div>
+                    <p class="mb-1">{{ activity.description|default:"Sin descripción." }}</p>
+                    <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ activity.location }} | {{ activity.starts_at|time:"H:i" }} - {{ activity.ends_at|time:"H:i" }} hrs</small>
+                </a>
+                {% empty %}
+                <div class="list-group-item">
+                    <p class="text-muted mb-0">No hay otras actividades programadas.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -24,7 +24,8 @@ urlpatterns = [
     
     # Perfil
     path('profile/', guardian_views.guardian_profile, name='profile'),
-    
+    path('profile/change-password/', guardian_views.change_password, name='change_password'),
+    path('profile/update-notifications/', guardian_views.update_notifications, name='update_notifications'),
     # Player detail view
     path('player/<int:player_id>/', guardian_views.guardian_player_detail, name='guardian_player_detail'),
     
@@ -35,4 +36,12 @@ urlpatterns = [
     # Payment functionality
     path('pay/<int:invoice_id>/', guardian_views.guardian_pay_quota, name='guardian_pay_quota'),
     path('pay/multiple/', guardian_views.guardian_pay_multiple, name='guardian_pay_multiple'),
+    
+
+    # Mensajes (RUTAS CORREGIDAS Y AÑADIDAS)
+    path('messages/', guardian_views.guardian_messages, name='messages'),
+    path('messages/<int:recipient_id>/detail/', guardian_views.message_detail, name='message_detail'),
+    path('messages/<int:recipient_id>/read/', guardian_views.mark_message_as_read, name='mark_message_read'),
+    path('messages/read-all/', guardian_views.mark_all_as_read, name='mark_all_messages_read'), # Corregido el nombre
+    
 ]

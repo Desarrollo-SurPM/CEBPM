@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 
 class Category(models.Model):
     """Categorías de jugadores"""
@@ -19,12 +19,28 @@ class Category(models.Model):
 
 class Player(models.Model):
     """Jugadores del club"""
+    STATUS_CHOICES = [
+        ('active', 'Activo'),
+        ('inactive', 'Inactivo'),
+        ('injured', 'Lesionado'),
+    ]
+    
+    POSITION_CHOICES = [
+        ('base', 'Base'),
+        ('escolta', 'Escolta'),
+        ('alero', 'Alero'),
+        ('ala_pivot', 'Ala-Pívot'),
+        ('pivot', 'Pívot'),
+    ]
+
     first_name = models.CharField(max_length=50, verbose_name='Nombre')
     last_name = models.CharField(max_length=50, verbose_name='Apellido')
+    rut = models.CharField(max_length=12, unique=True, null=True, blank=True, verbose_name='RUT')
     birthdate = models.DateField(verbose_name='Fecha de nacimiento')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Categoría')
     photo = models.ImageField(upload_to='players/', blank=True, null=True, verbose_name='Foto')
-    is_active = models.BooleanField(default=True, verbose_name='Activo')
+    position = models.CharField(max_length=20, choices=POSITION_CHOICES, blank=True, null=True, verbose_name='Posición')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', verbose_name='Estado')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,8 +57,9 @@ class Player(models.Model):
 
     @property
     def age(self):
-        from datetime import date
-        today = date.today()
+        if not self.birthdate:
+            return None
+        today = timezone.now().date()
         return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
 
 
@@ -67,4 +84,4 @@ class GuardianPlayer(models.Model):
         unique_together = ['guardian', 'player']
 
     def __str__(self):
-        return f'{self.guardian.get_full_name()} - {self.player.get_full_name()} ({self.get_relation_display()})' 
+        return f'{self.guardian.get_full_name()} - {self.player.get_full_name()} ({self.get_relation_display()})'
