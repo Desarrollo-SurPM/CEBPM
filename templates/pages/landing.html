@@ -51,46 +51,95 @@ main {
     margin-bottom: 0 !important;
 }
 
-/* Custom Cursor */
+/* Cursor de Pelota de Básquetbol */
 body {
-    cursor: none;
+    cursor: none !important;
 }
 
 .custom-cursor {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     position: fixed;
-    background: radial-gradient(circle, var(--secondary-bg) 0%, transparent 70%);
-    border-radius: 50%;
     pointer-events: none;
-    z-index: 9999;
-    transition: transform 0.1s ease;
-    animation: cursorPulse 1.5s infinite;
+    z-index: 10000;
+    transition: width 0.2s, height 0.2s, transform 0.1s;
 }
 
-.custom-cursor::before {
-    content: '🏀';
+.cursor-dot {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(0deg);
-    font-size: 20px;
-    animation: basketballRotate 2s linear infinite;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    font-size: 35px;
+    line-height: 1;
+    animation: basketballSpin 2s linear infinite;
 }
 
-@keyframes basketballRotate {
+.cursor-dot::before {
+    content: '🏀';
+    display: block;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+}
+
+@keyframes basketballSpin {
     from { transform: translate(-50%, -50%) rotate(0deg); }
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-@keyframes cursorPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+.cursor-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--secondary-bg);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: cursorRing 1.5s infinite;
+    opacity: 0.6;
 }
 
-/* Hero Section Estilo Cancha de Básquetbol */
+@keyframes cursorRing {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+.cursor-trail {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--button-color);
+    pointer-events: none;
+    animation: trail-fade 1s ease-out forwards;
+    z-index: 9998;
+}
+
+@keyframes trail-fade {
+    0% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+}
+
+/* Hero Dinámico con Partículas */
 .hero-section {
-    background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+    background:
+        radial-gradient(ellipse at 20% 30%, var(--secondary-bg) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 70%, var(--button-color) 0%, transparent 40%),
+        linear-gradient(135deg, var(--primary-bg) 0%, var(--dark-bg) 100%);
     position: relative;
     min-height: 100vh;
     width: 100vw;
@@ -100,16 +149,52 @@ body {
     align-items: center;
 }
 
-.hero-section::before {
-    content: '';
+/* Partículas Flotantes */
+.particle {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    background-image:
-        linear-gradient(90deg, transparent 48%, rgba(255,255,255,0.1) 49%, rgba(255,255,255,0.1) 51%, transparent 52%),
-        linear-gradient(0deg, transparent 48%, rgba(255,255,255,0.1) 49%, rgba(255,255,255,0.1) 51%, transparent 52%);
-    background-size: 100px 100px;
-    opacity: 0.3;
+    background: radial-gradient(circle, var(--banner-color) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.particle:nth-child(odd) {
+    width: 4px;
+    height: 4px;
+    animation: float-up 15s linear infinite;
+}
+
+.particle:nth-child(even) {
+    width: 6px;
+    height: 6px;
+    animation: float-diagonal 20s linear infinite;
+}
+
+@keyframes float-up {
+    0% {
+        transform: translateY(100vh) translateX(0) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) translateX(100px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes float-diagonal {
+    0% {
+        transform: translate(0, 100vh) rotate(0deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(100vw, -100vh) rotate(720deg);
+        opacity: 0;
+    }
 }
 
 .basketball-court {
@@ -189,42 +274,69 @@ body {
     border-radius: 50%;
 }
 
-/* Floating Basketballs Animation */
-.floating-basketball {
+/* Elementos Decorativos Dinámicos */
+.decoration-element {
     position: absolute;
-    font-size: 2rem;
-    opacity: 0.3;
-    animation: float 15s infinite ease-in-out;
+    pointer-events: none;
 }
 
-.floating-basketball:nth-child(1) {
-    top: 10%;
-    left: 10%;
+.jersey {
+    font-size: 3rem;
+    animation: jerseyFloat 8s ease-in-out infinite;
+}
+
+.jersey:nth-child(1) {
+    top: 15%;
+    left: 5%;
     animation-delay: 0s;
 }
 
-.floating-basketball:nth-child(2) {
-    top: 70%;
-    right: 10%;
-    animation-delay: 3s;
+.jersey:nth-child(2) {
+    top: 60%;
+    right: 8%;
+    animation-delay: 2s;
 }
 
-.floating-basketball:nth-child(3) {
-    bottom: 10%;
-    left: 20%;
-    animation-delay: 6s;
-}
-
-@keyframes float {
+@keyframes jerseyFloat {
     0%, 100% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0) rotate(-5deg) scale(1);
+        opacity: 0.2;
     }
-    33% {
-        transform: translateY(-30px) rotate(120deg);
+    50% {
+        transform: translateY(-20px) rotate(5deg) scale(1.1);
+        opacity: 0.4;
     }
-    66% {
-        transform: translateY(30px) rotate(240deg);
+}
+
+.trophy {
+    font-size: 2.5rem;
+    color: gold;
+    animation: trophyShine 3s linear infinite;
+    top: 80%;
+    left: 15%;
+}
+
+@keyframes trophyShine {
+    0%, 100% {
+        transform: rotate(-10deg);
+        filter: brightness(1) drop-shadow(0 0 10px gold);
     }
+    50% {
+        transform: rotate(10deg);
+        filter: brightness(1.5) drop-shadow(0 0 20px gold);
+    }
+}
+
+.sneaker {
+    font-size: 2rem;
+    top: 35%;
+    right: 15%;
+    animation: sneakerBounce 2s ease-in-out infinite;
+}
+
+@keyframes sneakerBounce {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50% { transform: translateY(10px) scaleY(0.9); }
 }
 
 .hero-content {
@@ -233,25 +345,43 @@ body {
 }
 
 .hero-title {
-    font-size: 5rem;
+    font-size: clamp(3rem, 8vw, 6rem);
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: -2px;
-    background: linear-gradient(45deg, var(--banner-color), var(--secondary-bg));
+    letter-spacing: -3px;
+    position: relative;
+    display: inline-block;
+}
+
+.hero-title span {
+    display: inline-block;
+    animation: letterDance 2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.1s);
+    background: linear-gradient(
+        45deg,
+        var(--banner-color) 0%,
+        var(--secondary-bg) 25%,
+        var(--button-color) 50%,
+        var(--banner-color) 75%,
+        var(--secondary-bg) 100%
+    );
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-    animation: titleBounce 2s ease-in-out infinite;
+    animation: gradientShift 3s ease-in-out infinite, letterDance 2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.1s);
 }
 
-@keyframes titleBounce {
-    0%, 100% {
-        transform: translateY(0) scale(1);
-    }
-    50% {
-        transform: translateY(-10px) scale(1.05);
-    }
+@keyframes letterDance {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-5px) rotate(-5deg) scale(1.1); }
+    75% { transform: translateY(5px) rotate(5deg) scale(0.9); }
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .hero-subtitle {
@@ -279,29 +409,39 @@ body {
     background: linear-gradient(45deg, var(--button-color), var(--secondary-bg));
     border: none;
     color: white;
-    box-shadow: 0 4px 20px rgba(200, 96, 176, 0.5);
-}
-
-.btn-primary-hero:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 8px 30px rgba(200, 96, 176, 0.7);
-    color: white;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
 .btn-primary-hero::before {
-    content: '🏀';
+    content: '';
     position: absolute;
-    top: -50px;
-    right: -30px;
-    font-size: 80px;
-    opacity: 0.1;
-    transform: rotate(-15deg);
-    transition: all 0.5s ease;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+    z-index: -1;
 }
 
 .btn-primary-hero:hover::before {
+    left: 100%;
+}
+
+.btn-primary-hero:hover {
+    transform: translateY(-3px) translateX(-3px);
+    box-shadow: 3px 3px 0 var(--banner-color), 6px 6px 0 var(--button-color);
+}
+
+.btn-emoji {
+    display: inline-block;
+    transition: transform 0.3s;
+}
+
+.btn-primary-hero:hover .btn-emoji {
     transform: rotate(360deg) scale(1.2);
-    top: -40px;
 }
 
 .btn-outline-hero {
@@ -318,32 +458,79 @@ body {
     box-shadow: 0 8px 30px rgba(192, 124, 205, 0.5);
 }
 
-/* Basketball Court Visual */
+/* Visualización Interactiva 3D */
 .court-visual {
     position: relative;
     height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
-    perspective: 1000px;
+    perspective: 1500px;
+}
+
+.scoreboard {
+    position: absolute;
+    top: -50px;
+    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: 3px solid var(--button-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.score {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--banner-color);
+    text-shadow: 0 0 10px var(--banner-color);
+    font-family: 'Courier New', monospace;
+}
+
+.time {
+    color: #00ff00;
+    font-size: 1.2rem;
+    text-align: center;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .court-3d {
     width: 100%;
     max-width: 500px;
     height: 300px;
-    background: linear-gradient(180deg, #CD853F, #8B4513);
-    border-radius: 10px;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #CD853F 0px,
+            #CD853F 40px,
+            #8B4513 40px,
+            #8B4513 80px
+        );
+    border-radius: 15px;
     position: relative;
-    box-shadow: 0 25px 70px rgba(88, 29, 147, 0.5);
-    border: 4px solid var(--banner-color);
+    box-shadow:
+        0 30px 60px rgba(0,0,0,0.4),
+        inset 0 0 30px rgba(0,0,0,0.2);
     transform-style: preserve-3d;
-    transform: rotateX(15deg);
-    transition: transform 0.3s ease;
+    transform: rotateX(25deg) rotateY(0deg);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: courtFloat 6s ease-in-out infinite;
+}
+
+@keyframes courtFloat {
+    0%, 100% { transform: rotateX(25deg) rotateY(0deg) translateY(0); }
+    25% { transform: rotateX(20deg) rotateY(10deg) translateY(-10px); }
+    50% { transform: rotateX(25deg) rotateY(0deg) translateY(-5px); }
+    75% { transform: rotateX(20deg) rotateY(-10deg) translateY(-10px); }
 }
 
 .court-3d:hover {
-    transform: rotateX(5deg) scale(1.05);
+    transform: rotateX(10deg) rotateY(360deg) scale(1.1);
 }
 
 .court-3d::before {
@@ -370,94 +557,152 @@ body {
     opacity: 0.9;
 }
 
+.ball-container {
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    width: 80%;
+    height: 60%;
+}
+
 .basketball-animation {
     position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 3rem;
-    animation: dribble 1s ease-in-out infinite;
+    font-size: 2.5rem;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+    animation: complexDribble 4s ease-in-out infinite;
 }
 
-@keyframes dribble {
-    0%, 100% {
-        transform: translate(-50%, -50%) translateY(0);
+@keyframes complexDribble {
+    0% {
+        left: 10%;
+        top: 30%;
+        transform: rotate(0deg) scale(1);
+    }
+    25% {
+        left: 70%;
+        top: 10%;
+        transform: rotate(180deg) scale(1.2);
     }
     50% {
-        transform: translate(-50%, -50%) translateY(30px);
+        left: 80%;
+        top: 60%;
+        transform: rotate(360deg) scale(0.9);
+    }
+    75% {
+        left: 30%;
+        top: 50%;
+        transform: rotate(540deg) scale(1.1);
+    }
+    100% {
+        left: 10%;
+        top: 30%;
+        transform: rotate(720deg) scale(1);
     }
 }
 
-/* Match Ticker */
+.net-animation {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    border: 3px solid white;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: netSwing 2s ease-in-out infinite;
+}
+
+.net-animation:last-child {
+    left: auto;
+    right: 20px;
+    animation-delay: 1s;
+}
+
+@keyframes netSwing {
+    0%, 100% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.2) translateY(-5px); }
+}
+
+/* Ticker Hologram Style */
 .match-ticker {
-    background: linear-gradient(90deg, var(--primary-bg), var(--secondary-bg));
-    padding: 25px 0;
-    border-top: 4px solid var(--banner-color);
-    border-bottom: 4px solid var(--banner-color);
+    background:
+        linear-gradient(45deg, transparent 25%, rgba(192, 124, 205, 0.1) 25%, rgba(192, 124, 205, 0.1) 75%, transparent 75%),
+        linear-gradient(-45deg, transparent 25%, rgba(231, 97, 124, 0.1) 25%, rgba(231, 97, 124, 0.1) 75%, transparent 75%),
+        var(--dark-bg);
+    background-size: 20px 20px;
+    padding: 30px 0;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     position: relative;
     overflow: hidden;
-}
-
-.match-ticker::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 10px,
-        rgba(255,255,255,0.05) 10px,
-        rgba(255,255,255,0.05) 20px
-    );
-    animation: tickerSlide 1s linear infinite;
-}
-
-@keyframes tickerSlide {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(20px); }
+    border-top: 2px solid var(--banner-color);
+    border-bottom: 2px solid var(--button-color);
 }
 
 .ticker-content {
     display: flex;
     align-items: center;
-    gap: 60px;
-    animation: scroll 25s linear infinite;
+    gap: 80px;
+    animation: hologramScroll 30s linear infinite;
     white-space: nowrap;
-    position: relative;
-    z-index: 1;
 }
 
-@keyframes scroll {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+@keyframes hologramScroll {
+    0% { transform: translateX(100vw) skewX(0deg); }
+    100% { transform: translateX(-100vw) skewX(-2deg); }
 }
 
 .ticker-item {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     color: white;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    position: relative;
 }
 
-.ticker-item .badge {
-    background: var(--button-color);
-    padding: 8px 20px;
+.ticker-item::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    right: -10px;
+    top: -5px;
+    bottom: -5px;
+    background: linear-gradient(90deg, transparent, rgba(192, 124, 205, 0.2), transparent);
     border-radius: 5px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-    animation: badgePulse 2s infinite;
+    animation: scanLine 2s ease-in-out infinite;
 }
 
-@keyframes badgePulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+@keyframes scanLine {
+    0%, 100% { opacity: 0.3; transform: scaleX(1); }
+    50% { opacity: 0.8; transform: scaleX(1.1); }
+}
+
+.ticker-badge {
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    padding: 6px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.ticker-badge::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 100%;
+    height: calc(100% + 4px);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: badgeShine 3s ease-in-out infinite;
+}
+
+@keyframes badgeShine {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
 }
 
 /* Stats Section Moderno */
@@ -486,70 +731,120 @@ body {
     gap: 30px;
 }
 
+/* Tarjetas con Efecto Glitch */
 .stat-card {
-    background: white;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
     padding: 40px;
-    border-radius: 15px;
+    border-radius: 20px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
-    border-top: 5px solid var(--button-color);
-    box-shadow: 0 10px 30px rgba(88, 29, 147, 0.2);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
 
 .stat-card:hover {
-    transform: translateY(-15px) rotateY(5deg);
-    box-shadow: 0 25px 50px rgba(88, 29, 147, 0.3);
+    transform: translateY(-20px) scale(1.05);
+    box-shadow:
+        0 30px 60px rgba(88, 29, 147, 0.4),
+        0 0 0 1px var(--button-color),
+        inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
-.stat-card::before {
-    content: '🏀';
-    position: absolute;
-    bottom: -20px;
-    right: -20px;
-    font-size: 100px;
-    opacity: 0.05;
-    transform: rotate(-15deg);
+.stat-card:nth-child(odd):hover {
+    animation: glitchEffect 0.6s ease-in-out;
+}
+
+@keyframes glitchEffect {
+    0%, 100% { transform: translateY(-20px) scale(1.05); }
+    10% { transform: translateY(-20px) scale(1.05) translateX(-2px); }
+    20% { transform: translateY(-20px) scale(1.05) translateX(2px); }
+    30% { transform: translateY(-20px) scale(1.05) translateX(-1px); }
+    40% { transform: translateY(-20px) scale(1.05) translateX(1px); }
+    50% { transform: translateY(-20px) scale(1.05); }
 }
 
 .stat-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(45deg, var(--primary-bg), var(--secondary-bg));
-    border-radius: 15px;
+    width: 90px;
+    height: 90px;
+    background: conic-gradient(from 45deg, var(--primary-bg), var(--secondary-bg), var(--button-color), var(--primary-bg));
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
-    animation: iconFloat 3s ease-in-out infinite;
+    margin: 0 auto 25px;
+    position: relative;
+    animation: iconSpin 10s linear infinite;
 }
 
-@keyframes iconFloat {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(10deg); }
+@keyframes iconSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.stat-icon::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: linear-gradient(45deg, var(--primary-bg), var(--secondary-bg));
+    border-radius: 17px;
+    z-index: 1;
 }
 
 .stat-icon i {
-    font-size: 2rem;
+    font-size: 2.2rem;
     color: white;
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
 }
 
 .stat-number {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 900;
-    color: var(--primary-bg);
+    background: linear-gradient(45deg, var(--primary-bg), var(--secondary-bg));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     line-height: 1;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.stat-number::after {
+    content: attr(data-count);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    background: linear-gradient(45deg, var(--button-color), var(--banner-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.3;
+    z-index: -1;
 }
 
 .stat-label {
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: var(--primary-bg);
     text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 10px;
-    font-weight: 600;
+    letter-spacing: 3px;
+    margin-top: 15px;
+    font-weight: 700;
+    position: relative;
+}
+
+.stat-label::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--button-color), var(--secondary-bg));
+    border-radius: 2px;
 }
 
 /* Next Match Card */
@@ -735,39 +1030,70 @@ body {
     gap: 30px;
 }
 
+/* Tarjetas de Noticias con Efectos Únicos */
 .news-card {
-    background: white;
-    border-radius: 15px;
+    background: linear-gradient(135deg, white 0%, #fafafa 100%);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(88, 29, 147, 0.2);
-    transition: all 0.3s ease;
-    cursor: none;
+    box-shadow: 0 15px 35px rgba(88, 29, 147, 0.15);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
-    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.news-card:nth-child(1) {
+    animation: cardFloat1 6s ease-in-out infinite;
+}
+
+.news-card:nth-child(2) {
+    animation: cardFloat2 8s ease-in-out infinite;
+}
+
+.news-card:nth-child(3) {
+    animation: cardFloat3 7s ease-in-out infinite;
+}
+
+@keyframes cardFloat1 {
+    0%, 100% { transform: translateY(0) rotateZ(0deg); }
+    50% { transform: translateY(-10px) rotateZ(1deg); }
+}
+
+@keyframes cardFloat2 {
+    0%, 100% { transform: translateY(0) rotateZ(0deg); }
+    50% { transform: translateY(-8px) rotateZ(-1deg); }
+}
+
+@keyframes cardFloat3 {
+    0%, 100% { transform: translateY(0) rotateZ(0deg); }
+    50% { transform: translateY(-12px) rotateZ(0.5deg); }
 }
 
 .news-card:hover {
-    transform: translateY(-15px) scale(1.02);
-    box-shadow: 0 25px 50px rgba(88, 29, 147, 0.3);
-    border-color: var(--button-color);
+    transform: translateY(-25px) rotateX(5deg) rotateY(-5deg) !important;
+    box-shadow:
+        0 35px 70px rgba(88, 29, 147, 0.4),
+        0 0 0 1px rgba(192, 124, 205, 0.3);
 }
 
-.news-card::after {
-    content: '🏀';
+.news-card::before {
+    content: '';
     position: absolute;
-    top: -30px;
-    right: -30px;
-    font-size: 60px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(192, 124, 205, 0.05) 50%,
+        transparent 70%
+    );
     opacity: 0;
-    transition: all 0.3s ease;
-    transform: rotate(0deg);
+    transition: opacity 0.3s ease;
 }
 
-.news-card:hover::after {
-    opacity: 0.1;
-    top: -20px;
-    right: -20px;
-    transform: rotate(360deg);
+.news-card:hover::before {
+    opacity: 1;
 }
 
 .news-image {
@@ -949,39 +1275,60 @@ body {
     gap: 30px;
 }
 
+/* Tarjetas de Jugadores Interactivas */
 .player-card {
-    background: white;
-    border-radius: 15px;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 25px;
     overflow: hidden;
-    box-shadow: 0 15px 40px rgba(88, 29, 147, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 0 20px 40px rgba(88, 29, 147, 0.2);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     text-align: center;
-    border: 3px solid transparent;
     position: relative;
+    transform-style: preserve-3d;
+    perspective: 1000px;
 }
 
-.player-card:hover {
-    transform: scale(1.08) rotate(2deg);
-    box-shadow: 0 25px 60px rgba(88, 29, 147, 0.4);
-    border-color: var(--button-color);
+.player-card:nth-child(odd):hover {
+    transform: rotateY(15deg) rotateX(10deg) translateZ(50px);
+    box-shadow:
+        -20px 30px 60px rgba(88, 29, 147, 0.4),
+        0 0 0 2px var(--button-color);
 }
 
-.player-card::before {
+.player-card:nth-child(even):hover {
+    transform: rotateY(-15deg) rotateX(10deg) translateZ(50px);
+    box-shadow:
+        20px 30px 60px rgba(88, 29, 147, 0.4),
+        0 0 0 2px var(--banner-color);
+}
+
+.player-card::after {
     content: '';
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, var(--primary-bg), var(--secondary-bg));
-    border-radius: 15px;
-    z-index: -1;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        transparent,
+        var(--button-color),
+        transparent,
+        var(--banner-color),
+        transparent
+    );
     opacity: 0;
+    animation: playerCardSpin 8s linear infinite;
     transition: opacity 0.3s ease;
 }
 
-.player-card:hover::before {
-    opacity: 1;
+.player-card:hover::after {
+    opacity: 0.1;
+}
+
+@keyframes playerCardSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .player-image {
@@ -1006,25 +1353,56 @@ body {
 
 .player-number {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: var(--banner-color);
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 100%);
     color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 900;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    animation: numberBounce 3s ease-in-out infinite;
+    box-shadow:
+        0 8px 25px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
 }
 
-@keyframes numberBounce {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.1) rotate(5deg); }
+.player-number::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: conic-gradient(
+        from 0deg,
+        var(--button-color),
+        var(--banner-color),
+        var(--secondary-bg),
+        var(--button-color)
+    );
+    border-radius: 50%;
+    z-index: -1;
+    animation: numberGlow 3s linear infinite;
+}
+
+@keyframes numberGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.player-number::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    background: inherit;
+    border-radius: 50%;
+    z-index: -1;
 }
 
 .player-silhouette {
@@ -1143,41 +1521,69 @@ body {
     margin-bottom: 40px;
 }
 
+/* Botón CTA con Efectos Avanzados */
 .cta-button {
     display: inline-block;
-    background: var(--banner-color);
+    background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 50%, var(--banner-color) 100%);
+    background-size: 200% 200%;
     color: white;
-    padding: 20px 50px;
-    border-radius: 10px;
-    font-weight: 700;
+    padding: 25px 60px;
+    border-radius: 50px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     position: relative;
     overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow:
+        0 15px 35px rgba(0,0,0,0.2),
+        0 0 0 1px rgba(255,255,255,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .cta-button::before {
-    content: '🏀';
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.cta-button::after {
+    content: '⚡️';
     position: absolute;
     top: 50%;
-    left: -50px;
+    right: 25px;
     transform: translateY(-50%);
-    font-size: 30px;
-    transition: all 0.3s ease;
+    font-size: 1.5rem;
+    transition: all 0.4s ease;
 }
 
 .cta-button:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    color: white;
-    padding-left: 70px;
+    transform: translateY(-8px) scale(1.05);
+    background-position: 100% 100%;
+    box-shadow:
+        0 25px 50px rgba(0,0,0,0.3),
+        0 0 30px var(--banner-color),
+        0 0 0 2px rgba(255,255,255,0.2);
+    animation: ctaPulse 1.5s ease-in-out infinite;
 }
 
 .cta-button:hover::before {
-    left: 20px;
+    left: 100%;
+}
+
+.cta-button:hover::after {
+    transform: translateY(-50%) rotate(360deg) scale(1.3);
+}
+
+@keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 25px 50px rgba(0,0,0,0.3), 0 0 30px var(--banner-color), 0 0 0 2px rgba(255,255,255,0.2); }
+    50% { box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 50px var(--secondary-bg), 0 0 0 4px rgba(255,255,255,0.3); }
 }
 
 /* Responsive Design */
@@ -1226,35 +1632,33 @@ body {
 {% endblock %}
 
 {% block content %}
-<!-- Custom Cursor -->
-<div class="custom-cursor" id="customCursor"></div>
+<!-- Cursor Dinámico -->
+<div class="custom-cursor" id="customCursor">
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+</div>
 
 <!-- Hero Section -->
-<section class="hero-section">
-    <!-- Floating Basketballs -->
-    <div class="floating-basketball">🏀</div>
-    <div class="floating-basketball">🏀</div>
-    <div class="floating-basketball">🏀</div>
-
-    <!-- Basketball Court Background -->
-    <div class="basketball-court">
-        <div class="three-point-line-left"></div>
-        <div class="three-point-line-right"></div>
-        <div class="basketball-hoop-left"></div>
-        <div class="basketball-hoop-right"></div>
-    </div>
+<section class="hero-section" id="heroSection">
+    <!-- Elementos Decorativos Variados -->
+    <div class="decoration-element jersey">🎽</div>
+    <div class="decoration-element jersey">🤼</div>
+    <div class="decoration-element trophy">🏆</div>
+    <div class="decoration-element sneaker">👟</div>
 
     <div class="container">
         <div class="row align-items-center min-vh-100">
             <div class="col-lg-6 hero-content">
-                <h6 class="hero-subtitle fade-in">Club de Básquetbol</h6>
-                <h1 class="hero-title fade-in">CEBPM</h1>
+                <h6 class="hero-subtitle fade-in">Club de Básquetbol Elite</h6>
+                <h1 class="hero-title fade-in">
+                    <span style="--i:0">C</span><span style="--i:1">E</span><span style="--i:2">B</span><span style="--i:3">P</span><span style="--i:4">M</span>
+                </h1>
                 <p class="lead text-white mb-4 fade-in" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
                     Dominando la cancha desde 1950. La pasión por el básquetbol en cada jugada.
                 </p>
                 <div class="hero-buttons fade-in">
                     <a href="{% url 'register' %}" class="btn btn-primary-hero me-3">
-                        <i class="fas fa-basketball-ball me-2"></i>Únete al Equipo
+                        <span class="btn-emoji">⚡</span> Únete al Equipo
                     </a>
                     <a href="{% url 'pages:about' %}" class="btn btn-outline-hero">
                         <i class="fas fa-play-circle me-2"></i>Conoce Más
@@ -1263,14 +1667,20 @@ body {
             </div>
             <div class="col-lg-6">
                 <div class="court-visual fade-in">
+                    <div class="scoreboard">
+                        <div class="score">CEBPM 95 - 87 RIVAL</div>
+                        <div class="time">04:23</div>
+                    </div>
                     <div class="court-3d">
-                        <div class="basketball-animation">🏀</div>
-                        <!-- Free throw line -->
-                        <div style="position: absolute; top: 20%; left: 10%; right: 10%; height: 3px; background: white; opacity: 0.7;"></div>
-                        <div style="position: absolute; bottom: 20%; left: 10%; right: 10%; height: 3px; background: white; opacity: 0.7;"></div>
-                        <!-- Three point arcs -->
-                        <div style="position: absolute; top: 10%; left: 5%; width: 40%; height: 80%; border: 3px solid white; border-right: none; border-radius: 50% 0 0 50%; opacity: 0.5;"></div>
-                        <div style="position: absolute; top: 10%; right: 5%; width: 40%; height: 80%; border: 3px solid white; border-left: none; border-radius: 0 50% 50% 0; opacity: 0.5;"></div>
+                        <div class="ball-container">
+                            <div class="basketball-animation">🏀</div>
+                        </div>
+                        <!-- Canastas con animación -->
+                        <div class="net-animation"></div>
+                        <div class="net-animation"></div>
+                        <!-- Líneas de la cancha -->
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.6);"></div>
+                        <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,0.6);"></div>
                     </div>
                 </div>
             </div>
@@ -1283,24 +1693,28 @@ body {
     <div class="ticker-content">
         {% for i in "123456" %}
         <div class="ticker-item">
-            <span class="badge">🏀 PRÓXIMO</span>
-            <span>CEBPM vs Thunder - Viernes 20:00</span>
+            <span class="ticker-badge">🎆 PLAYOFF</span>
+            <span>Clasificados a Semifinales - ¡Historia en proceso!</span>
         </div>
         <div class="ticker-item">
-            <span class="badge">🏆 VICTORIA</span>
-            <span>CEBPM 95-87 Lakers PM</span>
+            <span class="ticker-badge">🏆 REMONTADA</span>
+            <span>De 20 puntos abajo a ganar 102-98</span>
         </div>
         <div class="ticker-item">
-            <span class="badge">📅 PARTIDO</span>
-            <span>CEBPM vs Warriors - Sábado 19:00</span>
+            <span class="ticker-badge">⚡ DUNK</span>
+            <span>Volcada espectacular rompe el marcador</span>
         </div>
         <div class="ticker-item">
-            <span class="badge">⭐ TRIPLE</span>
-            <span>¡Triple ganador del #23 en el último segundo!</span>
+            <span class="ticker-badge">🌟 MVP</span>
+            <span>Jugador del mes: 28.5 puntos promedio</span>
         </div>
         <div class="ticker-item">
-            <span class="badge">🔥 RACHA</span>
-            <span>5 victorias consecutivas</span>
+            <span class="ticker-badge">🔥 INVICTOS</span>
+            <span>7 partidos seguidos en casa sin perder</span>
+        </div>
+        <div class="ticker-item">
+            <span class="ticker-badge">🏠 DEBUT</span>
+            <span>Juvenil promesa anota 15 en su estreno</span>
         </div>
         {% endfor %}
     </div>
@@ -1395,9 +1809,9 @@ body {
                     <i class="fas fa-trophy"></i>
                 </div>
                 <div class="news-content">
-                    <span class="news-category">🏆 Victoria</span>
-                    <h3 class="news-title">Victoria épica 98-95 en tiempo extra</h3>
-                    <p class="news-excerpt">Remontada histórica con triple sobre la chicharra para forzar el tiempo extra contra nuestro rival clásico...</p>
+                    <span class="news-category">🎆 Playoff</span>
+                    <h3 class="news-title">Clasificación dramática a semifinales</h3>
+                    <p class="news-excerpt">Con una jugada defensiva espectacular en los últimos 3 segundos, sellamos nuestro pase a la siguiente ronda...</p>
                     <div class="news-meta">
                         <span>⏰ Hace 2 días</span>
                         <span><i class="fas fa-basketball-ball"></i></span>
@@ -1409,9 +1823,9 @@ body {
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="news-content">
-                    <span class="news-category">🏀 Fichajes</span>
-                    <h3 class="news-title">Llega pívot estrella para reforzar la pintura</h3>
-                    <p class="news-excerpt">El experimentado jugador de 2.10m llega desde la liga nacional para fortalecer nuestro juego interior...</p>
+                    <span class="news-category">⭐ MVP</span>
+                    <h3 class="news-title">Nuestro capitán elegido MVP de la liga</h3>
+                    <p class="news-excerpt">Con promedios de 25.8 puntos y 8.2 asistencias, lidera el ranking de mejores jugadores de la temporada...</p>
                     <div class="news-meta">
                         <span>⏰ Hace 5 días</span>
                         <span><i class="fas fa-star"></i></span>
@@ -1423,9 +1837,9 @@ body {
                     <i class="fas fa-graduation-cap"></i>
                 </div>
                 <div class="news-content">
-                    <span class="news-category">🏀 Academia</span>
-                    <h3 class="news-title">Nueva academia de básquetbol femenino</h3>
-                    <p class="news-excerpt">CEBPM inaugura programa de desarrollo para jugadoras con entrenadores certificados FIBA...</p>
+                    <span class="news-category">🌟 Cantera</span>
+                    <h3 class="news-title">Triple corona juvenil en torneo regional</h3>
+                    <p class="news-excerpt">Nuestras categorías U15, U17 y U19 conquistan los tres campeonatos regionales en una temporada histórica...</p>
                     <div class="news-meta">
                         <span>⏰ Hace 1 semana</span>
                         <span><i class="fas fa-basketball-ball"></i></span>
@@ -1489,8 +1903,8 @@ body {
                     </div>
                 </div>
                 <div class="player-info">
-                    <div class="player-name">Capitán del Equipo</div>
-                    <div class="player-position">Base - Point Guard</div>
+                    <div class="player-name">Diego "Flash" Morales</div>
+                    <div class="player-position">Base - Playmaker</div>
                 </div>
             </div>
             <div class="player-card fade-in">
@@ -1501,8 +1915,8 @@ body {
                     </div>
                 </div>
                 <div class="player-info">
-                    <div class="player-name">Máximo Anotador</div>
-                    <div class="player-position">Escolta - Shooting Guard</div>
+                    <div class="player-name">Carlos "Sniper" Vega</div>
+                    <div class="player-position">Escolta - Tirador Elite</div>
                 </div>
             </div>
             <div class="player-card fade-in">
@@ -1513,8 +1927,8 @@ body {
                     </div>
                 </div>
                 <div class="player-info">
-                    <div class="player-name">Torre Defensiva</div>
-                    <div class="player-position">Pívot - Center</div>
+                    <div class="player-name">Miguel "La Muralla" Torres</div>
+                    <div class="player-position">Pívot - Bloqueador</div>
                 </div>
             </div>
             <div class="player-card fade-in">
@@ -1525,8 +1939,8 @@ body {
                     </div>
                 </div>
                 <div class="player-info">
-                    <div class="player-name">Estrella Emergente</div>
-                    <div class="player-position">Alero - Forward</div>
+                    <div class="player-name">Javier "Rocket" Silva</div>
+                    <div class="player-position">Alero - Versatilidad Pura</div>
                 </div>
             </div>
         </div>
@@ -1574,54 +1988,127 @@ body {
 
 {% block extra_js %}
 <script>
-// Custom Basketball Cursor
+// Sistema de Cursor Avanzado con Efectos Dinámicos
 document.addEventListener('DOMContentLoaded', function() {
     const cursor = document.getElementById('customCursor');
+    const heroSection = document.getElementById('heroSection');
     let mouseX = 0, mouseY = 0;
     let cursorX = 0, cursorY = 0;
+    let trails = [];
 
-    // Update cursor position
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-
-    // Smooth cursor animation
-    function animateCursor() {
+    // Cursor suave
+    function updateCursor() {
         const dx = mouseX - cursorX;
         const dy = mouseY - cursorY;
 
-        cursorX += dx * 0.2;
-        cursorY += dy * 0.2;
+        cursorX += dx * 0.15;
+        cursorY += dy * 0.15;
 
         cursor.style.left = cursorX + 'px';
         cursor.style.top = cursorY + 'px';
 
-        requestAnimationFrame(animateCursor);
+        requestAnimationFrame(updateCursor);
     }
-    animateCursor();
+    updateCursor();
 
-    // Cursor hover effects
-    document.querySelectorAll('a, button, .news-card, .player-card, .stat-card').forEach(elem => {
-        elem.addEventListener('mouseenter', () => {
-            cursor.style.transform = 'scale(1.5)';
-            cursor.style.background = 'radial-gradient(circle, var(--button-color) 0%, transparent 70%)';
-        });
-        elem.addEventListener('mouseleave', () => {
-            cursor.style.transform = 'scale(1)';
-            cursor.style.background = 'radial-gradient(circle, var(--secondary-bg) 0%, transparent 70%)';
-        });
-    });
+    // Crear estela del cursor con mini pelotas
+    function createTrail(x, y) {
+        const trail = document.createElement('div');
+        trail.className = 'cursor-trail';
+        trail.style.left = x + 'px';
+        trail.style.top = y + 'px';
+        trail.innerHTML = '🏀';
+        trail.style.fontSize = '12px';
+        trail.style.color = 'var(--button-color)';
+        document.body.appendChild(trail);
 
-    // Hide cursor when leaving window
-    document.addEventListener('mouseout', (e) => {
-        if (!e.relatedTarget) {
-            cursor.style.opacity = '0';
+        setTimeout(() => trail.remove(), 1000);
+    }
+
+    // Mousemove con estela
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        // Crear estela cada 3 movimientos
+        if (Math.random() > 0.7) {
+            createTrail(e.clientX, e.clientY);
         }
     });
 
-    document.addEventListener('mouseover', () => {
-        cursor.style.opacity = '1';
+    // Generar partículas en hero
+    function createParticle() {
+        if (!heroSection) return;
+
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.animationDelay = Math.random() * 2 + 's';
+        heroSection.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 25000);
+    }
+
+    // Crear partículas periódicamente
+    setInterval(createParticle, 1500);
+
+    // Efectos hover para agrandar la pelota
+    document.querySelectorAll('a, button, .stat-card, .news-card, .player-card').forEach((element, index) => {
+        element.addEventListener('mouseenter', () => {
+            cursor.style.width = '50px';
+            cursor.style.height = '50px';
+            cursor.style.transform = 'scale(1.2)';
+
+            // Cambiar velocidad de rotación al hover
+            const dot = cursor.querySelector('.cursor-dot');
+            if (dot) {
+                dot.style.animationDuration = '0.5s';
+            }
+
+            // Efecto glitch para las tarjetas
+            if (element.classList.contains('stat-card') && index % 2 === 0) {
+                createGlitchEffect(element);
+            }
+        });
+
+        element.addEventListener('mouseleave', () => {
+            cursor.style.width = '35px';
+            cursor.style.height = '35px';
+            cursor.style.transform = 'scale(1)';
+
+            // Restaurar velocidad normal
+            const dot = cursor.querySelector('.cursor-dot');
+            if (dot) {
+                dot.style.animationDuration = '2s';
+            }
+        });
+    });
+
+    // Efecto glitch
+    function createGlitchEffect(element) {
+        const glitchClasses = ['glitch-1', 'glitch-2', 'glitch-3'];
+        const randomClass = glitchClasses[Math.floor(Math.random() * glitchClasses.length)];
+        element.classList.add(randomClass);
+        setTimeout(() => element.classList.remove(randomClass), 600);
+    }
+
+    // Click effects variados
+    document.addEventListener('click', (e) => {
+        const effects = ['⚡', '✨', '💫', '🌟', '💥'];
+        const randomEffect = effects[Math.floor(Math.random() * effects.length)];
+
+        const effect = document.createElement('div');
+        effect.innerHTML = randomEffect;
+        effect.style.position = 'fixed';
+        effect.style.left = e.clientX + 'px';
+        effect.style.top = e.clientY + 'px';
+        effect.style.fontSize = '2rem';
+        effect.style.pointerEvents = 'none';
+        effect.style.zIndex = '9999';
+        effect.style.animation = `clickEffect${Math.floor(Math.random() * 3) + 1} 1.2s ease-out forwards`;
+
+        document.body.appendChild(effect);
+        setTimeout(() => effect.remove(), 1200);
     });
 
     // Animación contador de números
@@ -1702,23 +2189,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Basketball bounce animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes basketballBounce {
-        0% {
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-            opacity: 1;
-        }
-        50% {
-            transform: translate(-50%, -150%) scale(1.2) rotate(180deg);
-        }
-        100% {
-            transform: translate(-50%, 100vh) scale(0.8) rotate(360deg);
-            opacity: 0;
-        }
+// Animaciones CSS dinámicas
+const dynamicStyles = document.createElement('style');
+dynamicStyles.textContent = `
+    @keyframes clickEffect1 {
+        0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(3) rotate(180deg); opacity: 0; }
+    }
+
+    @keyframes clickEffect2 {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        50% { transform: translate(-50%, -150%) scale(1.5); }
+        100% { transform: translate(-50%, -300%) scale(0); opacity: 0; }
+    }
+
+    @keyframes clickEffect3 {
+        0% { transform: translate(-50%, -50%) scale(1) rotateY(0deg); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(2) rotateY(720deg); opacity: 0; }
+    }
+
+    .glitch-1 {
+        animation: glitch1 0.3s ease-in-out;
+    }
+
+    .glitch-2 {
+        animation: glitch2 0.3s ease-in-out;
+    }
+
+    .glitch-3 {
+        animation: glitch3 0.3s ease-in-out;
+    }
+
+    @keyframes glitch1 {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-2px); }
+        40% { transform: translateX(2px); }
+        60% { transform: translateX(-1px); }
+        80% { transform: translateX(1px); }
+    }
+
+    @keyframes glitch2 {
+        0%, 100% { filter: hue-rotate(0deg); }
+        25% { filter: hue-rotate(45deg); }
+        50% { filter: hue-rotate(90deg); }
+        75% { filter: hue-rotate(135deg); }
+    }
+
+    @keyframes glitch3 {
+        0%, 100% { text-shadow: none; }
+        25% { text-shadow: 2px 0 var(--secondary-bg); }
+        50% { text-shadow: -2px 0 var(--button-color); }
+        75% { text-shadow: 2px 0 var(--banner-color); }
+    }
+
+    /* Efectos de hover para diferentes elementos */
+    .news-card:hover {
+        animation: cardWobble 0.5s ease-in-out;
+    }
+
+    @keyframes cardWobble {
+        0%, 100% { transform: translateY(-25px) rotateX(5deg) rotateY(-5deg); }
+        25% { transform: translateY(-25px) rotateX(5deg) rotateY(-5deg) rotateZ(1deg); }
+        75% { transform: translateY(-25px) rotateX(5deg) rotateY(-5deg) rotateZ(-1deg); }
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(dynamicStyles);
 </script>
 {% endblock %}
