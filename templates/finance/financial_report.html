@@ -1,0 +1,65 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Reporte Financiero - Admin{% endblock %}
+
+{% block page_title %}Reporte Financiero{% endblock %}
+{% block page_subtitle %}Un resumen de los ingresos y pagos del club.{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="stat-card success">
+            <div class="stat-number">${{ total_income|floatformat:0 }}</div>
+            <div class="stat-label">
+                <i class="bi bi-cash-stack me-2"></i>Ingresos Totales (Completados)
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card warning">
+            <div class="stat-number">${{ pending_amount|floatformat:0 }}</div>
+            <div class="stat-label">
+                <i class="bi bi-clock me-2"></i>Monto Pendiente en Cuotas
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="card-header bg-transparent border-0">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-receipt text-primary me-2"></i>Últimos 20 Pagos Completados
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-admin">
+                <thead>
+                    <tr>
+                        <th>Fecha de Pago</th>
+                        <th>Apoderado</th>
+                        <th>Jugador</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in recent_payments %}
+                    <tr>
+                        <td>{{ payment.paid_at|date:"d M Y, H:i" }}</td>
+                        <td>{{ payment.invoice.guardian.get_full_name }}</td>
+                        <td>{{ payment.invoice.player.get_full_name }}</td>
+                        <td class="text-success fw-bold">${{ payment.amount|floatformat:0 }}</td>
+                        <td><span class="badge bg-info">{{ payment.get_method_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay pagos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

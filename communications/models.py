@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone # Asegúrate de importar timezone
 
 class BulkEmail(models.Model):
     """Correos masivos"""
@@ -43,6 +43,12 @@ class EmailRecipient(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendiente', verbose_name='Estado')
     error_message = models.TextField(blank=True, null=True, verbose_name='Mensaje de error')
     created_at = models.DateTimeField(auto_now_add=True)
+    # --- CAMPO AÑADIDO ---
+    read_at = models.DateTimeField(null=True, blank=True, verbose_name='Leído el')
+
+    @property
+    def is_read(self):
+        return self.read_at is not None
 
     class Meta:
         verbose_name = 'Destinatario de Correo'
@@ -51,4 +57,4 @@ class EmailRecipient(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.bulk_email.title} -> {self.user.email} ({self.get_status_display()})' 
+        return f'{self.bulk_email.title} -> {self.user.email} ({self.get_status_display()})'

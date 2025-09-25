@@ -9,8 +9,9 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 
 from .models import User, GuardianProfile, AdminProfile, Registration
-from players.models import Player, GuardianPlayer
-from finance.models import Payment, FeeDefinition, Invoice, Sponsor
+from players.models import Player, GuardianPlayer, Category
+from finance.models import Payment, FeeDefinition, Invoice
+from sponsors.models import Sponsor
 from schedules.models import Match, Activity
 from communications.models import BulkEmail, EmailRecipient
 
@@ -56,23 +57,23 @@ def admin_dashboard(request):
     # Active sponsors count
     active_sponsors = Sponsor.objects.filter(active=True).count()
     
-    # Pending registrations (assuming this model exists)
+    # Pending registrations
+    pending_registrations = Registration.objects.filter(status='pending').count()
+    
     # Monthly statistics
     current_month = timezone.now().replace(day=1)
-    
-    pending_registrations = Registration.objects.filter(status='pending').count()
-    # Recent activities
-    recent_registrations = Registration.objects.order_by('-created_at')[:5]
     monthly_registrations = Registration.objects.filter(
         created_at__gte=current_month
     ).count()
-    
-    recent_payments = Payment.objects.filter(status='completed').order_by('-created_at')[:5]
-    upcoming_matches = Match.objects.filter(starts_at__gte=timezone.now()).order_by('starts_at')[:5]
     monthly_payments = Payment.objects.filter(
         created_at__gte=current_month,
-        status='completed'
+        status='completado'
     ).count()
+
+    # Recent activities
+    recent_registrations = Registration.objects.order_by('-created_at')[:5]
+    recent_payments = Payment.objects.filter(status='completado').order_by('-created_at')[:5]
+    upcoming_matches = Match.objects.filter(starts_at__gte=timezone.now()).order_by('starts_at')[:5]
     
     context = {
         'total_players': total_players,
@@ -107,25 +108,22 @@ def admin_players(request):
     if search_query:
         players = players.filter(
             Q(first_name__icontains=search_query) |
-            Q(last_name__icontains=search_query) |
-            Q(rut__icontains=search_query)
+            Q(last_name__icontains=search_query)
         )
     
     if team_filter:
-        players = players.filter(category=team_filter)
+        players = players.filter(category__name=team_filter)
     
     if status_filter:
-        players = players.filter(status=status_filter)
+        players = players.filter(is_active=(status_filter == 'active'))
     
     players = players.order_by('last_name', 'first_name')
     
-    # Pagination
     paginator = Paginator(players, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Get unique teams for filter
-    teams = Player.objects.values_list('category__name', flat=True).distinct()
+    teams = Category.objects.values_list('name', flat=True).distinct()
     
     context = {
         'page_obj': page_obj,
@@ -151,7 +149,6 @@ def admin_registrations(request):
     
     registrations = registrations.order_by('-created_at')
     
-    # Pagination
     paginator = Paginator(registrations, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -167,79 +164,81 @@ def admin_registrations(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_approve_registration(request, registration_id):
-    """Approve a player registration"""
+    """Aprueba una solicitud de registro de jugador."""
     if request.method == 'POST':
-        registration = get_object_or_404(Registration, id=registration_id)
+        registration = get_object_or_404(Registration, id=registration_id, status='pending')
+        
+        # 1. Crear la categoría si no existe
+        category, _ = Category.objects.get_or_create(name=registration.team)
+        
+        # 2. Crear el nuevo jugador
+        player = Player.objects.create(
+            first_name=registration.player_first_name,
+            last_name=registration.player_last_name,
+            rut=registration.player_rut,
+            birthdate=registration.player_birth_date,
+            category=category,
+            status='active' # Se establece como activo por defecto
+        )
+        
+        # 3. Crear la relación entre el apoderado y el jugador
+        GuardianPlayer.objects.create(
+            guardian=registration.guardian,
+            player=player,
+            relation='tutor' # Relación por defecto, se puede mejorar después
+        )
+        
+        # 4. Actualizar el estado de la solicitud
         registration.status = 'approved'
         registration.approved_by = request.user
         registration.approved_at = timezone.now()
         registration.save()
         
-        # Create player if not exists
-        if not registration.player:
-            player = Player.objects.create(
-                first_name=registration.first_name,
-                last_name=registration.last_name,
-                rut=registration.rut,
-                birthdate=registration.birth_date,
-                team=registration.team,
-                guardian=registration.guardian,
-                status='active'
-            )
-            registration.player = player
-            registration.save()
-        
-        messages.success(request, f'Registro de {registration.first_name} {registration.last_name} aprobado exitosamente.')
+        messages.success(request, f'El jugador {player.get_full_name()} ha sido aprobado y creado exitosamente.')
         return JsonResponse({'success': True})
     
-    return JsonResponse({'success': False})
-
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
 @login_required
 @user_passes_test(is_admin)
 def admin_reject_registration(request, registration_id):
-    """Reject a player registration"""
+    """Rechaza una solicitud de registro de jugador."""
     if request.method == 'POST':
-        registration = get_object_or_404(Registration, id=registration_id)
-        rejection_reason = request.POST.get('reason', '')
+        registration = get_object_or_404(Registration, id=registration_id, status='pending')
         
+        # Actualizar el estado de la solicitud
         registration.status = 'rejected'
-        registration.rejection_reason = rejection_reason
+        registration.rejection_reason = request.POST.get('reason', 'Sin motivo especificado.')
         registration.save()
         
-        messages.success(request, f'Registro de {registration.first_name} {registration.last_name} rechazado.')
+        messages.warning(request, f'La solicitud para {registration.player_first_name} {registration.player_last_name} ha sido rechazada.')
         return JsonResponse({'success': True})
-    
-    return JsonResponse({'success': False})
+        
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
 
 @login_required
 @user_passes_test(is_admin)
 def admin_finances(request):
     """Manage finances"""
-    # Get payment statistics
-    total_income = Payment.objects.filter(status='completed').aggregate(
+    total_income = Payment.objects.filter(status='completado').aggregate(
         total=models.Sum('amount')
     )['total'] or 0
     
-    pending_payments = Payment.objects.filter(status='pending').count()
-    overdue_payments = Payment.objects.filter(
-        status='pending',
-        invoice__due_date__lt=timezone.now().date()
-    ).count()
+    pending_payments = Invoice.objects.filter(status='pendiente').count()
+    overdue_payments = Invoice.objects.filter(status='atrasada').count()
     
-    # Recent payments
     recent_payments = Payment.objects.order_by('-created_at')[:10]
     
-    # Monthly income chart data
     monthly_income = []
     for i in range(6):
-        month_start = timezone.now().replace(day=1) - timedelta(days=30*i)
-        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        month_start = (timezone.now() - timedelta(days=30*i)).replace(day=1)
+        month_end = (month_start + timedelta(days=32)).replace(day=1)
         
         income = Payment.objects.filter(
-            status='completed',
-            created_at__range=[month_start, month_end]
+            status='completado',
+            created_at__gte=month_start,
+            created_at__lt=month_end
         ).aggregate(total=models.Sum('amount'))['total'] or 0
         
         monthly_income.append({
@@ -264,13 +263,10 @@ def admin_finances(request):
 @user_passes_test(is_admin)
 def admin_communications(request):
     """Manage communications"""
-    # Get recent notifications and messages
-    recent_notifications = Notification.objects.order_by('-created_at')[:10]
-    recent_messages = Message.objects.order_by('-created_at')[:10]
+    recent_messages = BulkEmail.objects.order_by('-created_at')[:10]
     
     context = {
-        'recent_notifications': recent_notifications,
-        'recent_messages': recent_messages,
+        'messages': recent_messages,
     }
     
     return render(request, 'admin/communications.html', context)
@@ -285,29 +281,35 @@ def admin_send_notification(request):
         message = request.POST.get('message')
         recipient_type = request.POST.get('recipient_type')
         
-        recipients = []
+        recipients = User.objects.none()
         
         if recipient_type == 'all':
             recipients = User.objects.all()
         elif recipient_type == 'guardians':
-            recipients = User.objects.filter(guardianprofile__isnull=False)
+            recipients = User.objects.filter(guardian_profile__isnull=False)
         elif recipient_type == 'admins':
-            recipients = User.objects.filter(adminprofile__isnull=False)
+            recipients = User.objects.filter(admin_profile__isnull=False)
         
-        # Create notifications
-        notifications = []
-        for user in recipients:
-            notifications.append(Notification(
-                user=user,
+        if recipients.exists():
+            bulk_email = BulkEmail.objects.create(
                 title=title,
-                message=message,
-                sender=request.user
-            ))
-        
-        Notification.objects.bulk_create(notifications)
-        
-        messages.success(request, f'Notificación enviada a {len(recipients)} usuarios.')
-        return redirect('admin_communications')
+                body_html=message,
+                created_by=request.user,
+                is_sent=True,
+                sent_at=timezone.now()
+            )
+            
+            email_recipients = [
+                EmailRecipient(bulk_email=bulk_email, user=user, status='enviado', sent_at=timezone.now())
+                for user in recipients
+            ]
+            EmailRecipient.objects.bulk_create(email_recipients)
+            
+            messages.success(request, f'Comunicación enviada a {len(email_recipients)} usuarios.')
+        else:
+            messages.warning(request, 'No se encontraron destinatarios para esta comunicación.')
+
+        return redirect('admin_panel:communications')
     
     return render(request, 'admin/send_notification.html')
 
@@ -318,14 +320,12 @@ def admin_sponsors(request):
     """Manage sponsors"""
     sponsors = Sponsor.objects.all().order_by('-created_at')
     
-    # Filtros
     status_filter = request.GET.get('status')
     if status_filter == 'active':
         sponsors = sponsors.filter(active=True)
     elif status_filter == 'inactive':
         sponsors = sponsors.filter(active=False)
     
-    # Paginación
     paginator = Paginator(sponsors, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -342,12 +342,10 @@ def admin_sponsors(request):
 @user_passes_test(is_admin)
 def admin_player_cards(request):
     """View player cards by category"""
-    from players.models import Category
-    
     category_filter = request.GET.get('category')
     search_query = request.GET.get('search', '')
     
-    players = Player.objects.all()
+    players = Player.objects.select_related('category').all()
     
     if category_filter:
         players = players.filter(category_id=category_filter)
@@ -355,18 +353,15 @@ def admin_player_cards(request):
     if search_query:
         players = players.filter(
             Q(first_name__icontains=search_query) |
-            Q(last_name__icontains=search_query) |
-            Q(rut__icontains=search_query)
+            Q(last_name__icontains=search_query)
         )
     
-    players = players.select_related('category').order_by('category__name', 'last_name')
+    players = players.order_by('category__name', 'last_name')
     
-    # Paginación
     paginator = Paginator(players, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Categorías para filtro
     categories = Category.objects.all().order_by('name')
     
     context = {

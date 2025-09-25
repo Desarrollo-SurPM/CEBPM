@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from .models import ClubHistory
 from players.models import Player, Category
 from schedules.models import Match, Activity
-from finance.models import Sponsor
+from sponsors.models import Sponsor  # <-- ESTA LÍNEA ESTÁ CORREGIDA
 from django.utils import timezone
 from datetime import datetime, timedelta
 
@@ -79,4 +79,3 @@ def contact_view(request):
         })
     
     return render(request, 'pages/contact.html')
-

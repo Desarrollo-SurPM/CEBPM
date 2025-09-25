@@ -9,9 +9,11 @@ from datetime import datetime, timedelta
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 
-from .models import User, GuardianProfile
-from players.models import Player, GuardianPlayer
+from .models import User, GuardianProfile, Registration
+from players.models import Category, Player, GuardianPlayer
 from finance.models import Payment, Invoice
 from schedules.models import Match, Activity
 from communications.models import BulkEmail, EmailRecipient
@@ -33,49 +35,38 @@ def guardian_dashboard(request):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
     
-    # Obtener jugadores del apoderado
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
-    # Estadísticas generales
     total_players = players.count()
-    active_players = players.filter(is_active=True).count()
+    active_players = players.filter(status='active').count()
     
-    # Pagos pendientes
-    pending_payments = Payment.objects.filter(
-        invoice__player__in=players,
-        status='pending'
-    ).aggregate(total=Sum('amount'))['total'] or 0
+    pending_payments_agg = Invoice.objects.filter(
+        player__in=players,
+        status__in=['pendiente', 'atrasada']
+    ).aggregate(total=Sum('amount'))
+    pending_payments = pending_payments_agg['total'] or 0
     
-    # Próximos partidos y entrenamientos
     today = timezone.now().date()
-    player_categories = [p.category for p in players]
+    player_categories = players.values_list('category', flat=True)
     upcoming_matches = Match.objects.filter(
-        category__in=player_categories,
-        starts_at__date__gte=today
+        category__id__in=player_categories,
+        starts_at__gte=today
     ).order_by('starts_at')[:5]
     
-    # upcoming_trainings = Training.objects.filter(
-    #     category__in=player_categories,
-    #     starts_at__date__gte=today
-    # ).order_by('date')[:5]
-    upcoming_trainings = []
+    upcoming_trainings = Activity.objects.filter(
+        starts_at__gte=today
+    ).order_by('starts_at')[:5]
     
-    # Mensajes no leídos
-    # unread_messages = Message.objects.filter(
-    #     Q(audience='all_guardians') |
-    #     Q(audience='team_guardians', team__in=[p.team for p in players]) |
-    #     Q(recipients=request.user),
-    #     status='sent'
-    # ).exclude(
-    #     messageread__user=request.user
-    # ).count()
-    unread_messages = 0
+    unread_messages = EmailRecipient.objects.filter(
+        user=request.user,
+        status='enviado' # Idealmente, esto debería ser un campo `is_read=False`
+    ).count()
     
-    # Actividad reciente
     recent_payments = Payment.objects.filter(
-        invoice__player__in=players
-    ).order_by('-created_at')[:5]
+        invoice__player__in=players,
+        status='completado'
+    ).order_by('-paid_at')[:5]
     
     context = {
         'players': players,
@@ -86,6 +77,7 @@ def guardian_dashboard(request):
         'upcoming_trainings': upcoming_trainings,
         'unread_messages': unread_messages,
         'recent_payments': recent_payments,
+        'today': today,
     }
     
     return render(request, 'guardian/dashboard.html', context)
@@ -99,17 +91,16 @@ def guardian_players(request):
     
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
-    
-    # Filtros
+    categories = Category.objects.all()
+
     team_filter = request.GET.get('team')
     status_filter = request.GET.get('status')
     
     if team_filter:
-        players = players.filter(category=team_filter)
+        players = players.filter(category__id=team_filter)
     if status_filter:
         players = players.filter(status=status_filter)
     
-    # Paginación
     paginator = Paginator(players, 10)
     page_number = request.GET.get('page')
     players_page = paginator.get_page(page_number)
@@ -121,6 +112,7 @@ def guardian_players(request):
     }
     
     return render(request, 'guardian/players.html', context)
+
 
 @login_required
 def guardian_payments(request):
@@ -177,141 +169,153 @@ def guardian_payments(request):
 
 @login_required
 def guardian_schedule(request):
-    """Calendario de partidos y entrenamientos"""
+    """Calendario de partidos y entrenamientos del apoderado."""
     if not is_guardian(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
-    
+
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
-    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
-    teams = [p.category for p in players]
-    
-    # Filtros
-    team_filter = request.GET.get('team')
-    month_filter = request.GET.get('month')
-    
-    # Partidos
+    player_categories_ids = guardian_players.values_list('player__category__id', flat=True).distinct()
+
+    # **CORRECCIÓN**: Usar 'starts_at' en lugar de 'date' y 'time'
     matches = Match.objects.filter(
-        category__in=teams
-    )
-    
-    # Entrenamientos
-    trainings = []
-    
-    if team_filter:
-        matches = matches.filter(
-            category=team_filter
-        )
-    
-    if month_filter:
-        try:
-            year, month = month_filter.split('-')
-            matches = matches.filter(date__year=year, date__month=month)
-            trainings = trainings.filter(date__year=year, date__month=month)
-        except ValueError:
-            pass
-    
-    # Ordenar por fecha
-    matches = matches.order_by('date', 'time')
-    trainings = trainings.order_by('date', 'time')
-    
+        category__id__in=player_categories_ids
+    ).order_by('starts_at')
+
+    # Por ahora, las actividades son generales
+    trainings = Activity.objects.filter(type='entrenamiento').order_by('starts_at')
+
     context = {
         'matches': matches,
         'trainings': trainings,
-        'players': players,
-        'teams': list(set(teams)),
-        'team_filter': team_filter,
-        'month_filter': month_filter,
+        'teams': Category.objects.filter(id__in=player_categories_ids),
+        'today': timezone.now().date(),
+        'tomorrow': timezone.now().date() + timedelta(days=1),
     }
-    
     return render(request, 'guardian/schedule.html', context)
+
 
 @login_required
 def guardian_messages(request):
-    """Centro de mensajes para apoderados"""
+    """Centro de mensajes para apoderados."""
     if not is_guardian(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
-    
-    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
-    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
-    teams = [p.category for p in players]
-    
-    # Obtener mensajes dirigidos al apoderado
-    messages_query = BulkEmail.objects.filter(
-        Q(audience='all_guardians') |
-        Q(audience='team_guardians', category__in=teams) |
-        Q(recipients=request.user),
-        status='sent'
-    ).distinct()
-    
-    # Filtros
-    type_filter = request.GET.get('type')
-    read_filter = request.GET.get('read')
-    
-    if type_filter:
-        messages_query = messages_query.filter(type=type_filter)
-    
-    if read_filter == 'unread':
-        messages_query = messages_query.exclude(
-            messageread__user=request.user
-        )
-    elif read_filter == 'read':
-        messages_query = messages_query.filter(
-            messageread__user=request.user
-        )
-    
-    # Paginación
-    paginator = Paginator(messages_query.order_by('-created_at'), 10)
+
+    # La lógica correcta es buscar los 'EmailRecipient' que pertenecen al usuario
+    messages_received = EmailRecipient.objects.filter(user=request.user).select_related('bulk_email', 'bulk_email__created_by').order_by('-created_at')
+
+    paginator = Paginator(messages_received, 10)
     page_number = request.GET.get('page')
     messages_page = paginator.get_page(page_number)
-    
-    # Marcar mensajes como leídos cuando se visualizan
-    for message in messages_page:
-        EmailRecipient.objects.get_or_create(
-            email=message,
-            user=request.user,
-            defaults={'read_at': timezone.now()}
-        )
-    
+
     context = {
         'messages': messages_page,
-        'type_filter': type_filter,
-        'read_filter': read_filter,
+        'is_paginated': messages_page.has_other_pages(),
+        'page_obj': messages_page,
     }
-    
     return render(request, 'guardian/messages.html', context)
+
+
+@login_required
+def message_detail(request, recipient_id):
+    """Muestra el detalle de un mensaje y lo marca como leído."""
+    recipient_msg = get_object_or_404(EmailRecipient, id=recipient_id, user=request.user)
+    
+    if not recipient_msg.read_at:
+        recipient_msg.read_at = timezone.now()
+        recipient_msg.save()
+
+    return JsonResponse({
+        'success': True,
+        'message': {
+            'title': recipient_msg.bulk_email.title,
+            'content': recipient_msg.bulk_email.body_html,
+            'sender_name': recipient_msg.bulk_email.created_by.get_full_name() or recipient_msg.bulk_email.created_by.username,
+            'created_at': recipient_msg.created_at.strftime("%d/%m/%Y %H:%M"),
+            'is_read': recipient_msg.read_at is not None,
+        }
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def mark_message_as_read(request, recipient_id):
+    """Marca un mensaje como leído."""
+    recipient_msg = get_object_or_404(EmailRecipient, id=recipient_id, user=request.user)
+    if not recipient_msg.read_at:
+        recipient_msg.read_at = timezone.now()
+        recipient_msg.save()
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_http_methods(["POST"])
+def mark_all_as_read(request):
+    """Marca todos los mensajes del usuario como leídos."""
+    updated_count = EmailRecipient.objects.filter(user=request.user, read_at__isnull=True).update(read_at=timezone.now())
+    messages.success(request, f'{updated_count} mensajes fueron marcados como leídos.')
+    return JsonResponse({'success': True, 'count': updated_count})
 
 @login_required
 def guardian_profile(request):
-    """Perfil del apoderado"""
+    """Muestra y actualiza el perfil del apoderado."""
     if not is_guardian(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
-    
+
+    profile = get_object_or_404(GuardianProfile, user=request.user)
+
     if request.method == 'POST':
-        # Actualizar perfil
         user = request.user
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.email = request.POST.get('email', '')
-        user.phone = request.POST.get('phone', '')
-        user.address = request.POST.get('address', '')
-        
-        # Cambiar contraseña si se proporciona
-        new_password = request.POST.get('new_password')
-        if new_password:
-            user.set_password(new_password)
-        
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
         user.save()
-        messages.success(request, 'Perfil actualizado correctamente.')
+        
+        profile.phone = request.POST.get('phone', profile.phone)
+        profile.address = request.POST.get('address', profile.address)
+        profile.save()
+        
+        messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
         return redirect('guardian:profile')
     
+    # Creamos un formulario de cambio de contraseña para pasarlo al template
+    password_form = PasswordChangeForm(request.user)
+
     context = {
         'user': request.user,
+        'profile': profile,
+        'password_form': password_form, # Enviamos el form al template
     }
-    
     return render(request, 'guardian/profile.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def change_password(request):
+    """Procesa el cambio de contraseña."""
+    form = PasswordChangeForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        # Mantiene al usuario logueado después de cambiar la contraseña
+        update_session_auth_hash(request, user)  
+        messages.success(request, 'Tu contraseña ha sido cambiada exitosamente.')
+    else:
+        for error in form.errors.values():
+            messages.error(request, error.as_text())
+    return redirect('guardian:profile')
+
+@login_required
+@require_http_methods(["POST"])
+def update_notifications(request):
+    """Actualiza las preferencias de notificación."""
+    profile = get_object_or_404(GuardianProfile, user=request.user)
+    
+    profile.email_notifications = 'email_notifications' in request.POST
+    profile.payment_notifications = 'payment_notifications' in request.POST
+    profile.schedule_notifications = 'schedule_notifications' in request.POST
+    profile.general_notifications = 'general_notifications' in request.POST
+    profile.save()
+    
+    messages.success(request, 'Tus preferencias de notificación han sido actualizadas.')
+    return redirect('guardian:profile')
 
 @login_required
 @require_http_methods(["POST"])
@@ -323,13 +327,12 @@ def register_player(request):
     try:
         data = json.loads(request.body)
         
-        # Crear registro de inscripción
-        registration = Registration.objects.create(
+        Registration.objects.create(
             guardian=request.user,
             player_first_name=data.get('first_name'),
             player_last_name=data.get('last_name'),
             player_rut=data.get('rut'),
-            player_birth_date=data.get('birthdate'),
+            player_birth_date=data.get('birth_date'),
             team=data.get('team'),
             emergency_contact=data.get('emergency_contact'),
             emergency_phone=data.get('emergency_phone'),
@@ -343,10 +346,7 @@ def register_player(request):
         })
         
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        })
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
 def message_detail(request, message_id):
