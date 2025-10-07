@@ -1341,6 +1341,29 @@ body {
     overflow: hidden;
 }
 
+.player-image img {
+    width: 85%;
+    max-width: 340px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 22px rgba(0,0,0,0.35));
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.player-card:nth-child(odd) .player-image img {
+    transform: rotate(-2deg) translateY(0);
+}
+
+.player-card:nth-child(even) .player-image img {
+    transform: rotate(2deg) translateY(0);
+}
+
+.player-card:hover .player-image img {
+    transform: translateY(-6px) scale(1.03);
+}
+
 .player-image::after {
     content: '';
     position: absolute;
@@ -1628,6 +1651,76 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* Collage de imágenes en el Hero */
+.hero-images {
+    position: relative;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-images .hero-main {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35), 0 0 0 6px rgba(255,255,255,0.12);
+    object-fit: cover;
+}
+
+.hero-images .hero-float {
+    position: absolute;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    border: 4px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(3px);
+    animation: heroFloat 6s ease-in-out infinite;
+    will-change: transform;
+}
+
+.hero-images .hero-float-1 {
+    width: 200px;
+    right: -20px;
+    top: 10%;
+    transform: rotate(2deg);
+    animation-delay: 0.2s;
+}
+
+.hero-images .hero-float-2 {
+    width: 180px;
+    left: -25px;
+    bottom: -20px;
+    transform: rotate(-3deg);
+    animation-delay: 0.8s;
+}
+
+.hero-images .hero-float-3 {
+    width: 220px;
+    left: 50%;
+    bottom: -40px;
+    transform: translateX(-50%) rotate(1deg);
+    animation-delay: 1.4s;
+}
+
+@keyframes heroFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+/* Imágenes dentro de tarjetas de noticias */
+.news-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
 </style>
 {% endblock %}
 
@@ -1666,22 +1759,11 @@ body {
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="court-visual fade-in">
-                    <div class="scoreboard">
-                        <div class="score">CEBPM 95 - 87 RIVAL</div>
-                        <div class="time">04:23</div>
-                    </div>
-                    <div class="court-3d">
-                        <div class="ball-container">
-                            <div class="basketball-animation">🏀</div>
-                        </div>
-                        <!-- Canastas con animación -->
-                        <div class="net-animation"></div>
-                        <div class="net-animation"></div>
-                        <!-- Líneas de la cancha -->
-                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.6);"></div>
-                        <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,0.6);"></div>
-                    </div>
+                <div class="hero-images fade-in">
+                    <img src="{% static 'img/Equipo.png' %}" alt="Equipo CEBPM" class="hero-main" loading="eager" />
+                    <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM" class="hero-float hero-float-1" loading="lazy" />
+                    <img src="{% static 'img/player2.png' %}" alt="Jugador CEBPM 2" class="hero-float hero-float-2" loading="lazy" />
+                    <img src="{% static 'img/equipo2.png' %}" alt="Equipo CEBPM 2" class="hero-float hero-float-3" loading="lazy" />
                 </div>
             </div>
         </div>
@@ -1806,7 +1888,7 @@ body {
         <div class="news-grid">
             <div class="news-card fade-in">
                 <div class="news-image">
-                    <i class="fas fa-trophy"></i>
+                    <img src="{% static 'img/equipo2.png' %}" alt="Noticia CEBPM - equipo" loading="lazy" />
                 </div>
                 <div class="news-content">
                     <span class="news-category">🎆 Playoff</span>
@@ -1820,7 +1902,7 @@ body {
             </div>
             <div class="news-card fade-in">
                 <div class="news-image">
-                    <i class="fas fa-users"></i>
+                    <img src="{% static 'img/player.png' %}" alt="Noticia CEBPM - jugador" loading="lazy" />
                 </div>
                 <div class="news-content">
                     <span class="news-category">⭐ MVP</span>
@@ -1834,7 +1916,7 @@ body {
             </div>
             <div class="news-card fade-in">
                 <div class="news-image">
-                    <i class="fas fa-graduation-cap"></i>
+                    <img src="{% static 'img/Equipo.png' %}" alt="Noticia CEBPM - formación" loading="lazy" />
                 </div>
                 <div class="news-content">
                     <span class="news-category">🌟 Cantera</span>
@@ -1898,9 +1980,7 @@ body {
             <div class="player-card fade-in">
                 <div class="player-image">
                     <div class="player-number">10</div>
-                    <div class="player-silhouette">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM - Diego Morales" loading="lazy" />
                 </div>
                 <div class="player-info">
                     <div class="player-name">Diego "Flash" Morales</div>
@@ -1910,9 +1990,7 @@ body {
             <div class="player-card fade-in">
                 <div class="player-image">
                     <div class="player-number">9</div>
-                    <div class="player-silhouette">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <img src="{% static 'img/player2.png' %}" alt="Jugador CEBPM - Carlos Vega" loading="lazy" />
                 </div>
                 <div class="player-info">
                     <div class="player-name">Carlos "Sniper" Vega</div>
@@ -1922,9 +2000,7 @@ body {
             <div class="player-card fade-in">
                 <div class="player-image">
                     <div class="player-number">1</div>
-                    <div class="player-silhouette">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM - Miguel Torres" loading="lazy" />
                 </div>
                 <div class="player-info">
                     <div class="player-name">Miguel "La Muralla" Torres</div>
@@ -1934,9 +2010,7 @@ body {
             <div class="player-card fade-in">
                 <div class="player-image">
                     <div class="player-number">4</div>
-                    <div class="player-silhouette">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <img src="{% static 'img/player2.png' %}" alt="Jugador CEBPM - Javier Silva" loading="lazy" />
                 </div>
                 <div class="player-info">
                     <div class="player-name">Javier "Rocket" Silva</div>
