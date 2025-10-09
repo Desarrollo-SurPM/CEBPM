@@ -1,15 +1,39 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone # Asegúrate de importar timezone
+from django.utils import timezone
+from players.models import Category # Importar Category
 
 class BulkEmail(models.Model):
     """Correos masivos"""
+    TYPE_CHOICES = [
+        ('announcement', 'Anuncio'),
+        ('notification', 'Notificación'),
+        ('reminder', 'Recordatorio'),
+        ('emergency', 'Emergencia'),
+    ]
+    AUDIENCE_CHOICES = [
+        ('all_guardians', 'Todos los Apoderados'),
+        ('team_guardians', 'Por Equipo'),
+        ('specific_guardians', 'Apoderados Específicos'),
+    ]
+    STATUS_CHOICES = [
+        ('draft', 'Borrador'),
+        ('sent', 'Enviado'),
+        ('scheduled', 'Programado'),
+    ]
+
     title = models.CharField(max_length=200, verbose_name='Título')
     body_html = models.TextField(verbose_name='Contenido HTML')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Creado por')
+    
+    # --- CAMPOS NUEVOS Y MODIFICADOS ---
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft', verbose_name='Estado')
+    message_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='notification', verbose_name='Tipo de Mensaje')
+    audience = models.CharField(max_length=20, choices=AUDIENCE_CHOICES, verbose_name='Audiencia')
+    team = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Equipo Destino')
+    
     created_at = models.DateTimeField(auto_now_add=True)
     sent_at = models.DateTimeField(blank=True, null=True, verbose_name='Enviado el')
-    is_sent = models.BooleanField(default=False, verbose_name='Enviado')
 
     class Meta:
         verbose_name = 'Correo Masivo'
@@ -17,19 +41,26 @@ class BulkEmail(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        status = 'Enviado' if self.is_sent else 'Borrador'
-        return f'{self.title} ({status})'
+        return f'{self.title} ({self.get_status_display()})'
 
+    # --- PROPIEDADES NUEVAS PARA ESTADÍSTICAS ---
     @property
-    def recipient_count(self):
+    def total_recipients(self):
         return self.emailrecipient_set.count()
 
     @property
-    def sent_count(self):
-        return self.emailrecipient_set.filter(sent_at__isnull=False).count()
+    def read_count(self):
+        return self.emailrecipient_set.filter(read_at__isnull=False).count()
 
+    @property
+    def read_percentage(self):
+        total = self.total_recipients
+        if total == 0:
+            return 0
+        return (self.read_count / total) * 100
 
 class EmailRecipient(models.Model):
+    # ... (sin cambios en este modelo)
     """Destinatarios de correos masivos"""
     STATUS_CHOICES = [
         ('pendiente', 'Pendiente'),

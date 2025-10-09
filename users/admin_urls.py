@@ -25,8 +25,10 @@ urlpatterns = [
 
     
     # Communications
+     # Communications (SECCIÓN ACTUALIZADA)
     path('communications/', admin_views.admin_communications, name='communications'),
-    path('communications/send-notification/', admin_views.admin_send_notification, name='send_notification'),
+    path('communications/send/', admin_views.admin_send_notification, name='send_notification'),
+    path('communications/<int:message_id>/delete/', admin_views.admin_delete_communication, name='delete_communication'),
     
     # Sponsors management
     path('sponsors/', admin_views.admin_sponsors, name='admin_sponsors'),

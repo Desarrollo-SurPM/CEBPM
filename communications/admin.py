@@ -1,111 +1,57 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
-from django.db.models import Q
 from .models import BulkEmail, EmailRecipient
-
 
 @admin.register(BulkEmail)
 class BulkEmailAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_by', 'recipient_count', 'sent_count', 'status_badge', 'created_at')
-    list_filter = ('is_sent', 'created_at', 'sent_at')
+    # --- CORREGIDO: Usando los nuevos campos y propiedades ---
+    list_display = ('title', 'created_by', 'total_recipients', 'read_count', 'status', 'created_at')
+    list_filter = ('status', 'created_at', 'sent_at', 'message_type', 'audience')
     search_fields = ('title', 'body_html', 'created_by__first_name', 'created_by__last_name')
-    readonly_fields = ('sent_at', 'created_at', 'recipient_count', 'sent_count')
+    # Usamos las propiedades del modelo que ahora sí existen
+    readonly_fields = ('sent_at', 'created_at', 'total_recipients', 'read_count', 'read_percentage')
     date_hierarchy = 'created_at'
     
     fieldsets = (
         ('Información del Correo', {
-            'fields': ('title', 'body_html', 'created_by')
+            'fields': ('title', 'body_html', 'created_by', 'message_type', 'audience', 'team')
         }),
         ('Estado', {
-            'fields': ('is_sent', 'sent_at')
+            'fields': ('status', 'sent_at')
         }),
         ('Estadísticas', {
-            'fields': ('recipient_count', 'sent_count'),
+            'fields': ('total_recipients', 'read_count', 'read_percentage'),
             'classes': ('collapse',)
         }),
-        ('Fechas', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        })
     )
     
-    def sender_info(self, obj):
-        if obj.sender:
-            return f"{obj.sender.first_name} {obj.sender.last_name}"
-        return 'Sistema'
-    sender_info.short_description = 'Remitente'
-    
-    def recipient_info(self, obj):
-        return f"{obj.recipient.first_name} {obj.recipient.last_name}"
-    recipient_info.short_description = 'Destinatario'
-    
-    def status_badge(self, obj):
-        if obj.is_read:
-            return format_html(
-                '<span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">✅ Leído</span>'
-            )
-        else:
-            days_ago = (timezone.now().date() - obj.sent_at.date()).days if obj.sent_at else 0
-            if days_ago > 7:
-                color = '#dc3545'  # Red for old unread
-                icon = '🔴'
-            elif days_ago > 3:
-                color = '#ffc107'  # Yellow for moderately old
-                icon = '🟡'
-            else:
-                color = '#17a2b8'  # Blue for recent
-                icon = '🔵'
-            
-            return format_html(
-                '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">{} No leído</span>',
-                color, icon
-            )
-    status_badge.short_description = 'Estado'
-    
-    actions = ['mark_as_read', 'mark_as_unread', 'send_bulk_message']
-    
-    def mark_as_read(self, request, queryset):
-        updated = queryset.update(is_read=True, read_at=timezone.now())
-        self.message_user(request, f'{updated} mensajes marcados como leídos.')
-    mark_as_read.short_description = 'Marcar como leído'
-    
-    def mark_as_unread(self, request, queryset):
-        updated = queryset.update(is_read=False, read_at=None)
-        self.message_user(request, f'{updated} mensajes marcados como no leídos.')
-    mark_as_unread.short_description = 'Marcar como no leído'
-    
-    def send_bulk_message(self, request, queryset):
-        # This would open a form to send bulk messages
-        self.message_user(request, 'Función de envío masivo disponible en desarrollo.')
-    send_bulk_message.short_description = 'Enviar mensaje masivo'
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Add annotations for better performance
-        return qs.select_related('sender', 'recipient')
+    actions = ['send_bulk_message']
 
+    def send_bulk_message(self, request, queryset):
+        # Aquí se implementaría el envío de emails de bienvenida
+        count = queryset.count()
+        self.message_user(
+            request,
+            f'Funcionalidad de envío masivo para {count} correos pendiente de implementación.'
+        )
+    send_bulk_message.short_description = 'Enviar correos seleccionados'
 
 @admin.register(EmailRecipient)
 class EmailRecipientAdmin(admin.ModelAdmin):
-    list_display = ('bulk_email', 'user', 'status', 'sent_at', 'created_at')
-    list_filter = ('status', 'sent_at', 'created_at')
+    # --- CORREGIDO: Adaptado a los campos reales del modelo ---
+    list_display = ('bulk_email', 'user_info', 'status', 'sent_at', 'is_read_display', 'created_at')
+    list_filter = ('status', 'sent_at', 'created_at', 'read_at')
     search_fields = ('bulk_email__title', 'user__first_name', 'user__last_name')
-    readonly_fields = ('sent_at', 'created_at')
+    readonly_fields = ('sent_at', 'created_at', 'read_at')
     date_hierarchy = 'created_at'
     
     fieldsets = (
-        ('Información de la Notificación', {
-            'fields': ('user', 'title', 'message')
-        }),
-        ('Configuración', {
-            'fields': ('notification_type', 'priority')
-        }),
-        ('Estado', {
-            'fields': ('is_read', 'read_at')
+        ('Información del Envío', {
+            'fields': ('bulk_email', 'user', 'status', 'error_message')
         }),
         ('Fechas', {
-            'fields': ('created_at', 'updated_at'),
+            'fields': ('sent_at', 'read_at', 'created_at'),
             'classes': ('collapse',)
         })
     )
@@ -114,48 +60,20 @@ class EmailRecipientAdmin(admin.ModelAdmin):
         return f"{obj.user.first_name} {obj.user.last_name}"
     user_info.short_description = 'Usuario'
     
-    def priority_badge(self, obj):
-        colors = {
-            'low': '#28a745',
-            'medium': '#ffc107',
-            'high': '#fd7e14',
-            'urgent': '#dc3545'
-        }
-        icons = {
-            'low': '🟢',
-            'medium': '🟡',
-            'high': '🟠',
-            'urgent': '🔴'
-        }
-        color = colors.get(obj.priority, '#6c757d')
-        icon = icons.get(obj.priority, '⚪')
-        return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">{} {}</span>',
-            color, icon, obj.get_priority_display()
-        )
-    priority_badge.short_description = 'Prioridad'
+    def is_read_display(self, obj):
+        if obj.read_at:
+            return format_html('<span style="color: green;">✔ Leído</span>')
+        return format_html('<span style="color: red;">✖ No Leído</span>')
+    is_read_display.short_description = 'Estado de Lectura'
     
-    actions = ['mark_as_read', 'mark_as_unread', 'delete_old_notifications']
-    
+    actions = ['mark_as_read', 'mark_as_unread']
+
     def mark_as_read(self, request, queryset):
-        updated = queryset.update(is_read=True, read_at=timezone.now())
-        self.message_user(request, f'{updated} notificaciones marcadas como leídas.')
-    mark_as_read.short_description = 'Marcar como leída'
-    
+        updated = queryset.update(read_at=timezone.now())
+        self.message_user(request, f'{updated} mensajes marcados como leídos.')
+    mark_as_read.short_description = 'Marcar como leído'
+
     def mark_as_unread(self, request, queryset):
-        updated = queryset.update(is_read=False, read_at=None)
-        self.message_user(request, f'{updated} notificaciones marcadas como no leídas.')
-    mark_as_unread.short_description = 'Marcar como no leída'
-    
-    def delete_old_notifications(self, request, queryset):
-        # Delete notifications older than 30 days
-        old_date = timezone.now() - timezone.timedelta(days=30)
-        old_notifications = queryset.filter(created_at__lt=old_date, is_read=True)
-        count = old_notifications.count()
-        old_notifications.delete()
-        self.message_user(request, f'{count} notificaciones antiguas eliminadas.')
-    delete_old_notifications.short_description = 'Eliminar notificaciones antiguas'
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related('user')
+        updated = queryset.update(read_at=None)
+        self.message_user(request, f'{updated} mensajes marcados como no leídos.')
+    mark_as_unread.short_description = 'Marcar como no leído'

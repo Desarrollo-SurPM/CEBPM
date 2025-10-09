@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django.core.mail import send_mail
+from django.conf import settings
 from finance.forms import TransactionForm
 
 from .models import User, GuardianProfile, AdminProfile, Registration
@@ -377,11 +379,41 @@ def admin_add_transaction(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_communications(request):
-    """Manage communications"""
-    recent_messages = BulkEmail.objects.order_by('-created_at')[:10]
+    """Muestra el panel de comunicaciones con estadísticas y filtros."""
+    messages_list = BulkEmail.objects.annotate(
+        read_count=Count('emailrecipient', filter=Q(emailrecipient__read_at__isnull=False)),
+        total_recipients=Count('emailrecipient')
+    ).order_by('-created_at')
+
+    # Lógica de Filtros (básica por ahora)
+    if 'search' in request.GET and request.GET['search']:
+        search_query = request.GET['search']
+        messages_list = messages_list.filter(Q(title__icontains=search_query) | Q(body_html__icontains=search_query))
     
+    # Estadísticas para las tarjetas
+    total_messages = messages_list.count()
+    sent_messages = messages_list.filter(status='sent').count()
+    pending_messages = messages_list.filter(status__in=['draft', 'scheduled']).count()
+    
+    total_recipients_sent = EmailRecipient.objects.filter(status='enviado').count()
+    total_recipients_read = EmailRecipient.objects.filter(read_at__isnull=False).count()
+    read_rate = int((total_recipients_read / total_recipients_sent) * 100) if total_recipients_sent > 0 else 0
+
+    # Paginación
+    paginator = Paginator(messages_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Para el modal
+    guardians = User.objects.filter(guardian_profile__isnull=False)
+
     context = {
-        'messages': recent_messages,
+        'messages': page_obj,
+        'total_messages': total_messages,
+        'sent_messages': sent_messages,
+        'pending_messages': pending_messages,
+        'read_rate': read_rate,
+        'guardians': guardians,
     }
     
     return render(request, 'admin/communications.html', context)
@@ -390,44 +422,62 @@ def admin_communications(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_send_notification(request):
-    """Send notification to users"""
+    """Procesa el formulario y envía notificaciones por correo electrónico."""
     if request.method == 'POST':
+        # ... (código de la respuesta anterior, ya es correcto y funcional) ...
+        # Lo incluyo aquí de nuevo para que lo tengas a mano
         title = request.POST.get('title')
-        message = request.POST.get('message')
-        recipient_type = request.POST.get('recipient_type')
+        body_html = request.POST.get('content')
+        recipient_type = request.POST.get('audience')
         
         recipients = User.objects.none()
-        
-        if recipient_type == 'all':
-            recipients = User.objects.all()
-        elif recipient_type == 'guardians':
+        if recipient_type == 'all_guardians':
             recipients = User.objects.filter(guardian_profile__isnull=False)
-        elif recipient_type == 'admins':
-            recipients = User.objects.filter(admin_profile__isnull=False)
         
         if recipients.exists():
             bulk_email = BulkEmail.objects.create(
                 title=title,
-                body_html=message,
+                body_html=body_html,
                 created_by=request.user,
-                is_sent=True,
-                sent_at=timezone.now()
+                status='sent', # Marcamos como enviado
+                sent_at=timezone.now(),
+                audience=recipient_type
             )
             
-            email_recipients = [
-                EmailRecipient(bulk_email=bulk_email, user=user, status='enviado', sent_at=timezone.now())
-                for user in recipients
-            ]
-            EmailRecipient.objects.bulk_create(email_recipients)
+            sent_count = 0
+            for user in recipients:
+                try:
+                    send_mail(
+                        subject=title,
+                        message=body_html,
+                        from_email=getattr(settings, 'EMAIL_HOST_USER', 'noreply@cebpm.cl'),
+                        recipient_list=[user.email],
+                        html_message=body_html,
+                        fail_silently=False,
+                    )
+                    EmailRecipient.objects.create(bulk_email=bulk_email, user=user, status='enviado', sent_at=timezone.now())
+                    sent_count += 1
+                except Exception as e:
+                    EmailRecipient.objects.create(bulk_email=bulk_email, user=user, status='fallido', error_message=str(e))
             
-            messages.success(request, f'Comunicación enviada a {len(email_recipients)} usuarios.')
+            messages.success(request, f'Comunicación enviada a {sent_count} de {recipients.count()} destinatarios.')
         else:
             messages.warning(request, 'No se encontraron destinatarios para esta comunicación.')
 
         return redirect('admin_panel:communications')
     
-    return render(request, 'admin/send_notification.html')
+    return redirect('admin_panel:communications')
 
+@login_required
+@user_passes_test(is_admin)
+def admin_delete_communication(request, message_id):
+    """Elimina una comunicación."""
+    if request.method == 'POST': # Por seguridad, solo permitir DELETE vía POST
+        message = get_object_or_404(BulkEmail, id=message_id)
+        message.delete()
+        messages.success(request, 'La comunicación ha sido eliminada exitosamente.')
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
 @login_required
 @user_passes_test(is_admin)
