@@ -14,6 +14,7 @@ from finance.models import Payment, FeeDefinition, Invoice
 from sponsors.models import Sponsor
 from schedules.models import Match, Activity
 from communications.models import BulkEmail, EmailRecipient
+from players.forms import PlayerForm # <-- Importado
 
 
 def is_admin(user):
@@ -31,6 +32,7 @@ def is_admin(user):
 @user_passes_test(is_admin)
 def admin_dashboard(request):
     """Main admin dashboard with overview statistics"""
+    # ... (código existente sin cambios) ...
     # Get statistics
     total_players = Player.objects.count()
     total_guardians = GuardianProfile.objects.count()
@@ -94,7 +96,7 @@ def admin_dashboard(request):
     
     return render(request, 'admin/dashboard.html', context)
 
-
+# ... (código existente sin cambios hasta admin_players) ...
 @login_required
 @user_passes_test(is_admin)
 def admin_players(request):
@@ -136,9 +138,65 @@ def admin_players(request):
     return render(request, 'admin/players.html', context)
 
 
+# --- NUEVAS VISTAS ---
+@login_required
+@user_passes_test(is_admin)
+def admin_add_player(request):
+    """Vista para agregar un nuevo jugador."""
+    if request.method == 'POST':
+        form = PlayerForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Jugador agregado exitosamente.')
+            return redirect('admin_panel:players')
+    else:
+        form = PlayerForm()
+    
+    context = {
+        'form': form,
+        'title': 'Agregar Jugador'
+    }
+    return render(request, 'admin/player_form.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def admin_edit_player(request, player_id):
+    """Vista para editar un jugador existente."""
+    player = get_object_or_404(Player, id=player_id)
+    if request.method == 'POST':
+        form = PlayerForm(request.POST, request.FILES, instance=player)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Jugador actualizado exitosamente.')
+            return redirect('admin_panel:players')
+    else:
+        form = PlayerForm(instance=player)
+        
+    context = {
+        'form': form,
+        'title': 'Editar Jugador'
+    }
+    return render(request, 'admin/player_form.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def admin_delete_player(request, player_id):
+    """Vista para eliminar un jugador."""
+    player = get_object_or_404(Player, id=player_id)
+    if request.method == 'POST':
+        player.delete()
+        messages.success(request, 'Jugador eliminado exitosamente.')
+        return redirect('admin_panel:players')
+    
+    return render(request, 'admin/player_confirm_delete.html', {'player': player})
+
+# --- FIN DE NUEVAS VISTAS ---
+
+
 @login_required
 @user_passes_test(is_admin)
 def admin_registrations(request):
+# ... (resto del código sin cambios) ...
     """Manage player registrations"""
     status_filter = request.GET.get('status', 'pending')
     

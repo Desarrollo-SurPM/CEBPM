@@ -9,6 +9,9 @@ urlpatterns = [
     
     # Players management
     path('players/', admin_views.admin_players, name='players'),
+    path('players/add/', admin_views.admin_add_player, name='admin_add_player'),
+    path('players/edit/<int:player_id>/', admin_views.admin_edit_player, name='admin_edit_player'),
+    path('players/delete/<int:player_id>/', admin_views.admin_delete_player, name='admin_delete_player'),
     
     # Registrations management
     path('registrations/', admin_views.admin_registrations, name='registrations'),

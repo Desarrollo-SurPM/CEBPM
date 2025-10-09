@@ -1,0 +1,81 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{{ title }} - Panel de Administración{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Completa la información del jugador{% endblock %}
+
+{% block content %}
+<div class="admin-card p-4">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                {{ form.first_name }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                {{ form.last_name }}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.rut.id_for_label }}" class="form-label">{{ form.rut.label }}</label>
+                {{ form.rut }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.birthdate.id_for_label }}" class="form-label">{{ form.birthdate.label }}</label>
+                {{ form.birthdate }}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                {{ form.category }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.position.id_for_label }}" class="form-label">{{ form.position.label }}</label>
+                {{ form.position }}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                {{ form.status }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.photo.id_for_label }}" class="form-label">{{ form.photo.label }}</label>
+                {{ form.photo }}
+                {% if form.instance.photo %}
+                    <small class="d-block mt-1">Actual: <a href="{{ form.instance.photo.url }}" target="_blank">{{ form.instance.photo.name }}</a></small>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if form.errors %}
+            <div class="alert alert-danger mt-3">
+                <strong>Por favor, corrige los siguientes errores:</strong>
+                <ul>
+                    {% for field, error_list in form.errors.items %}
+                        {% for error in error_list %}
+                            <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <hr>
+        
+        <div class="d-flex justify-content-end">
+            <a href="{% url 'admin_panel:players' %}" class="btn btn-secondary me-2">Cancelar</a>
+            <button type="submit" class="btn btn-admin">Guardar Jugador</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

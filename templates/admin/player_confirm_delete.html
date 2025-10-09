@@ -1,0 +1,21 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Confirmar Eliminación - Admin Panel{% endblock %}
+
+{% block page_title %}Eliminar Jugador{% endblock %}
+
+{% block content %}
+<div class="admin-card p-4">
+    <h4 class="text-danger">Confirmar Eliminación</h4>
+    <p>¿Estás seguro de que deseas eliminar permanentemente al jugador <strong>{{ player.get_full_name }}</strong>?</p>
+    <p class="text-muted">Esta acción no se puede deshacer.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="d-flex justify-content-end">
+            <a href="{% url 'admin_panel:players' %}" class="btn btn-secondary me-2">Cancelar</a>
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
