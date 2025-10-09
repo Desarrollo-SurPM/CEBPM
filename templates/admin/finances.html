@@ -10,14 +10,13 @@
             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportFinances()">
                 <i class="bi bi-download"></i> Exportar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                <i class="bi bi-plus"></i> Registrar Pago
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+                <i class="bi bi-plus"></i> Registrar Transacción
             </button>
         </div>
     </div>
 </div>
 
-<!-- Resumen financiero -->
 <div class="row mb-4">
     <div class="col-md-3">
         <div class="card text-center bg-success text-white">
@@ -36,14 +35,6 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">${{ pending_payments|floatformat:0 }}</h5>
-                <p class="card-text">Pagos Pendientes</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
         <div class="card text-center bg-info text-white">
             <div class="card-body">
                 <h5 class="card-title">${{ balance|floatformat:0 }}</h5>
@@ -51,9 +42,16 @@
             </div>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">${{ pending_payments|floatformat:0 }}</h5>
+                <p class="card-text">Cuotas Pendientes</p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Gráfico de ingresos/gastos mensuales -->
 <div class="row mb-4">
     <div class="col-md-8">
         <div class="card">
@@ -77,24 +75,22 @@
     </div>
 </div>
 
-<!-- Filtros -->
 <div class="row mb-4">
     <div class="col-md-2">
         <select class="form-select" id="typeFilter">
             <option value="">Todos los tipos</option>
-            <option value="income">Ingresos</option>
-            <option value="expense">Gastos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="egreso">Gastos</option>
         </select>
     </div>
     <div class="col-md-2">
         <select class="form-select" id="categoryFilter">
             <option value="">Todas las categorías</option>
-            <option value="mensualidad">Mensualidades</option>
-            <option value="inscripcion">Inscripciones</option>
-            <option value="equipamiento">Equipamiento</option>
-            <option value="transporte">Transporte</option>
-            <option value="arbitraje">Arbitraje</option>
-            <option value="otros">Otros</option>
+            {% for cat_id, cat_name in form.fields.category.choices %}
+                {% if cat_id %}
+                    <option value="{{ cat_id }}">{{ cat_name }}</option>
+                {% endif %}
+            {% endfor %}
         </select>
     </div>
     <div class="col-md-2">
@@ -113,7 +109,6 @@
     </div>
 </div>
 
-<!-- Tabla de transacciones -->
 <div class="card">
     <div class="card-header">
         <h5 class="mb-0">Historial de Transacciones</h5>
@@ -127,61 +122,40 @@
                         <th>Tipo</th>
                         <th>Categoría</th>
                         <th>Descripción</th>
-                        <th>Jugador/Concepto</th>
-                        <th>Monto</th>
-                        <th>Estado</th>
+                        <th>Asociado a</th>
+                        <th class="text-end">Monto</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for transaction in transactions %}
                     <tr>
-                        <td>{{ transaction.date|date:"d/m/Y" }}</td>
+                        <td>{{ transaction.transaction_date|date:"d/m/Y" }}</td>
                         <td>
-                            {% if transaction.type == 'income' %}
+                            {% if transaction.transaction_type == 'ingreso' %}
                                 <span class="badge bg-success">Ingreso</span>
                             {% else %}
-                                <span class="badge bg-danger">Gasto</span>
+                                <span class="badge bg-danger">Egreso</span>
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-secondary">{{ transaction.category|capfirst }}</span>
+                            <span class="badge bg-secondary">{{ transaction.get_category_display }}</span>
                         </td>
                         <td>{{ transaction.description }}</td>
                         <td>
-                            {% if transaction.player %}
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm me-2">
-                                        {% if transaction.player.photo %}
-                                            <img src="{{ transaction.player.photo.url }}" alt="{{ transaction.player.first_name }}" class="rounded-circle">
-                                        {% else %}
-                                            <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
-                                                {{ transaction.player.first_name|first }}{{ transaction.player.last_name|first }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div>
-                                        <small>{{ transaction.player.first_name }} {{ transaction.player.last_name }}</small>
-                                    </div>
-                                </div>
+                            {% if transaction.payment.invoice.player %}
+                                <small>Jugador: {{ transaction.payment.invoice.player.get_full_name }}</small>
+                            {% elif transaction.sponsor %}
+                                <small>Auspiciador: {{ transaction.sponsor.name }}</small>
                             {% else %}
                                 <span class="text-muted">-</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <strong class="{% if transaction.type == 'income' %}text-success{% else %}text-danger{% endif %}">
-                                {% if transaction.type == 'income' %}+{% else %}-{% endif %}
+                        <td class="text-end">
+                            <strong class="{% if transaction.transaction_type == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                                {% if transaction.transaction_type == 'ingreso' %}+{% else %}-{% endif %}
                                 ${{ transaction.amount|floatformat:0 }}
                             </strong>
-                        </td>
-                        <td>
-                            {% if transaction.status == 'completed' %}
-                                <span class="badge bg-success">Completado</span>
-                            {% elif transaction.status == 'pending' %}
-                                <span class="badge bg-warning">Pendiente</span>
-                            {% else %}
-                                <span class="badge bg-danger">Cancelado</span>
-                            {% endif %}
                         </td>
                         <td>
                             <div class="btn-group" role="group">
@@ -189,22 +163,16 @@
                                         onclick="viewTransaction('{{ transaction.id }}')" title="Ver detalles">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                {% if transaction.status == 'pending' %}
-                                    <button class="btn btn-sm btn-outline-warning" 
-                                            onclick="editTransaction('{{ transaction.id }}')" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" 
-                                            onclick="cancelTransaction('{{ transaction.id }}')" title="Cancelar">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                {% endif %}
+                                <button class="btn btn-sm btn-outline-warning" 
+                                        onclick="editTransaction('{{ transaction.id }}')" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <i class="bi bi-receipt display-4 text-muted"></i>
                             <p class="mt-2 text-muted">No hay transacciones registradas</p>
                         </td>
@@ -214,7 +182,6 @@
             </table>
         </div>
         
-        <!-- Paginación -->
         {% if transactions.has_other_pages %}
         <nav aria-label="Paginación de transacciones">
             <ul class="pagination justify-content-center">
@@ -251,61 +218,48 @@
     </div>
 </div>
 
-<!-- Modal para agregar pago -->
-<div class="modal fade" id="addPaymentModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="addTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Registrar Nueva Transacción</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="addPaymentForm">
+            <form action="{% url 'admin_panel:admin_add_transaction' %}" method="post">
+                {% csrf_token %}
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="transactionType" class="form-label">Tipo</label>
-                        <select class="form-select" id="transactionType" required>
-                            <option value="">Seleccionar tipo</option>
-                            <option value="income">Ingreso</option>
-                            <option value="expense">Gasto</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.transaction_type.id_for_label }}" class="form-label">{{ form.transaction_type.label }}</label>
+                            {{ form.transaction_type }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                            {{ form.category }}
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="transactionCategory" class="form-label">Categoría</label>
-                        <select class="form-select" id="transactionCategory" required>
-                            <option value="">Seleccionar categoría</option>
-                            <option value="mensualidad">Mensualidad</option>
-                            <option value="inscripcion">Inscripción</option>
-                            <option value="equipamiento">Equipamiento</option>
-                            <option value="transporte">Transporte</option>
-                            <option value="arbitraje">Arbitraje</option>
-                            <option value="otros">Otros</option>
-                        </select>
+                        <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">{{ form.amount.label }}</label>
+                            {{ form.amount }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.transaction_date.id_for_label }}" class="form-label">{{ form.transaction_date.label }}</label>
+                            {{ form.transaction_date }}
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="transactionDescription" class="form-label">Descripción</label>
-                        <input type="text" class="form-control" id="transactionDescription" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="transactionAmount" class="form-label">Monto</label>
-                        <input type="number" class="form-control" id="transactionAmount" min="0" step="0.01" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="transactionDate" class="form-label">Fecha</label>
-                        <input type="date" class="form-control" id="transactionDate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="transactionPlayer" class="form-label">Jugador (opcional)</label>
-                        <select class="form-select" id="transactionPlayer">
-                            <option value="">Sin jugador asociado</option>
-                            {% for player in players %}
-                                <option value="{{ player.id }}">{{ player.first_name }} {{ player.last_name }}</option>
-                            {% endfor %}
-                        </select>
+                        <label for="{{ form.sponsor.id_for_label }}" class="form-label">{{ form.sponsor.label }}</label>
+                        {{ form.sponsor }}
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Transacción</button>
                 </div>
             </form>
         </div>
@@ -358,17 +312,14 @@
 // Inicializar gráficos
 document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
-    
-    // Establecer fecha actual por defecto
-    document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
 });
 
 function initializeCharts() {
     // Gráfico de ingresos vs gastos
     const ctx1 = document.getElementById('financialChart').getContext('2d');
-    const monthlyLabels = JSON.parse('{{ monthly_labels|escapejs }}' || '[]');
-    const monthlyIncome = JSON.parse('{{ monthly_income|escapejs }}' || '[]');
-    const monthlyExpenses = JSON.parse('{{ monthly_expenses|escapejs }}' || '[]');
+    const monthlyLabels = JSON.parse('{{ monthly_labels|safe }}' || '[]');
+    const monthlyIncome = JSON.parse('{{ monthly_income|safe }}' || '[]');
+    const monthlyExpenses = JSON.parse('{{ monthly_expenses|safe }}' || '[]');
     
     new Chart(ctx1, {
         type: 'line',
@@ -400,8 +351,8 @@ function initializeCharts() {
     
     // Gráfico de distribución de ingresos
     const ctx2 = document.getElementById('incomeChart').getContext('2d');
-    const incomeCategories = JSON.parse('{{ income_categories|escapejs }}' || '[]');
-    const incomeAmounts = JSON.parse('{{ income_amounts|escapejs }}' || '[]');
+    const incomeCategories = JSON.parse('{{ income_categories|safe }}' || '[]');
+    const incomeAmounts = JSON.parse('{{ income_amounts|safe }}' || '[]');
     
     new Chart(ctx2, {
         type: 'doughnut',
@@ -453,84 +404,10 @@ function editTransaction(transactionId) {
     alert('Editar transacción: ' + transactionId);
 }
 
-function cancelTransaction(transactionId) {
-    if (confirm('¿Está seguro de que desea cancelar esta transacción?')) {
-        fetch(`/admin-panel/finances/transaction/${transactionId}/cancel/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al cancelar la transacción');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cancelar la transacción');
-        });
-    }
-}
-
 function exportFinances() {
     const params = new URLSearchParams(window.location.search);
     params.append('export', 'true');
     window.location.href = '?' + params.toString();
-}
-
-// Manejo del formulario de nueva transacción
-document.getElementById('addPaymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = {
-        type: document.getElementById('transactionType').value,
-        category: document.getElementById('transactionCategory').value,
-        description: document.getElementById('transactionDescription').value,
-        amount: document.getElementById('transactionAmount').value,
-        date: document.getElementById('transactionDate').value,
-        player: document.getElementById('transactionPlayer').value || null
-    };
-    
-    fetch('/admin-panel/finances/add/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error al registrar la transacción');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al registrar la transacción');
-    });
-});
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 }
 
 // Filtros en tiempo real
@@ -540,7 +417,8 @@ document.getElementById('searchInput').addEventListener('keyup', function(e) {
     }
 });
 
-document.getElementById('typeFilter').addEventListener('change', filterTransactions);
-document.getElementById('categoryFilter').addEventListener('change', filterTransactions);
+// Para que los filtros se apliquen al cambiar la selección
+// document.getElementById('typeFilter').addEventListener('change', filterTransactions);
+// document.getElementById('categoryFilter').addEventListener('change', filterTransactions);
 </script>
 {% endblock %}

@@ -1,6 +1,9 @@
+from datetime import timezone
+from django.utils import timezone 
 from django.db import models
 from django.contrib.auth.models import User
 from players.models import Category, Player
+from sponsors.models import Sponsor # Importamos el modelo Sponsor
 from decimal import Decimal
 
 
@@ -105,3 +108,41 @@ class Payment(models.Model):
             self.invoice.status = 'pagada'
             self.invoice.save()
         super().save(*args, **kwargs)
+
+
+# --- NUEVO MODELO ---
+class Transaction(models.Model):
+    """Registro de todas las transacciones financieras del club"""
+    TRANSACTION_TYPE_CHOICES = [
+        ('ingreso', 'Ingreso'),
+        ('egreso', 'Egreso'),
+    ]
+    CATEGORY_CHOICES = [
+        ('cuota_jugador', 'Cuota de Jugador'),
+        ('aporte_auspiciador', 'Aporte de Auspiciador'),
+        ('pago_proveedor', 'Pago a Proveedor'),
+        ('venta_entradas', 'Venta de Entradas'),
+        ('gasto_operativo', 'Gasto Operativo'),
+        ('otro_ingreso', 'Otro Ingreso'),
+        ('otro_egreso', 'Otro Egreso'),
+    ]
+
+    description = models.CharField(max_length=255, verbose_name='Descripción')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto')
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES, verbose_name='Tipo')
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, verbose_name='Categoría')
+    transaction_date = models.DateField(default=timezone.now, verbose_name='Fecha de Transacción')
+    
+    # Relaciones opcionales para mayor detalle
+    payment = models.OneToOneField(Payment, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Pago de Cuota Asociado')
+    sponsor = models.ForeignKey(Sponsor, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Auspiciador Asociado')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Transacción'
+        verbose_name_plural = 'Transacciones'
+        ordering = ['-transaction_date']
+
+    def __str__(self):
+        return f'{self.get_transaction_type_display()} - {self.get_category_display()} - ${self.amount}'

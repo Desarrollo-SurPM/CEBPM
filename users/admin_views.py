@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -7,10 +8,11 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import datetime, timedelta
+from finance.forms import TransactionForm
 
 from .models import User, GuardianProfile, AdminProfile, Registration
 from players.models import Player, GuardianPlayer, Category
-from finance.models import Payment, FeeDefinition, Invoice
+from finance.models import Payment, FeeDefinition, Invoice, Transaction
 from sponsors.models import Sponsor
 from schedules.models import Match, Activity
 from communications.models import BulkEmail, EmailRecipient
@@ -278,44 +280,99 @@ def admin_reject_registration(request, registration_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_finances(request):
-    """Manage finances"""
-    total_income = Payment.objects.filter(status='completado').aggregate(
-        total=models.Sum('amount')
-    )['total'] or 0
+    """Muestra un resumen financiero completo, gráficos y permite registrar transacciones."""
+    transactions = Transaction.objects.select_related('sponsor', 'payment__invoice__player').all()
+
+    # Lógica de Filtros
+    search_query = request.GET.get('search', '')
+    type_filter = request.GET.get('type', '')
+    category_filter = request.GET.get('category', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    if search_query:
+        transactions = transactions.filter(description__icontains=search_query)
+    if type_filter:
+        transactions = transactions.filter(transaction_type=type_filter)
+    if category_filter:
+        transactions = transactions.filter(category=category_filter)
+    if date_from:
+        transactions = transactions.filter(transaction_date__gte=date_from)
+    if date_to:
+        transactions = transactions.filter(transaction_date__lte=date_to)
+
+    # Cálculos para tarjetas de resumen
+    total_income = transactions.filter(transaction_type='ingreso').aggregate(total=Sum('amount'))['total'] or 0
+    total_expenses = transactions.filter(transaction_type='egreso').aggregate(total=Sum('amount'))['total'] or 0
+    balance = total_income - total_expenses
+    pending_payments = Invoice.objects.filter(status__in=['pendiente', 'atrasada']).aggregate(total=Sum('amount'))['total'] or 0
+
+    # Datos para el gráfico de Ingresos vs Gastos (últimos 12 meses)
+    monthly_data = {}
+    for i in range(12):
+        month = timezone.now() - timedelta(days=30 * i)
+        month_key = month.strftime('%Y-%m')
+        monthly_data[month_key] = {'income': 0, 'expenses': 0}
+
+    for t in transactions.filter(transaction_date__gte=timezone.now() - timedelta(days=365)):
+        month_key = t.transaction_date.strftime('%Y-%m')
+        if month_key in monthly_data:
+            if t.transaction_type == 'ingreso':
+                monthly_data[month_key]['income'] += float(t.amount)
+            else:
+                monthly_data[month_key]['expenses'] += float(t.amount)
+
+    sorted_months = sorted(monthly_data.keys())
+    monthly_labels = [datetime.strptime(m, '%Y-%m').strftime('%b %Y') for m in sorted_months]
+    monthly_income = [monthly_data[m]['income'] for m in sorted_months]
+    monthly_expenses = [monthly_data[m]['expenses'] for m in sorted_months]
+
+    # Datos para el gráfico de Distribución de Ingresos
+    income_distribution = transactions.filter(transaction_type='ingreso').values('category').annotate(total=Sum('amount')).order_by('-total')
+    income_categories = [item['category'] for item in income_distribution]
+    income_amounts = [float(item['total']) for item in income_distribution]
+
+    # Paginación para la tabla
+    paginator = Paginator(transactions, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
-    pending_payments = Invoice.objects.filter(status='pendiente').count()
-    overdue_payments = Invoice.objects.filter(status='atrasada').count()
-    
-    recent_payments = Payment.objects.order_by('-created_at')[:10]
-    
-    monthly_income = []
-    for i in range(6):
-        month_start = (timezone.now() - timedelta(days=30*i)).replace(day=1)
-        month_end = (month_start + timedelta(days=32)).replace(day=1)
-        
-        income = Payment.objects.filter(
-            status='completado',
-            created_at__gte=month_start,
-            created_at__lt=month_end
-        ).aggregate(total=models.Sum('amount'))['total'] or 0
-        
-        monthly_income.append({
-            'month': month_start.strftime('%B %Y'),
-            'income': float(income)
-        })
-    
-    monthly_income.reverse()
-    
+    form = TransactionForm()
+    players = Player.objects.all()
+
     context = {
         'total_income': total_income,
+        'total_expenses': total_expenses,
+        'balance': balance,
         'pending_payments': pending_payments,
-        'overdue_payments': overdue_payments,
-        'recent_payments': recent_payments,
-        'monthly_income': monthly_income,
+        'transactions': page_obj,
+        'players': players,
+        'form': form,
+        # Datos para JS
+        'monthly_labels': json.dumps(monthly_labels),
+        'monthly_income': json.dumps(monthly_income),
+        'monthly_expenses': json.dumps(monthly_expenses),
+        'income_categories': json.dumps(income_categories),
+        'income_amounts': json.dumps(income_amounts),
     }
     
     return render(request, 'admin/finances.html', context)
 
+@login_required
+@user_passes_test(is_admin)
+def admin_add_transaction(request):
+    """Procesa el formulario para agregar una nueva transacción."""
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Transacción registrada exitosamente.')
+        else:
+            # Si hay errores, los mostramos como mensajes
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    return redirect('admin_panel:finances')
 
 @login_required
 @user_passes_test(is_admin)

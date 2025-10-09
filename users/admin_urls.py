@@ -18,8 +18,11 @@ urlpatterns = [
     path('registrations/<int:registration_id>/approve/', admin_views.admin_approve_registration, name='approve_registration'),
     path('registrations/<int:registration_id>/reject/', admin_views.admin_reject_registration, name='reject_registration'),
     
+    
     # Finances
     path('finances/', admin_views.admin_finances, name='finances'),
+    path('finances/add/', admin_views.admin_add_transaction, name='admin_add_transaction'), # <-- NUEVA RUTA
+
     
     # Communications
     path('communications/', admin_views.admin_communications, name='communications'),
