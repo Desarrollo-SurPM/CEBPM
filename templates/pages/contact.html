@@ -1,394 +1,575 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Contacto - CEB FEM{% endblock %}
+{% block title %}Contacto - {{ block.super }}{% endblock %}
 
-{% block content %}
-<div class="container-fluid p-0">
-    <!-- Hero Section -->
-    <section class="hero-section bg-primary text-white py-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h1 class="display-4 fw-bold mb-4">Contáctanos</h1>
-                    <p class="lead mb-4">Estamos aquí para responder tus consultas y ayudarte a ser parte de nuestra familia deportiva.</p>
-                </div>
-                <div class="col-lg-4">
-                    <div class="text-center">
-                        <i class="fas fa-envelope" style="font-size: 8rem; opacity: 0.3;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Información de Contacto -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-lg h-100 contact-card">
-                        <div class="card-body p-4 text-center">
-                            <div class="contact-icon mb-3">
-                                <div class="bg-primary rounded-circle p-3 d-inline-block">
-                                    <i class="fas fa-map-marker-alt text-white" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                            <h5 class="card-title">Dirección</h5>
-                            <p class="text-muted mb-3">Estadio Chinquihue<br>Av. Costanera s/n<br>Puerto Montt, Chile</p>
-                            <a href="https://maps.google.com" target="_blank" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-external-link-alt me-1"></i>Ver en Google Maps
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-lg h-100 contact-card">
-                        <div class="card-body p-4 text-center">
-                            <div class="contact-icon mb-3">
-                                <div class="bg-success rounded-circle p-3 d-inline-block">
-                                    <i class="fas fa-phone text-white" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                            <h5 class="card-title">Teléfonos</h5>
-                            <p class="text-muted mb-3">
-                                <strong>Oficina:</strong> +56 65 2 234567<br>
-                                <strong>Móvil:</strong> +56 9 8765 4321<br>
-                                <strong>Emergencias:</strong> +56 9 1234 5678
-                            </p>
-                            <a href="tel:+56652234567" class="btn btn-outline-success btn-sm">
-                                <i class="fas fa-phone me-1"></i>Llamar Ahora
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-lg h-100 contact-card">
-                        <div class="card-body p-4 text-center">
-                            <div class="contact-icon mb-3">
-                                <div class="bg-info rounded-circle p-3 d-inline-block">
-                                    <i class="fas fa-envelope text-white" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                            <h5 class="card-title">Email</h5>
-                            <p class="text-muted mb-3">
-                                <strong>General:</strong> info@deportespuertomontt.cl<br>
-                                <strong>Prensa:</strong> prensa@deportespuertomontt.cl<br>
-                                <strong>Comercial:</strong> comercial@deportespuertomontt.cl
-                            </p>
-                            <a href="mailto:info@deportespuertomontt.cl" class="btn btn-outline-info btn-sm">
-                                <i class="fas fa-envelope me-1"></i>Enviar Email
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Formulario de Contacto -->
-    <section class="py-5 bg-light">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <div class="card border-0 shadow-lg">
-                        <div class="card-header bg-primary text-white text-center">
-                            <h3 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Envíanos un Mensaje</h3>
-                        </div>
-                        <div class="card-body p-5">
-                            <form id="contactForm" method="post">
-                                {% csrf_token %}
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="firstName" class="form-label fw-bold">Nombre *</label>
-                                        <input type="text" class="form-control" id="firstName" name="first_name" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="lastName" class="form-label fw-bold">Apellido *</label>
-                                        <input type="text" class="form-control" id="lastName" name="last_name" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="email" class="form-label fw-bold">Email *</label>
-                                        <input type="email" class="form-control" id="email" name="email" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="phone" class="form-label fw-bold">Teléfono</label>
-                                        <input type="tel" class="form-control" id="phone" name="phone">
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="subject" class="form-label fw-bold">Asunto *</label>
-                                        <select class="form-select" id="subject" name="subject" required>
-                                            <option value="">Selecciona un asunto</option>
-                                            <option value="informacion-general">Información General</option>
-                                            <option value="inscripcion-jugador">Inscripción de Jugador</option>
-                                            <option value="escuela-futbol">Escuela de Básquet</option>
-                                            <option value="patrocinio">Patrocinio</option>
-                                            <option value="prensa">Consulta de Prensa</option>
-                                            <option value="instalaciones">Uso de Instalaciones</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="message" class="form-label fw-bold">Mensaje *</label>
-                                        <textarea class="form-control" id="message" name="message" rows="5" placeholder="Escribe tu mensaje aquí..." required></textarea>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="privacy" name="privacy" required>
-                                            <label class="form-check-label" for="privacy">
-                                                Acepto la <a href="#" class="text-primary">política de privacidad</a> y el tratamiento de mis datos personales *
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 text-center">
-                                        <button type="submit" class="btn btn-primary btn-lg px-5">
-                                            <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Horarios de Atención -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow">
-                        <div class="card-header bg-success text-white">
-                            <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Horarios de Atención</h4>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="schedule-item d-flex justify-content-between align-items-center mb-3">
-                                <span><i class="fas fa-calendar-day me-2 text-success"></i>Lunes a Viernes</span>
-                                <span class="badge bg-success">09:00 - 18:00</span>
-                            </div>
-                            <div class="schedule-item d-flex justify-content-between align-items-center mb-3">
-                                <span><i class="fas fa-calendar-day me-2 text-warning"></i>Sábados</span>
-                                <span class="badge bg-warning text-dark">09:00 - 13:00</span>
-                            </div>
-                            <div class="schedule-item d-flex justify-content-between align-items-center mb-3">
-                                <span><i class="fas fa-calendar-day me-2 text-danger"></i>Domingos</span>
-                                <span class="badge bg-danger">Cerrado</span>
-                            </div>
-                            <hr>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                En días de partido, la atención puede variar. Consulta nuestras redes sociales.
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow">
-                        <div class="card-header bg-info text-white">
-                            <h4 class="mb-0"><i class="fas fa-share-alt me-2"></i>Síguenos</h4>
-                        </div>
-                        <div class="card-body p-4">
-                            <p class="text-muted mb-4">Mantente conectado con todas nuestras actividades</p>
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <a href="#" class="btn btn-outline-primary w-100">
-                                        <i class="fab fa-facebook-f me-2"></i>Facebook
-                                    </a>
-                                </div>
-                                <div class="col-6">
-                                    <a href="#" class="btn btn-outline-info w-100">
-                                        <i class="fab fa-twitter me-2"></i>Twitter
-                                    </a>
-                                </div>
-                                <div class="col-6">
-                                    <a href="#" class="btn btn-outline-danger w-100">
-                                        <i class="fab fa-instagram me-2"></i>Instagram
-                                    </a>
-                                </div>
-                                <div class="col-6">
-                                    <a href="#" class="btn btn-outline-success w-100">
-                                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
-                                    </a>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="text-center">
-                                <small class="text-muted">¿Prefieres llamar?</small><br>
-                                <a href="tel:+56652234567" class="btn btn-success mt-2">
-                                    <i class="fas fa-phone me-2"></i>+56 65 2 234567
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Mapa -->
-    <section class="py-5 bg-light">
-        <div class="container">
-            <div class="text-center mb-4">
-                <h2 class="mb-3">¿Cómo llegar?</h2>
-                <p class="text-muted">Encuentra nuestras instalaciones en el corazón deportivo de Puerto Montt</p>
-            </div>
-            
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <div class="card border-0 shadow">
-                        <div class="card-body p-0">
-                            <div class="map-container bg-light rounded" style="height: 400px; display: flex; align-items: center; justify-content: center;">
-                                <div class="text-center">
-                                    <i class="fas fa-map-marked-alt text-primary mb-3" style="font-size: 4rem;"></i>
-                                    <h5 class="text-primary">Estadio Chinquihue</h5>
-                                    <p class="text-muted mb-3">Av. Costanera s/n, Puerto Montt</p>
-                                    <a href="https://maps.google.com" target="_blank" class="btn btn-primary">
-                                        <i class="fas fa-external-link-alt me-2"></i>Abrir en Google Maps
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Rápido -->
-    <section class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="mb-3">Preguntas Frecuentes</h2>
-                <p class="text-muted">Respuestas rápidas a las consultas más comunes</p>
-            </div>
-            
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <h6 class="text-primary mb-3"><i class="fas fa-question-circle me-2"></i>¿Cómo inscribir a mi hijo en la escuela de Básquet?</h6>
-                            <p class="text-muted mb-0">Puedes inscribirlo visitando nuestras oficinas los días sábados de 9:00 a 13:00 o enviándonos un mensaje a través de este formulario.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <h6 class="text-primary mb-3"><i class="fas fa-question-circle me-2"></i>¿Cuáles son los requisitos para las pruebas?</h6>
-                            <p class="text-muted mb-0">Los jugadores deben presentar certificado médico, autorización de los padres (menores de edad) y documentos de identidad.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <h6 class="text-primary mb-3"><i class="fas fa-question-circle me-2"></i>¿Ofrecen becas deportivas?</h6>
-                            <p class="text-muted mb-0">Sí, tenemos un programa de becas para jugadores destacados con situación socioeconómica vulnerable. Consulta los requisitos en nuestras oficinas.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <h6 class="text-primary mb-3"><i class="fas fa-question-circle me-2"></i>¿Cómo puedo ser patrocinador del club?</h6>
-                            <p class="text-muted mb-0">Contáctanos a través del email comercial@deportespuertomontt.cl o llama al teléfono de oficina para conocer nuestros planes de patrocinio.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-
+{% block extra_css %}
 <style>
-.hero-section {
-    background: linear-gradient(135deg, var(--bs-primary) 0%, #0056b3 100%);
+/* Variables de colores */
+:root {
+    --banner-color: #c07ccd;
+    --button-color: #c860b0;
+    --primary-bg: #581d93;
+    --secondary-bg: #e7617c;
+    --dark-bg: #1a0d2e;
+}
+
+main.container {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Hero Section */
+.contact-hero-section {
+    background:
+        radial-gradient(ellipse at 20% 30%, var(--secondary-bg) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 70%, var(--button-color) 0%, transparent 40%),
+        linear-gradient(135deg, var(--primary-bg) 0%, var(--dark-bg) 100%);
+    min-height: 50vh;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    display: flex;
+    align-items: center;
+    padding: 60px 0;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    color: white;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero-description {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* Contact Info Section */
+.contact-info-section {
+    padding: 80px 0;
+    background: linear-gradient(to bottom, white, #f5f5f5);
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 
 .contact-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 50px rgba(88, 29, 147, 0.15);
+    transition: all 0.4s ease;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--button-color), var(--secondary-bg));
 }
 
 .contact-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    transform: translateY(-10px);
+    box-shadow: 0 30px 70px rgba(88, 29, 147, 0.25);
 }
 
 .contact-icon {
-    transition: transform 0.3s ease;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    animation: iconFloat 3s ease-in-out infinite;
 }
 
-.contact-icon:hover {
-    transform: scale(1.1);
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.contact-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.contact-card h5 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--primary-bg);
+    margin-bottom: 20px;
+}
+
+.btn-contact-action {
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-contact-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(200, 96, 176, 0.4);
+    color: white;
+}
+
+/* Form Section */
+.form-section {
+    padding: 80px 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+}
+
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 50px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+}
+
+.form-card h3 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--primary-bg);
+    margin-bottom: 30px;
+}
+
+.form-label {
+    font-weight: 700;
+    color: var(--primary-bg);
+    margin-bottom: 10px;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px 18px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--button-color);
+    box-shadow: 0 0 0 3px rgba(200, 96, 176, 0.1);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    border: none;
+    color: white;
+    padding: 15px 50px;
+    border-radius: 50px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: all 0.4s ease;
+    box-shadow: 0 12px 30px rgba(200, 96, 176, 0.4);
+}
+
+.btn-submit:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 18px 40px rgba(200, 96, 176, 0.5);
+}
+
+/* Schedule & Social Section */
+.info-section {
+    padding: 80px 0;
+    background: white;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.info-card {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 50px rgba(88, 29, 147, 0.1);
+    height: 100%;
+}
+
+.info-card h4 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--primary-bg);
+    margin-bottom: 25px;
 }
 
 .schedule-item {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 15px 0;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .schedule-item:last-child {
     border-bottom: none;
 }
 
-.map-container {
-    background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%), 
-                linear-gradient(-45deg, #f8f9fa 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #f8f9fa 75%), 
-                linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+.badge-schedule {
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
 }
 
-#contactForm .form-control:focus,
-#contactForm .form-select:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+.social-btn {
+    background: white;
+    border: 2px solid var(--button-color);
+    color: var(--button-color);
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: block;
+    text-align: center;
+}
+
+.social-btn:hover {
+    background: var(--button-color);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(200, 96, 176, 0.3);
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: 80px 0;
+    background: linear-gradient(to bottom, #f5f5f5, white);
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.faq-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(88, 29, 147, 0.1);
+    transition: all 0.3s ease;
+}
+
+.faq-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(88, 29, 147, 0.2);
+}
+
+.faq-card h6 {
+    color: var(--primary-bg);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--primary-bg);
+    text-align: center;
+    margin-bottom: 50px;
 }
 
 @media (max-width: 768px) {
-    .hero-section h1 {
-        font-size: 2.5rem;
-    }
-    
-    .contact-card .card-body {
-        padding: 2rem !important;
+    .form-card {
+        padding: 30px 20px;
     }
 }
 </style>
+{% endblock %}
 
+{% block content %}
+<!-- Hero Section -->
+<section class="contact-hero-section">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="hero-title">Contáctanos</h1>
+            <p class="hero-description">
+                Estamos aquí para responder tus consultas y ayudarte
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Info -->
+<section class="contact-info-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h5>Dirección</h5>
+                    <p class="text-muted mb-3">
+                        Estadio Chinquihue<br>
+                        Av. Costanera s/n<br>
+                        Puerto Montt, Chile
+                    </p>
+                    <a href="https://maps.google.com" target="_blank" class="btn-contact-action">
+                        <i class="fas fa-external-link-alt me-1"></i>Ver Mapa
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h5>Teléfonos</h5>
+                    <p class="text-muted mb-3">
+                        <strong>Oficina:</strong> +56 65 2 234567<br>
+                        <strong>Móvil:</strong> +56 9 8765 4321<br>
+                        <strong>Emergencias:</strong> +56 9 1234 5678
+                    </p>
+                    <a href="tel:+56652234567" class="btn-contact-action">
+                        <i class="fas fa-phone me-1"></i>Llamar
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h5>Email</h5>
+                    <p class="text-muted mb-3">
+                        <strong>General:</strong> info@deportespuertomontt.cl<br>
+                        <strong>Prensa:</strong> prensa@deportespuertomontt.cl<br>
+                        <strong>Comercial:</strong> comercial@deportespuertomontt.cl
+                    </p>
+                    <a href="mailto:info@deportespuertomontt.cl" class="btn-contact-action">
+                        <i class="fas fa-envelope me-1"></i>Enviar Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form -->
+<section class="form-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card">
+                    <h3 class="text-center">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Envíanos un Mensaje
+                    </h3>
+
+                    <form id="contactForm" method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" name="first_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellido *</label>
+                                <input type="text" class="form-control" name="last_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" name="phone">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Asunto *</label>
+                                <select class="form-select" name="subject" required>
+                                    <option value="">Selecciona un asunto</option>
+                                    <option value="informacion-general">Información General</option>
+                                    <option value="inscripcion-jugador">Inscripción de Jugador</option>
+                                    <option value="escuela-futbol">Escuela de Básquet</option>
+                                    <option value="patrocinio">Patrocinio</option>
+                                    <option value="prensa">Consulta de Prensa</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Mensaje *</label>
+                                <textarea class="form-control" name="message" rows="5" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="privacy" required>
+                                    <label class="form-check-label" for="privacy">
+                                        Acepto la política de privacidad *
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Enviar Mensaje
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Schedule & Social -->
+<section class="info-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="info-card">
+                    <h4>
+                        <i class="fas fa-clock me-2"></i>
+                        Horarios de Atención
+                    </h4>
+                    <div class="schedule-item">
+                        <span><i class="fas fa-calendar-day me-2"></i>Lunes a Viernes</span>
+                        <span class="badge-schedule">09:00 - 18:00</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span><i class="fas fa-calendar-day me-2"></i>Sábados</span>
+                        <span class="badge-schedule">09:00 - 13:00</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span><i class="fas fa-calendar-day me-2"></i>Domingos</span>
+                        <span class="badge-schedule" style="background: #dc3545;">Cerrado</span>
+                    </div>
+                    <hr>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        En días de partido, la atención puede variar
+                    </small>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="info-card">
+                    <h4>
+                        <i class="fas fa-share-alt me-2"></i>
+                        Síguenos
+                    </h4>
+                    <p class="text-muted mb-4">Mantente conectado con nuestras actividades</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="#" class="social-btn">
+                                <i class="fab fa-facebook-f me-2"></i>Facebook
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="social-btn">
+                                <i class="fab fa-twitter me-2"></i>Twitter
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="social-btn">
+                                <i class="fab fa-instagram me-2"></i>Instagram
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="social-btn">
+                                <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+    <div class="container">
+        <h2 class="section-title">Preguntas Frecuentes</h2>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="faq-card">
+                    <h6>
+                        <i class="fas fa-question-circle me-2"></i>
+                        ¿Cómo inscribir a mi hijo en la escuela de Básquet?
+                    </h6>
+                    <p class="text-muted mb-0">
+                        Puedes inscribirlo visitando nuestras oficinas los sábados de 9:00 a 13:00
+                        o enviándonos un mensaje a través de este formulario.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="faq-card">
+                    <h6>
+                        <i class="fas fa-question-circle me-2"></i>
+                        ¿Cuáles son los requisitos para las pruebas?
+                    </h6>
+                    <p class="text-muted mb-0">
+                        Certificado médico, autorización de los padres (menores de edad)
+                        y documentos de identidad.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="faq-card">
+                    <h6>
+                        <i class="fas fa-question-circle me-2"></i>
+                        ¿Ofrecen becas deportivas?
+                    </h6>
+                    <p class="text-muted mb-0">
+                        Sí, tenemos un programa de becas para jugadores destacados.
+                        Consulta los requisitos en nuestras oficinas.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="faq-card">
+                    <h6>
+                        <i class="fas fa-question-circle me-2"></i>
+                        ¿Cómo puedo ser patrocinador del club?
+                    </h6>
+                    <p class="text-muted mb-0">
+                        Contáctanos a través del email comercial@deportespuertomontt.cl
+                        o llama al teléfono de oficina.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 document.getElementById('contactForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    // Aquí se implementaría el envío del formulario
-    const formData = new FormData(this);
-    
+
     // Simulación de envío exitoso
     setTimeout(() => {
         alert('¡Mensaje enviado correctamente! Te contactaremos pronto.');
         this.reset();
     }, 1000);
-});
-
-// Validación en tiempo real
-document.querySelectorAll('#contactForm input, #contactForm select, #contactForm textarea').forEach(field => {
-    field.addEventListener('blur', function() {
-        if (this.hasAttribute('required') && !this.value.trim()) {
-            this.classList.add('is-invalid');
-        } else {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-        }
-    });
 });
 </script>
 {% endblock %}
