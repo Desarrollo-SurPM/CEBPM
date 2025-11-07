@@ -666,25 +666,13 @@ main {
 }
 
 .stat-card:hover {
-    transform: translateY(-20px) scale(1.05);
+    transform: translateY(-6px) scale(1.01);
     box-shadow:
-        0 30px 60px rgba(88, 29, 147, 0.4),
-        0 0 0 1px var(--button-color),
+        0 10px 20px rgba(88, 29, 147, 0.15),
         inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
-.stat-card:nth-child(odd):hover {
-    animation: glitchEffect 0.6s ease-in-out;
-}
 
-@keyframes glitchEffect {
-    0%, 100% { transform: translateY(-20px) scale(1.05); }
-    10% { transform: translateY(-20px) scale(1.05) translateX(-2px); }
-    20% { transform: translateY(-20px) scale(1.05) translateX(2px); }
-    30% { transform: translateY(-20px) scale(1.05) translateX(-1px); }
-    40% { transform: translateY(-20px) scale(1.05) translateX(1px); }
-    50% { transform: translateY(-20px) scale(1.05); }
-}
 
 .stat-icon {
     width: 90px;
@@ -1974,22 +1962,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Crear partículas periódicamente
     setInterval(createParticle, 1500);
 
-    // Efecto glitch opcional para tarjetas
-    document.querySelectorAll('.stat-card').forEach((element, index) => {
-        element.addEventListener('mouseenter', () => {
-            if (index % 2 === 0) {
-                createGlitchEffect(element);
-            }
-        });
-    });
-
-    // Efecto glitch
-    function createGlitchEffect(element) {
-        const glitchClasses = ['glitch-1', 'glitch-2', 'glitch-3'];
-        const randomClass = glitchClasses[Math.floor(Math.random() * glitchClasses.length)];
-        element.classList.add(randomClass);
-        setTimeout(() => element.classList.remove(randomClass), 600);
-    }
+    // Efecto hover de tarjetas de estadísticas manejado solo por CSS (sin glitch)
 
     // Click effects variados
     document.addEventListener('click', (e) => {
