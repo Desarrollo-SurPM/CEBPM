@@ -51,88 +51,8 @@ main {
     margin-bottom: 0 !important;
 }
 
-/* Cursor de Pelota de Básquetbol */
-body {
-    cursor: none !important;
-}
-
-.custom-cursor {
-    width: 35px;
-    height: 35px;
-    position: fixed;
-    pointer-events: none;
-    z-index: 10000;
-    transition: width 0.2s, height 0.2s, transform 0.1s;
-}
-
-.cursor-dot {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    transform: translate(-50%, -50%);
-    font-size: 35px;
-    line-height: 1;
-    animation: basketballSpin 2s linear infinite;
-}
-
-.cursor-dot::before {
-    content: '🏀';
-    display: block;
-    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-}
-
-@keyframes basketballSpin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.cursor-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 50px;
-    height: 50px;
-    border: 2px solid var(--secondary-bg);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    animation: cursorRing 1.5s infinite;
-    opacity: 0.6;
-}
-
-@keyframes cursorRing {
-    0% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 0.8;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(2);
-        opacity: 0;
-    }
-}
-
-.cursor-trail {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--button-color);
-    pointer-events: none;
-    animation: trail-fade 1s ease-out forwards;
-    z-index: 9998;
-}
-
-@keyframes trail-fade {
-    0% {
-        opacity: 0.8;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-}
+/* Cursor por defecto del sitio */
+/* Eliminado cursor personalizado de pelota para usar el estándar */
 
 /* Hero Dinámico con Partículas */
 .hero-section {
@@ -1701,11 +1621,7 @@ body {
 {% endblock %}
 
 {% block content %}
-<!-- Cursor Dinámico -->
-<div class="custom-cursor" id="customCursor">
-    <div class="cursor-dot"></div>
-    <div class="cursor-ring"></div>
-</div>
+<!-- Cursor dinámico eliminado -->
 
 <!-- Hero Section -->
 <section class="hero-section" id="heroSection">
@@ -2038,53 +1954,9 @@ body {
 
 {% block extra_js %}
 <script>
-// Sistema de Cursor Avanzado con Efectos Dinámicos
+// Efectos visuales del landing (cursor de pelota eliminado)
 document.addEventListener('DOMContentLoaded', function() {
-    const cursor = document.getElementById('customCursor');
     const heroSection = document.getElementById('heroSection');
-    let mouseX = 0, mouseY = 0;
-    let cursorX = 0, cursorY = 0;
-    let trails = [];
-
-    // Cursor suave
-    function updateCursor() {
-        const dx = mouseX - cursorX;
-        const dy = mouseY - cursorY;
-
-        cursorX += dx * 0.15;
-        cursorY += dy * 0.15;
-
-        cursor.style.left = cursorX + 'px';
-        cursor.style.top = cursorY + 'px';
-
-        requestAnimationFrame(updateCursor);
-    }
-    updateCursor();
-
-    // Crear estela del cursor con mini pelotas
-    function createTrail(x, y) {
-        const trail = document.createElement('div');
-        trail.className = 'cursor-trail';
-        trail.style.left = x + 'px';
-        trail.style.top = y + 'px';
-        trail.innerHTML = '🏀';
-        trail.style.fontSize = '12px';
-        trail.style.color = 'var(--button-color)';
-        document.body.appendChild(trail);
-
-        setTimeout(() => trail.remove(), 1000);
-    }
-
-    // Mousemove con estela
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-
-        // Crear estela cada 3 movimientos
-        if (Math.random() > 0.7) {
-            createTrail(e.clientX, e.clientY);
-        }
-    });
 
     // Generar partículas en hero
     function createParticle() {
@@ -2102,34 +1974,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Crear partículas periódicamente
     setInterval(createParticle, 1500);
 
-    // Efectos hover para agrandar la pelota
-    document.querySelectorAll('a, button, .stat-card, .news-card, .player-card').forEach((element, index) => {
+    // Efecto glitch opcional para tarjetas
+    document.querySelectorAll('.stat-card').forEach((element, index) => {
         element.addEventListener('mouseenter', () => {
-            cursor.style.width = '50px';
-            cursor.style.height = '50px';
-            cursor.style.transform = 'scale(1.2)';
-
-            // Cambiar velocidad de rotación al hover
-            const dot = cursor.querySelector('.cursor-dot');
-            if (dot) {
-                dot.style.animationDuration = '0.5s';
-            }
-
-            // Efecto glitch para las tarjetas
-            if (element.classList.contains('stat-card') && index % 2 === 0) {
+            if (index % 2 === 0) {
                 createGlitchEffect(element);
-            }
-        });
-
-        element.addEventListener('mouseleave', () => {
-            cursor.style.width = '35px';
-            cursor.style.height = '35px';
-            cursor.style.transform = 'scale(1)';
-
-            // Restaurar velocidad normal
-            const dot = cursor.querySelector('.cursor-dot');
-            if (dot) {
-                dot.style.animationDuration = '2s';
             }
         });
     });
@@ -2219,24 +2068,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Basketball bounce effect on click
-    document.addEventListener('click', (e) => {
-        const basketball = document.createElement('div');
-        basketball.innerHTML = '🏀';
-        basketball.style.position = 'fixed';
-        basketball.style.left = e.clientX + 'px';
-        basketball.style.top = e.clientY + 'px';
-        basketball.style.fontSize = '30px';
-        basketball.style.pointerEvents = 'none';
-        basketball.style.zIndex = '9999';
-        basketball.style.animation = 'basketballBounce 0.8s ease-out forwards';
-
-        document.body.appendChild(basketball);
-
-        setTimeout(() => {
-            basketball.remove();
-        }, 800);
-    });
+    // Efecto de rebote de pelota eliminado
 });
 
 // Animaciones CSS dinámicas
