@@ -1,182 +1,691 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Acerca de - CEB FEM{% endblock %}
+{% block title %}Acerca de - {{ block.super }}{% endblock %}
 
-{% block content %}
-<div class="container-fluid p-0">
-    <section class="hero-section bg-primary text-white py-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-4">Nuestra Historia</h1>
-                    <p class="lead mb-4">Más de 70 años formando talento y construyendo sueños en el baloncesto chileno.</p>
-                </div>
-                <div class="col-lg-6">
-                    <div class="text-center">
-                        <i class="fas fa-trophy" style="font-size: 8rem; opacity: 0.3;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <div class="card shadow-lg border-0">
-                        <div class="card-body p-5">
-                            <h2 class="text-center mb-4">CEB FEM Puerto Montt</h2>
-                            <p class="text-muted mb-4">
-                                Fundado en 1950, CEB FEM ha sido una institución fundamental 
-                                en el desarrollo del baloncesto en la región de Los Lagos. Desde nuestros humildes 
-                                comienzos hasta convertirnos en un referente del básquetbol profesional chileno.
-                            </p>
-                            <p class="text-muted mb-4">
-                                A lo largo de nuestra historia, hemos formado grandes jugadores que han representado 
-                                tanto al club como a la selección nacional. Nuestro compromiso con la excelencia 
-                                deportiva y la formación integral de nuestros jugadores nos ha posicionado como 
-                                una de las instituciones más respetadas del país.
-                            </p>
-                            <p class="text-muted">
-                                Hoy continuamos trabajando con la misma pasión del primer día, desarrollando 
-                                talentos locales y manteniendo viva la tradición basquetbolística de Puerto Montt.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-5">Nuestros Logros</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 text-center border-0 shadow">
-                        <div class="card-body">
-                            <i class="fas fa-medal text-warning mb-3" style="font-size: 3rem;"></i>
-                            <h5 class="card-title">Campeonatos</h5>
-                            <p class="card-text text-muted">Múltiples títulos en divisiones inferiores y torneos regionales</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 text-center border-0 shadow">
-                        <div class="card-body">
-                            <i class="fas fa-users text-primary mb-3" style="font-size: 3rem;"></i>
-                            <h5 class="card-title">Jugadores Formados</h5>
-                            <p class="card-text text-muted">Cientos de jugadores han pasado por nuestras divisiones menores</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100 text-center border-0 shadow">
-                        <div class="card-body">
-                            <i class="fas fa-heart text-danger mb-3" style="font-size: 3rem;"></i>
-                            <h5 class="card-title">Compromiso Social</h5>
-                            <p class="card-text text-muted">Programas comunitarios y apoyo al deporte amateur local</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <h2 class="mb-4">Nuestros Valores</h2>
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-primary rounded-circle p-3 me-3">
-                                    <i class="fas fa-handshake text-white"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Respeto</h6>
-                                    <small class="text-muted">Hacia compañeros, rivales y la institución</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-success rounded-circle p-3 me-3">
-                                    <i class="fas fa-star text-white"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Excelencia</h6>
-                                    <small class="text-muted">Búsqueda constante de la mejora deportiva</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-warning rounded-circle p-3 me-3">
-                                    <i class="fas fa-users text-white"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Trabajo en Equipo</h6>
-                                    <small class="text-muted">La unión hace la fuerza</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-info rounded-circle p-3 me-3">
-                                    <i class="fas fa-graduation-cap text-white"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Formación Integral</h6>
-                                    <small class="text-muted">Desarrollo deportivo y personal</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="bg-primary rounded-3 p-4 text-white h-100 d-flex align-items-center">
-                        <div class="text-center w-100">
-                            <i class="fas fa-quote-left mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
-                            <blockquote class="blockquote">
-                                <p class="mb-3">"El básquetbol es más que un deporte, es una escuela de vida que nos enseña valores fundamentales para el crecimiento personal."</p>
-                                <footer class="blockquote-footer text-white-50">
-                                    <cite title="Source Title">Filosofía del Club</cite>
-                                </footer>
-                            </blockquote>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-
+{% block extra_css %}
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #06236B 0%, #13623D 100%);
+/* Variables de colores */
+:root {
+    --banner-color: #c07ccd;
+    --button-color: #c860b0;
+    --primary-bg: #581d93;
+    --secondary-bg: #e7617c;
+    --accent-orange: #ff6b35;
+    --dark-bg: #1a0d2e;
+    --light-bg: #f8f9fa;
 }
 
-.card {
-    transition: transform 0.3s ease;
+/* Eliminar márgenes del container principal */
+main.container {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
 }
 
-.card:hover {
-    transform: translateY(-5px);
+/* Hero Section con el mismo estilo que la landing */
+.about-hero-section {
+    background:
+        radial-gradient(ellipse at 20% 30%, var(--secondary-bg) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 70%, var(--button-color) 0%, transparent 40%),
+        linear-gradient(135deg, var(--primary-bg) 0%, var(--dark-bg) 100%);
+    position: relative;
+    min-height: 70vh;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 100px 0;
 }
 
-.bg-primary.rounded-circle,
-.bg-success.rounded-circle,
-.bg-warning.rounded-circle,
-.bg-info.rounded-circle {
-    width: 50px;
-    height: 50px;
+/* Partículas flotantes */
+.particle {
+    position: absolute;
+    background: radial-gradient(circle, var(--banner-color) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.particle:nth-child(odd) {
+    width: 4px;
+    height: 4px;
+    animation: float-up 15s linear infinite;
+}
+
+.particle:nth-child(even) {
+    width: 6px;
+    height: 6px;
+    animation: float-diagonal 20s linear infinite;
+}
+
+@keyframes float-up {
+    0% {
+        transform: translateY(100vh) translateX(0) scale(0);
+        opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% {
+        transform: translateY(-100vh) translateX(100px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes float-diagonal {
+    0% {
+        transform: translate(0, 100vh) rotate(0deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(100vw, -100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Elementos decorativos */
+.decoration-element {
+    position: absolute;
+    pointer-events: none;
+    font-size: 3rem;
+    animation: jerseyFloat 8s ease-in-out infinite;
+    opacity: 0.2;
+}
+
+.decoration-element:nth-child(1) {
+    top: 15%;
+    left: 5%;
+    animation-delay: 0s;
+}
+
+.decoration-element:nth-child(2) {
+    top: 60%;
+    right: 8%;
+    animation-delay: 2s;
+}
+
+.decoration-element:nth-child(3) {
+    bottom: 20%;
+    left: 15%;
+    animation-delay: 1s;
+}
+
+@keyframes jerseyFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(-5deg) scale(1);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translateY(-20px) rotate(5deg) scale(1.1);
+        opacity: 0.4;
+    }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+}
+
+.hero-title {
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    color: white;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: var(--banner-color);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.hero-description {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.8;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Historia Section */
+.historia-section {
+    background: linear-gradient(to bottom, white, #f5f5f5);
+    padding: 100px 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--primary-bg);
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+}
+
+.section-underline {
+    width: 150px;
+    height: 5px;
+    background: linear-gradient(90deg, var(--button-color), var(--secondary-bg));
+    margin: 20px auto;
+    border-radius: 3px;
+}
+
+.historia-card {
+    background: white;
+    border-radius: 25px;
+    padding: 50px;
+    box-shadow: 0 20px 50px rgba(88, 29, 147, 0.15);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.historia-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 70px rgba(88, 29, 147, 0.25);
+}
+
+.historia-card p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* Logros Section */
+.logros-section {
+    background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+    padding: 100px 0;
+    color: white;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
+    overflow: hidden;
+}
+
+.logros-section::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: repeating-conic-gradient(
+        from 0deg at 50% 50%,
+        transparent 0deg,
+        rgba(255,255,255,0.02) 20deg,
+        transparent 40deg
+    );
+    animation: rotateGradient 30s linear infinite;
+}
+
+@keyframes rotateGradient {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.logros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.logro-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+}
+
+.logro-card:hover {
+    transform: translateY(-15px) scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.logro-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.logro-card h5 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.logro-card p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Valores Section */
+.valores-section {
+    padding: 100px 0;
+    background: linear-gradient(to bottom, #f5f5f5, white);
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.valores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.valor-item {
+    background: linear-gradient(135deg, #ffffff, #fafafa);
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 15px 35px rgba(88, 29, 147, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.valor-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--button-color), var(--secondary-bg));
+}
+
+.valor-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 20px 50px rgba(88, 29, 147, 0.2);
+}
+
+.valor-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 20px;
+}
+
+.valor-icon-wrapper i {
+    font-size: 2rem;
+    color: white;
+}
+
+.valor-item h6 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-bg);
+    margin-bottom: 10px;
+}
+
+.valor-item p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+/* Quote Section */
+.quote-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 60px;
+    border: 2px solid rgba(200, 96, 176, 0.2);
+    box-shadow: 0 20px 50px rgba(88, 29, 147, 0.15);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.quote-section::before {
+    content: '🏀';
+    position: absolute;
+    font-size: 15rem;
+    opacity: 0.05;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.quote-icon {
+    font-size: 3rem;
+    color: var(--button-color);
+    opacity: 0.3;
+    margin-bottom: 20px;
+}
+
+.quote-section blockquote {
+    font-size: 1.5rem;
+    font-style: italic;
+    color: var(--primary-bg);
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.quote-section footer {
+    font-size: 1.1rem;
+    color: var(--secondary-bg);
+    font-weight: 600;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(45deg, var(--primary-bg), var(--secondary-bg));
+    padding: 80px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,0.05) 10px,
+        rgba(255,255,255,0.05) 20px
+    );
+    animation: slide 20s linear infinite;
+}
+
+@keyframes slide {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+}
+
+.cta-content {
+    position: relative;
+    z-index: 1;
+}
+
+.cta-title {
+    font-size: 3rem;
+    font-weight: 900;
+    color: white;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.cta-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 40px;
+}
+
+.cta-button {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 50%, var(--banner-color) 100%);
+    background-size: 200% 200%;
+    color: white;
+    padding: 20px 50px;
+    border-radius: 50px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 15px 35px rgba(0,0,0,0.2),
+        0 0 0 1px rgba(255,255,255,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.cta-button:hover {
+    transform: translateY(-5px) scale(1.05);
+    background-position: 100% 100%;
+    box-shadow:
+        0 25px 50px rgba(0,0,0,0.3),
+        0 0 30px var(--banner-color);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+    }
+
+    .historia-card {
+        padding: 30px;
+    }
+
+    .quote-section {
+        padding: 40px 30px;
+    }
+}
+
+/* Animaciones */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 </style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero-section" id="heroSection">
+    <!-- Elementos decorativos -->
+    <div class="decoration-element">🏀</div>
+    <div class="decoration-element">🏆</div>
+    <div class="decoration-element">⚡</div>
+
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-12 hero-content text-center">
+                <h6 class="hero-subtitle fade-in">Nuestra Esencia</h6>
+                <h1 class="hero-title fade-in">Más de 70 Años de Historia</h1>
+                <p class="hero-description fade-in">
+                    Formando talento, construyendo sueños y dejando huella en el baloncesto chileno
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Historia Section -->
+<section class="historia-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>CEBPM</h2>
+            <div class="section-underline"></div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="historia-card fade-in">
+                    <p>
+                        Fundado en 1950, CEBPM ha sido una institución fundamental en el desarrollo del baloncesto
+                        en la región de Los Lagos. Desde nuestros humildes comienzos hasta convertirnos en un
+                        referente del básquetbol profesional chileno.
+                    </p>
+                    <p>
+                        A lo largo de nuestra historia, hemos formado grandes jugadores que han representado tanto
+                        al club como a la selección nacional. Nuestro compromiso con la excelencia deportiva y la
+                        formación integral de nuestros jugadores nos ha posicionado como una de las instituciones
+                        más respetadas del país.
+                    </p>
+                    <p>
+                        Hoy continuamos trabajando con la misma pasión del primer día, desarrollando talentos locales
+                        y manteniendo viva la tradición basquetbolística de Puerto Montt.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Logros Section -->
+<section class="logros-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 style="color: white;">Nuestros Logros</h2>
+            <div class="section-underline"></div>
+        </div>
+
+        <div class="logros-grid">
+            <div class="logro-card fade-in">
+                <div class="logro-icon">🏆</div>
+                <h5>Campeonatos</h5>
+                <p>Múltiples títulos en divisiones inferiores y torneos regionales a lo largo de nuestra historia</p>
+            </div>
+            <div class="logro-card fade-in">
+                <div class="logro-icon">👥</div>
+                <h5>Jugadores Formados</h5>
+                <p>Cientos de jugadores han pasado por nuestras divisiones menores, muchos llegando a ligas profesionales</p>
+            </div>
+            <div class="logro-card fade-in">
+                <div class="logro-icon">❤️</div>
+                <h5>Compromiso Social</h5>
+                <p>Programas comunitarios y apoyo constante al deporte amateur local en Puerto Montt</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Valores Section -->
+<section class="valores-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Nuestros Valores</h2>
+            <div class="section-underline"></div>
+        </div>
+
+        <div class="valores-grid">
+            <div class="valor-item fade-in">
+                <div class="valor-icon-wrapper">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h6>Respeto</h6>
+                <p>Hacia compañeros, rivales y la institución. El respeto es la base de toda convivencia deportiva.</p>
+            </div>
+            <div class="valor-item fade-in">
+                <div class="valor-icon-wrapper">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h6>Excelencia</h6>
+                <p>Búsqueda constante de la mejora deportiva y personal en cada entrenamiento y partido.</p>
+            </div>
+            <div class="valor-item fade-in">
+                <div class="valor-icon-wrapper">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h6>Trabajo en Equipo</h6>
+                <p>La unión hace la fuerza. Juntos somos más fuertes y alcanzamos nuestras metas.</p>
+            </div>
+            <div class="valor-item fade-in">
+                <div class="valor-icon-wrapper">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h6>Formación Integral</h6>
+                <p>Desarrollo deportivo y personal de cada jugador, formando personas de bien.</p>
+            </div>
+        </div>
+
+        <div class="quote-section fade-in">
+            <i class="fas fa-quote-left quote-icon"></i>
+            <blockquote>
+                "El básquetbol es más que un deporte, es una escuela de vida que nos enseña valores
+                fundamentales para el crecimiento personal."
+            </blockquote>
+            <footer>— Filosofía del Club</footer>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container cta-content">
+        <h2 class="cta-title">Únete a Nuestra Familia</h2>
+        <p class="cta-subtitle">
+            Sé parte de la historia del básquetbol en Puerto Montt
+        </p>
+        <a href="{% url 'register' %}" class="cta-button">
+            <i class="fas fa-user-plus me-2"></i>
+            Inscríbete Ahora
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const heroSection = document.getElementById('heroSection');
+
+    // Generar partículas
+    function createParticle() {
+        if (!heroSection) return;
+
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.animationDelay = Math.random() * 2 + 's';
+        heroSection.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 25000);
+    }
+
+    setInterval(createParticle, 1500);
+
+    // Intersection Observer para animaciones
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
 {% endblock %}

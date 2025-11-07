@@ -1,266 +1,509 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Equipos - CEB FEM{% endblock %}
+{% block title %}Nuestros Equipos - {{ block.super }}{% endblock %}
 
-{% block content %}
-<div class="container-fluid p-0">
-    <!-- Hero Section -->
-    <section class="hero-section bg-primary text-white py-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h1 class="display-4 fw-bold mb-4">Nuestros Equipos</h1>
-                    <p class="lead mb-4">Desde las divisiones menores hasta el primer equipo, formamos jugadores integrales con proyección profesional.</p>
-                </div>
-                <div class="col-lg-4">
-                    <div class="text-center">
-                        <i class="fas fa-users" style="font-size: 8rem; opacity: 0.3;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Equipos Section -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row g-4">
-                <!-- Primer Equipo -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-lg border-0">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0"><i class="fas fa-star me-2"></i>Primer Equipo</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 class="text-muted mb-3">Plantel Profesional</h6>
-                                    <p class="mb-3">Nuestro equipo principal compite en la Primera B del Básquet chileno, representando con orgullo los colores de Puerto Montt.</p>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 25</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cuerpo Técnico: 8</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>División: Primera B</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="bg-light rounded-circle p-4 mb-3">
-                                        <i class="fas fa-trophy text-warning" style="font-size: 3rem;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub 21 -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-lg border-0">
-                        <div class="card-header bg-success text-white">
-                            <h4 class="mb-0"><i class="fas fa-running me-2"></i>Sub 21</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 class="text-muted mb-3">Formación Avanzada</h6>
-                                    <p class="mb-3">Jugadores en proceso de transición al Básquet profesional, con entrenamientos de alto nivel.</p>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 22</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 3</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Torneos: Regionales</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="bg-light rounded-circle p-4 mb-3">
-                                        <i class="fas fa-medal text-success" style="font-size: 3rem;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub 19 -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-lg border-0">
-                        <div class="card-header bg-info text-white">
-                            <h4 class="mb-0"><i class="fas fa-futbol me-2"></i>Sub 19</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 class="text-muted mb-3">Juveniles</h6>
-                                    <p class="mb-3">Desarrollo técnico y táctico avanzado para jugadores con proyección profesional.</p>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 20</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 2</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Campeonatos: ANFP</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="bg-light rounded-circle p-4 mb-3">
-                                        <i class="fas fa-graduation-cap text-info" style="font-size: 3rem;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub 17 -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-lg border-0">
-                        <div class="card-header bg-warning text-dark">
-                            <h4 class="mb-0"><i class="fas fa-child me-2"></i>Sub 17</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 class="text-muted mb-3">Cadetes</h6>
-                                    <p class="mb-3">Formación integral con énfasis en fundamentos técnicos y valores deportivos.</p>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 18</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 2</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Enfoque: Formativo</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="bg-light rounded-circle p-4 mb-3">
-                                        <i class="fas fa-seedling text-warning" style="font-size: 3rem;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub 15 -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-lg border-0">
-                        <div class="card-header bg-secondary text-white">
-                            <h4 class="mb-0"><i class="fas fa-baby me-2"></i>Sub 15</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 class="text-muted mb-3">Infantiles</h6>
-                                    <p class="mb-3">Iniciación al Básquet competitivo con metodologías adaptadas a la edad.</p>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jugadores: 16</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Entrenadores: 2</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Modalidad: Recreativa</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="bg-light rounded-circle p-4 mb-3">
-                                        <i class="fas fa-heart text-danger" style="font-size: 3rem;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Escuela de Básquet -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-lg border-0">
-                        <div class="card-header bg-danger text-white">
-                            <h4 class="mb-0"><i class="fas fa-school me-2"></i>Escuela de Básquet</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 class="text-muted mb-3">Iniciación Deportiva</h6>
-                                    <p class="mb-3">Programa de formación para niños de 6 a 12 años, enfocado en diversión y aprendizaje.</p>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Niños: 40+</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Profesores: 4</li>
-                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Edades: 6-12 años</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="bg-light rounded-circle p-4 mb-3">
-                                        <i class="fas fa-smile text-primary" style="font-size: 3rem;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Cuerpo Técnico Section -->
-    <section class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-5">Cuerpo Técnico</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card text-center border-0 shadow">
-                        <div class="card-body p-4">
-                            <div class="bg-primary rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-user-tie text-white" style="font-size: 2rem;"></i>
-                            </div>
-                            <h5 class="card-title">Director Técnico</h5>
-                            <p class="text-muted">Liderazgo y planificación estratégica del proyecto deportivo</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center border-0 shadow">
-                        <div class="card-body p-4">
-                            <div class="bg-success rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-clipboard-list text-white" style="font-size: 2rem;"></i>
-                            </div>
-                            <h5 class="card-title">Entrenadores</h5>
-                            <p class="text-muted">Profesionales especializados en cada categoría</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center border-0 shadow">
-                        <div class="card-body p-4">
-                            <div class="bg-info rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-heartbeat text-white" style="font-size: 2rem;"></i>
-                            </div>
-                            <h5 class="card-title">Área Médica</h5>
-                            <p class="text-muted">Kinesiología y medicina deportiva</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Call to Action -->
-    <section class="py-5 bg-primary text-white">
-        <div class="container text-center">
-            <h2 class="mb-4">¿Quieres ser parte de nuestro club?</h2>
-            <p class="lead mb-4">Únete a nuestra familia deportiva y desarrolla tu potencial futbolístico</p>
-            <a href="{% url 'pages:contact' %}" class="btn btn-light btn-lg">
-                <i class="fas fa-envelope me-2"></i>Contáctanos
-            </a>
-        </div>
-    </section>
-</div>
-
+{% block extra_css %}
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #06236B 0%, #13623D 100%);
+/* Variables de colores */
+:root {
+    --banner-color: #c07ccd;
+    --button-color: #c860b0;
+    --primary-bg: #581d93;
+    --secondary-bg: #e7617c;
+    --dark-bg: #1a0d2e;
 }
 
-.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Eliminar márgenes del container principal */
+main.container {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
 }
 
-.card:hover {
+/* Hero Section */
+.teams-hero-section {
+    background:
+        radial-gradient(ellipse at 20% 30%, var(--secondary-bg) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 70%, var(--button-color) 0%, transparent 40%),
+        linear-gradient(135deg, var(--primary-bg) 0%, var(--dark-bg) 100%);
+    min-height: 60vh;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 80px 0;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    color: white;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    margin-bottom: 15px;
+}
+
+.hero-description {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Teams Section */
+.teams-section {
+    padding: 100px 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    background: linear-gradient(to bottom, white, #f5f5f5);
+}
+
+.team-card {
+    background: white;
+    border-radius: 25px;
+    padding: 40px;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 50px rgba(88, 29, 147, 0.15);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--button-color), var(--secondary-bg));
+}
+
+.team-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 70px rgba(88, 29, 147, 0.25);
+}
+
+.team-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.team-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    font-size: 2.5rem;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.team-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--primary-bg);
+    margin: 0;
+}
+
+.team-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.team-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.stat-item {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    border-color: var(--button-color);
+    box-shadow: 0 10px 25px rgba(200, 96, 176, 0.2);
 }
 
-.card-header {
-    border-bottom: none;
+.stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--button-color);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Staff Section */
+.staff-section {
+    padding: 100px 0;
+    background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+.staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.staff-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+}
+
+.staff-card:hover {
+    transform: translateY(-15px) scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.staff-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+}
+
+.staff-icon-wrapper i {
+    font-size: 3rem;
+    color: var(--primary-bg);
+}
+
+.staff-card h5 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(45deg, var(--primary-bg), var(--secondary-bg));
+    padding: 80px 0;
+    text-align: center;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.cta-title {
+    font-size: 3rem;
+    font-weight: 900;
+    color: white;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.cta-button {
+    display: inline-block;
+    background: white;
+    color: var(--primary-bg);
+    padding: 20px 50px;
+    border-radius: 50px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-decoration: none;
+    transition: all 0.4s ease;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.cta-button:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    color: var(--primary-bg);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .team-card {
+        padding: 25px;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+    }
 }
 </style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="teams-hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h1 class="hero-title">Nuestros Equipos</h1>
+                <p class="hero-description">
+                    Desde las divisiones menores hasta el primer equipo, formando jugadores integrales
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Teams Section -->
+<section class="teams-section">
+    <div class="container">
+        <!-- Primer Equipo -->
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-icon">🏆</div>
+                <div>
+                    <h3 class="team-title">Primer Equipo</h3>
+                    <p class="team-subtitle">Plantel Profesional</p>
+                </div>
+            </div>
+            <p>Nuestro equipo principal compite en la Primera B del Básquet chileno, representando con orgullo los colores de Puerto Montt.</p>
+            <div class="team-stats">
+                <div class="stat-item">
+                    <span class="stat-value">25</span>
+                    <span class="stat-label">Jugadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">Cuerpo Técnico</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">1B</span>
+                    <span class="stat-label">División</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub 21 -->
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-icon">⚡</div>
+                <div>
+                    <h3 class="team-title">Sub 21</h3>
+                    <p class="team-subtitle">Formación Avanzada</p>
+                </div>
+            </div>
+            <p>Jugadores en proceso de transición al Básquet profesional, con entrenamientos de alto nivel.</p>
+            <div class="team-stats">
+                <div class="stat-item">
+                    <span class="stat-value">22</span>
+                    <span class="stat-label">Jugadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">3</span>
+                    <span class="stat-label">Entrenadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">REG</span>
+                    <span class="stat-label">Torneos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub 19 -->
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-icon">🎯</div>
+                <div>
+                    <h3 class="team-title">Sub 19</h3>
+                    <p class="team-subtitle">Juveniles</p>
+                </div>
+            </div>
+            <p>Desarrollo técnico y táctico avanzado para jugadores con proyección profesional.</p>
+            <div class="team-stats">
+                <div class="stat-item">
+                    <span class="stat-value">20</span>
+                    <span class="stat-label">Jugadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">2</span>
+                    <span class="stat-label">Entrenadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">ANFP</span>
+                    <span class="stat-label">Campeonatos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub 17 -->
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-icon">🌟</div>
+                <div>
+                    <h3 class="team-title">Sub 17</h3>
+                    <p class="team-subtitle">Cadetes</p>
+                </div>
+            </div>
+            <p>Formación integral con énfasis en fundamentos técnicos y valores deportivos.</p>
+            <div class="team-stats">
+                <div class="stat-item">
+                    <span class="stat-value">18</span>
+                    <span class="stat-label">Jugadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">2</span>
+                    <span class="stat-label">Entrenadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">FORM</span>
+                    <span class="stat-label">Enfoque</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub 15 -->
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-icon">💫</div>
+                <div>
+                    <h3 class="team-title">Sub 15</h3>
+                    <p class="team-subtitle">Infantiles</p>
+                </div>
+            </div>
+            <p>Iniciación al Básquet competitivo con metodologías adaptadas a la edad.</p>
+            <div class="team-stats">
+                <div class="stat-item">
+                    <span class="stat-value">16</span>
+                    <span class="stat-label">Jugadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">2</span>
+                    <span class="stat-label">Entrenadores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">REC</span>
+                    <span class="stat-label">Modalidad</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Escuela -->
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-icon">🎓</div>
+                <div>
+                    <h3 class="team-title">Escuela de Básquet</h3>
+                    <p class="team-subtitle">Iniciación Deportiva</p>
+                </div>
+            </div>
+            <p>Programa de formación para niños de 6 a 12 años, enfocado en diversión y aprendizaje.</p>
+            <div class="team-stats">
+                <div class="stat-item">
+                    <span class="stat-value">40+</span>
+                    <span class="stat-label">Niños</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Profesores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">6-12</span>
+                    <span class="stat-label">Edades</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Staff Section -->
+<section class="staff-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Cuerpo Técnico</h2>
+            <p>Profesionales dedicados a la formación integral</p>
+        </div>
+
+        <div class="staff-grid">
+            <div class="staff-card">
+                <div class="staff-icon-wrapper">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h5>Director Técnico</h5>
+                <p>Liderazgo y planificación estratégica del proyecto deportivo</p>
+            </div>
+
+            <div class="staff-card">
+                <div class="staff-icon-wrapper">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h5>Entrenadores</h5>
+                <p>Profesionales especializados en cada categoría</p>
+            </div>
+
+            <div class="staff-card">
+                <div class="staff-icon-wrapper">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h5>Área Médica</h5>
+                <p>Kinesiología y medicina deportiva</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2 class="cta-title">¿Quieres ser parte?</h2>
+        <p class="hero-description mb-4">
+            Únete a nuestra familia deportiva y desarrolla tu potencial
+        </p>
+        <a href="{% url 'pages:contact' %}" class="cta-button">
+            <i class="fas fa-envelope me-2"></i>
+            Contáctanos
+        </a>
+    </div>
+</section>
 {% endblock %}
