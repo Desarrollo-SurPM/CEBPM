@@ -75,7 +75,9 @@ WSGI_APPLICATION = 'club.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+DATABASE_URL = 'postgresql://postgres:qzdoupurPeEUdSbFoOMcFnbCXYCcguMQ@maglev.proxy.rlwy.net:53910/railway'
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
 }
