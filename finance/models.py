@@ -8,6 +8,7 @@ class FeeDefinition(models.Model):
     """Definición de cuotas"""
     PERIOD_CHOICES = [
         ('mensual', 'Mensual'),
+        ('unico', 'Pago Único'),
         ('anual', 'Anual'),
     ]
     
@@ -32,8 +33,9 @@ class Invoice(models.Model):
     """Facturas de cuotas"""
     STATUS_CHOICES = [
         ('pendiente', 'Pendiente'),
-        ('pagada', 'Pagada'),
         ('atrasada', 'Atrasada'),
+        ('en revisión', 'En Revisión'),  # <-- NUEVO ESTADO
+        ('pagada', 'Pagada'),
     ]
     
     guardian = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Apoderado')
@@ -41,7 +43,7 @@ class Invoice(models.Model):
     fee_definition = models.ForeignKey(FeeDefinition, on_delete=models.CASCADE, verbose_name='Definición de cuota')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto')
     due_date = models.DateField(verbose_name='Fecha de vencimiento')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendiente', verbose_name='Estado')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pendiente', verbose_name='Estado') # Ajustado max_length
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -60,7 +62,7 @@ class Invoice(models.Model):
         return self.due_date < date.today() and self.status == 'pendiente'
 
     def save(self, *args, **kwargs):
-        # Auto-actualizar estado si está atrasada
+        # Auto-actualizar estado si está atrasada (pero no si está en revisión o pagada)
         if self.is_overdue and self.status == 'pendiente':
             self.status = 'atrasada'
         super().save(*args, **kwargs)
@@ -69,25 +71,40 @@ class Invoice(models.Model):
 class Payment(models.Model):
     """Pagos realizados"""
     STATUS_CHOICES = [
-        ('pendiente', 'Pendiente'),
+        ('pendiente', 'Pendiente de Aprobación'), # <-- CAMBIADO
         ('completado', 'Completado'),
-        ('fallido', 'Fallido'),
-        ('reembolsado', 'Reembolsado'),
+        ('fallido', 'Rechazado'), # <-- CAMBIADO
     ]
     
+    # AJUSTADO para coincidir con tu plantilla pay_quota.html
     METHOD_CHOICES = [
+        ('transferencia', 'Transferencia Bancaria'),
         ('efectivo', 'Efectivo'),
-        ('transferencia', 'Transferencia'),
-        ('tarjeta', 'Tarjeta'),
-        ('dummy', 'Pasarela Simulada'),
+        ('tarjeta_credito', 'Tarjeta de Crédito'),
+        ('tarjeta_debito', 'Tarjeta de Débito'),
+        ('cheque', 'Cheque'),
     ]
     
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, verbose_name='Factura')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto')
-    paid_at = models.DateTimeField(verbose_name='Fecha de pago')
-    method = models.CharField(max_length=15, choices=METHOD_CHOICES, verbose_name='Método de pago')
+    paid_at = models.DateTimeField(verbose_name='Fecha de pago') # El apoderado la define al subir el pago
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES, verbose_name='Método de pago') # Ajustado max_length
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pendiente', verbose_name='Estado')
-    transaction_id = models.CharField(max_length=100, blank=True, null=True, verbose_name='ID de transacción')
+    
+    # --- NUEVOS CAMPOS ---
+    payment_proof = models.ImageField(
+        upload_to='payment_proofs/', 
+        null=True, 
+        blank=False, # Requerido para este flujo
+        verbose_name='Comprobante de Pago'
+    )
+    notes = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name='Notas (Nro. Transacción)'
+    )
+    # --- FIN NUEVOS CAMPOS ---
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -99,9 +116,55 @@ class Payment(models.Model):
     def __str__(self):
         return f'Pago {self.id} - ${self.amount} ({self.get_status_display()})'
 
-    def save(self, *args, **kwargs):
-        # Si el pago se completa, marcar la factura como pagada
-        if self.status == 'completado' and self.invoice.status != 'pagada':
-            self.invoice.status = 'pagada'
-            self.invoice.save()
-        super().save(*args, **kwargs)
+class Transaction(models.Model):
+    """
+    Modelo para registrar transacciones financieras generales
+    (Ingresos por sponsors, Gastos en árbitros, etc.)
+    """
+    TYPE_CHOICES = [
+        ('ingreso', 'Ingreso'),
+        ('gasto', 'Gasto'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        # Ingresos
+        ('sponsor', 'Auspiciador'),
+        ('evento', 'Evento'),
+        ('donacion', 'Donación'),
+        ('entrada', 'Entradas'),
+        # Gastos
+        ('arriendo', 'Arriendo Gimnasio'),
+        ('arbitraje', 'Pago Árbitros'),
+        ('proveedor', 'Pago Proveedores'),
+        ('cuerpo_tecnico', 'Cuerpo Técnico'),
+        ('equipamiento', 'Equipamiento'),
+        ('transporte', 'Transporte'),
+        ('otros', 'Otros'),
+    ]
+
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name='Tipo')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name='Categoría')
+    description = models.CharField(max_length=255, verbose_name='Descripción')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto')
+    date = models.DateField(verbose_name='Fecha de Transacción')
+    
+    # Opcional: Para vincular un pago a un jugador específico
+    player = models.ForeignKey(
+        Player, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name='Jugador (Opcional)'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Transacción'
+        verbose_name_plural = 'Transacciones'
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"[{self.get_type_display()}] {self.description} - ${self.amount}"
+    # ELIMINAMOS EL MÉTODO SAVE() que auto-aprobaba la factura.
+    # El admin lo hará manualmente ahora.

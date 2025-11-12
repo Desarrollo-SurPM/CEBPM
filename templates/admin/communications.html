@@ -1,596 +1,113 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Comunicaciones - Admin Panel{% endblock %}
-
+{% block title %}Comunicaciones{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Centro de Comunicaciones</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newMessageModal">
-                <i class="bi bi-plus"></i> Nueva Comunicación
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportCommunications()">
-                <i class="bi bi-download"></i> Exportar
-            </button>
-        </div>
-    </div>
-</div>
+<h1 class="h3 mb-4 text-gray-800">Comunicaciones y Notificaciones</h1>
 
-<!-- Estadísticas de comunicaciones -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center bg-primary text-white">
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-send-fill me-2"></i>Enviar Nueva Notificación
+                </h6>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">{{ total_messages }}</h5>
-                <p class="card-text">Total Mensajes</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">{{ sent_messages }}</h5>
-                <p class="card-text">Enviados</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">{{ pending_messages }}</h5>
-                <p class="card-text">Pendientes</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-info text-white">
-            <div class="card-body">
-                <h5 class="card-title">{{ read_rate }}%</h5>
-                <p class="card-text">Tasa de Lectura</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Filtros -->
-<div class="row mb-4">
-    <div class="col-md-2">
-        <select class="form-select" id="typeFilter">
-            <option value="">Todos los tipos</option>
-            <option value="announcement">Anuncio</option>
-            <option value="notification">Notificación</option>
-            <option value="reminder">Recordatorio</option>
-            <option value="emergency">Emergencia</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <select class="form-select" id="statusFilter">
-            <option value="">Todos los estados</option>
-            <option value="draft">Borrador</option>
-            <option value="sent">Enviado</option>
-            <option value="scheduled">Programado</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <select class="form-select" id="audienceFilter">
-            <option value="">Todas las audiencias</option>
-            <option value="all_guardians">Todos los Apoderados</option>
-            <option value="team_guardians">Por Equipo</option>
-            <option value="specific_guardians">Específicos</option>
-        </select>
-    </div>
-    <div class="col-md-4">
-        <input type="text" class="form-control" id="searchInput" placeholder="Buscar por título o contenido...">
-    </div>
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100" onclick="filterCommunications()">
-            <i class="bi bi-search"></i> Filtrar
-        </button>
-    </div>
-</div>
-
-<!-- Tabla de comunicaciones -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">Historial de Comunicaciones</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Título</th>
-                        <th>Audiencia</th>
-                        <th>Estado</th>
-                        <th>Leídos</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for message in messages %}
-                    <tr>
-                        <td>
-                            <div>
-                                <strong>{{ message.created_at|date:"d/m/Y" }}</strong><br>
-                                <small class="text-muted">{{ message.created_at|time:"H:i" }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            {% if message.type == 'announcement' %}
-                                <span class="badge bg-primary">Anuncio</span>
-                            {% elif message.type == 'notification' %}
-                                <span class="badge bg-info">Notificación</span>
-                            {% elif message.type == 'reminder' %}
-                                <span class="badge bg-warning">Recordatorio</span>
-                            {% else %}
-                                <span class="badge bg-danger">Emergencia</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div>
-                                <strong>{{ message.title }}</strong><br>
-                                <small class="text-muted">{{ message.content|truncatechars:50 }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            {% if message.audience == 'all_guardians' %}
-                                <span class="badge bg-secondary">Todos los Apoderados</span>
-                            {% elif message.audience == 'team_guardians' %}
-                                <span class="badge bg-secondary">Equipo: {{ message.team|capfirst }}</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ message.recipients.count }} Específicos</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if message.status == 'draft' %}
-                                <span class="badge bg-secondary">Borrador</span>
-                            {% elif message.status == 'sent' %}
-                                <span class="badge bg-success">Enviado</span>
-                            {% else %}
-                                <span class="badge bg-warning">Programado</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if message.status == 'sent' %}
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: {{ message.read_percentage|default:0 }}%" 
-                                         aria-valuenow="{{ message.read_percentage|default:0 }}" 
-                                         aria-valuemin="0" aria-valuemax="100">
-                                        {{ message.read_count|default:0 }}/{{ message.total_recipients|default:0 }}
-                                    </div>
-                                </div>
-                            {% else %}
-                                <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-outline-primary" 
-                                        onclick="viewMessage('{{ message.id }}')" title="Ver detalles">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                {% if message.status == 'draft' %}
-                                    <button class="btn btn-sm btn-outline-warning" 
-                                            onclick="editMessage('{{ message.id }}')" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-success" 
-                                            onclick="sendMessage('{{ message.id }}')" title="Enviar">
-                                        <i class="bi bi-send"></i>
-                                    </button>
-                                {% endif %}
-                                {% if message.status == 'sent' %}
-                                    <button class="btn btn-sm btn-outline-info" 
-                                            onclick="viewStats('{{ message.id }}')" title="Estadísticas">
-                                        <i class="bi bi-bar-chart"></i>
-                                    </button>
-                                {% endif %}
-                                <button class="btn btn-sm btn-outline-danger" 
-                                        onclick="deleteMessage('{{ message.id }}')" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <i class="bi bi-chat-dots display-4 text-muted"></i>
-                            <p class="mt-2 text-muted">No hay comunicaciones registradas</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Paginación -->
-        {% if messages.has_other_pages %}
-        <nav aria-label="Paginación de comunicaciones">
-            <ul class="pagination justify-content-center">
-                {% if messages.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ messages.previous_page_number }}">
-                            <i class="bi bi-chevron-left"></i>
-                        </a>
-                    </li>
-                {% endif %}
-                
-                {% for num in messages.paginator.page_range %}
-                    {% if messages.number == num %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ num }}</span>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if messages.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ messages.next_page_number }}">
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Modal para nueva comunicación -->
-<div class="modal fade" id="newMessageModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Nueva Comunicación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="newMessageForm">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="messageType" class="form-label">Tipo</label>
-                                <select class="form-select" id="messageType" required>
-                                    <option value="">Seleccionar tipo</option>
-                                    <option value="announcement">Anuncio</option>
-                                    <option value="notification">Notificación</option>
-                                    <option value="reminder">Recordatorio</option>
-                                    <option value="emergency">Emergencia</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="messageAudience" class="form-label">Audiencia</label>
-                                <select class="form-select" id="messageAudience" required>
-                                    <option value="">Seleccionar audiencia</option>
-                                    <option value="all_guardians">Todos los Apoderados</option>
-                                    <option value="team_guardians">Por Equipo</option>
-                                    <option value="specific_guardians">Apoderados Específicos</option>
-                                </select>
-                            </div>
-                        </div>
+                <form method="POST" action="{% url 'admin_panel:send_notification' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Asunto (Título):</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
                     </div>
                     
-                    <div class="mb-3" id="teamSelection" style="display: none;">
-                        <label for="messageTeam" class="form-label">Equipo</label>
-                        <select class="form-select" id="messageTeam">
-                            <option value="">Seleccionar equipo</option>
-                            <option value="primer_equipo">Primer Equipo</option>
-                            <option value="sub_21">Sub 21</option>
-                            <option value="sub_19">Sub 19</option>
-                            <option value="sub_17">Sub 17</option>
-                            <option value="sub_15">Sub 15</option>
-                            <option value="escuela">Escuela de Básquet</option>
+                    <div class="mb-3">
+                        <label for="recipient_type" class="form-label">Enviar a:</label>
+                        <select class="form-select" id="recipient_type" name="recipient_type" required>
+                            <option value="all_guardians">Todos los Apoderados</option>
+                            <option value="multiple_categories">Una o Múltiples Categorías...</option>
+                            <option value="specific_email">Un Apoderado Específico (por Email)</option>
+                            <option value="all_admins">Todos los Administradores</option>
                         </select>
                     </div>
                     
-                    <div class="mb-3" id="specificSelection" style="display: none;">
-                        <label for="messageRecipients" class="form-label">Apoderados</label>
-                        <select class="form-select" id="messageRecipients" multiple>
-                            {% for guardian in guardians %}
-                                <option value="{{ guardian.id }}">{{ guardian.first_name }} {{ guardian.last_name }} - {{ guardian.email }}</option>
+                    <div class="mb-3" id="category-selector" style="display: none;">
+                        <label for="category" class="form-label">Seleccionar Categorías:</label>
+                        <select class="form-select" id="category" name="category" multiple size="5">
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
                             {% endfor %}
                         </select>
-                        <small class="form-text text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples apoderados</small>
+                        <small class="form-text text-muted">Mantén presionada la tecla Ctrl (o Cmd en Mac) para seleccionar más de una.</small>
+                    </div>
+
+                    <div class="mb-3" id="specific-email-selector" style="display: none;">
+                        <label for="specific_email" class="form-label">Email del Apoderado:</label>
+                        <input type="email" class="form-control" id="specific_email" name="specific_email" placeholder="apoderado@ejemplo.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Mensaje:</label>
+                        <textarea class="form-control" id="message" name="message" rows="8" required placeholder="Escribe tu mensaje aquí. Se enviará al panel."></textarea>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="messageTitle" class="form-label">Título</label>
-                        <input type="text" class="form-control" id="messageTitle" required>
+                        <label for="attachment" class="form-label">Adjuntar Archivo (Opcional):</label>
+                        <input class="form-control" type="file" id="attachment" name="attachment">
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="messageContent" class="form-label">Contenido</label>
-                        <textarea class="form-control" id="messageContent" rows="5" required></textarea>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="scheduledDate" class="form-label">Fecha de Envío (opcional)</label>
-                                <input type="datetime-local" class="form-control" id="scheduledDate">
-                                <small class="form-text text-muted">Dejar vacío para envío inmediato</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="sendEmail">
-                                    <label class="form-check-label" for="sendEmail">
-                                        Enviar también por email
-                                    </label>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-2"></i>Enviar Mensaje
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clock-history me-2"></i>Historial de Mensajes Enviados
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if messages_list %}
+                    <div class="list-group list-group-flush">
+                        {% for message in messages_list %}
+                            <a href="{% url 'admin_panel:communication_status' message.pk %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ message.title }}</h6>
+                                    <small>{{ message.sent_at|timesince }}</small>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="sendSMS">
-                                    <label class="form-check-label" for="sendSMS">
-                                        Enviar también por SMS
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
+                                <small class="text-muted">Enviado por {{ message.created_by.username }}</small>
+                            </a>
+                            {% endfor %}
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-outline-primary" onclick="saveDraft()">Guardar Borrador</button>
-                    <button type="submit" class="btn btn-primary">Enviar Ahora</button>
-                </div>
-            </form>
+                {% else %}
+                    <p class="text-muted">No se han enviado mensajes.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-.table th {
-    border-top: none;
-    font-weight: 600;
-    color: #495057;
-}
-
-.btn-group .btn {
-    border-radius: 0.25rem;
-    margin-right: 2px;
-}
-
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.125);
-}
-
-.progress {
-    background-color: #e9ecef;
-}
-
-.progress-bar {
-    background-color: #28a745;
-    color: white;
-    font-size: 12px;
-    line-height: 20px;
-}
-
-#messageContent {
-    resize: vertical;
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Manejo de selección de audiencia
-document.getElementById('messageAudience').addEventListener('change', function() {
-    const audience = this.value;
-    const teamSelection = document.getElementById('teamSelection');
-    const specificSelection = document.getElementById('specificSelection');
-    
-    if (audience === 'team_guardians') {
-        teamSelection.style.display = 'block';
-        specificSelection.style.display = 'none';
-    } else if (audience === 'specific_guardians') {
-        teamSelection.style.display = 'none';
-        specificSelection.style.display = 'block';
-    } else {
-        teamSelection.style.display = 'none';
-        specificSelection.style.display = 'none';
-    }
-});
-
-function filterCommunications() {
-    const type = document.getElementById('typeFilter').value;
-    const status = document.getElementById('statusFilter').value;
-    const audience = document.getElementById('audienceFilter').value;
-    const search = document.getElementById('searchInput').value;
-    
-    const params = new URLSearchParams();
-    if (type) params.append('type', type);
-    if (status) params.append('status', status);
-    if (audience) params.append('audience', audience);
-    if (search) params.append('search', search);
-    
-    window.location.href = '?' + params.toString();
-}
-
-function viewMessage(messageId) {
-    window.location.href = `/admin-panel/communications/${messageId}/`;
-}
-
-function editMessage(messageId) {
-    window.location.href = `/admin-panel/communications/${messageId}/edit/`;
-}
-
-function sendMessage(messageId) {
-    if (confirm('¿Está seguro de que desea enviar esta comunicación?')) {
-        fetch(`/admin-panel/communications/${messageId}/send/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al enviar la comunicación');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al enviar la comunicación');
-        });
-    }
-}
-
-function viewStats(messageId) {
-    window.location.href = `/admin-panel/communications/${messageId}/stats/`;
-}
-
-function deleteMessage(messageId) {
-    if (confirm('¿Está seguro de que desea eliminar esta comunicación?')) {
-        fetch(`/admin-panel/communications/${messageId}/delete/`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al eliminar la comunicación');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al eliminar la comunicación');
-        });
-    }
-}
-
-function exportCommunications() {
-    const params = new URLSearchParams(window.location.search);
-    params.append('export', 'true');
-    window.location.href = '?' + params.toString();
-}
-
-function saveDraft() {
-    const formData = getFormData();
-    formData.status = 'draft';
-    
-    fetch('/admin-panel/communications/add/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('newMessageModal')).hide();
-            location.reload();
+    // JS para mostrar/ocultar los selectores
+    document.getElementById('recipient_type').addEventListener('change', function() {
+        var categorySelector = document.getElementById('category-selector');
+        var emailSelector = document.getElementById('specific-email-selector');
+        
+        if (this.value === 'multiple_categories') {
+            categorySelector.style.display = 'block';
+            emailSelector.style.display = 'none';
+        } else if (this.value === 'specific_email') {
+            categorySelector.style.display = 'none';
+            emailSelector.style.display = 'block';
         } else {
-            alert('Error al guardar el borrador');
+            categorySelector.style.display = 'none';
+            emailSelector.style.display = 'none';
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al guardar el borrador');
     });
-}
-
-// Manejo del formulario de nueva comunicación
-document.getElementById('newMessageForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = getFormData();
-    formData.status = 'sent';
-    
-    fetch('/admin-panel/communications/add/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('newMessageModal')).hide();
-            location.reload();
-        } else {
-            alert('Error al enviar la comunicación');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al enviar la comunicación');
-    });
-});
-
-function getFormData() {
-    const audience = document.getElementById('messageAudience').value;
-    let recipients = [];
-    
-    if (audience === 'team_guardians') {
-        recipients = [document.getElementById('messageTeam').value];
-    } else if (audience === 'specific_guardians') {
-        const selected = document.getElementById('messageRecipients').selectedOptions;
-        recipients = Array.from(selected).map(option => option.value);
-    }
-    
-    return {
-        type: document.getElementById('messageType').value,
-        audience: audience,
-        recipients: recipients,
-        title: document.getElementById('messageTitle').value,
-        content: document.getElementById('messageContent').value,
-        scheduled_date: document.getElementById('scheduledDate').value || null,
-        send_email: document.getElementById('sendEmail').checked,
-        send_sms: document.getElementById('sendSMS').checked
-    };
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-// Filtros en tiempo real
-document.getElementById('searchInput').addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') {
-        filterCommunications();
-    }
-});
-
-document.getElementById('typeFilter').addEventListener('change', filterCommunications);
-document.getElementById('statusFilter').addEventListener('change', filterCommunications);
-document.getElementById('audienceFilter').addEventListener('change', filterCommunications);
 </script>
 {% endblock %}

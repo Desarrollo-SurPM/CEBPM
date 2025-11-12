@@ -1,0 +1,30 @@
+{% extends 'guardian/base_guardian.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Nueva Solicitud</h6>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Completa el formulario para enviar tu consulta a un administrador.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="{{ form.subject.id_for_label }}" class="form-label">{{ form.subject.label }} *</label>
+                {{ form.subject }}
+                {% if form.subject.errors %}<div class="text-danger small">{{ form.subject.errors }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.message.id_for_label }}" class="form-label">{{ form.message.label }} *</label>
+                {{ form.message }}
+                {% if form.message.errors %}<div class="text-danger small">{{ form.message.errors }}</div>{% endif %}
+            </div>
+            
+            <a href="{% url 'tickets:list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

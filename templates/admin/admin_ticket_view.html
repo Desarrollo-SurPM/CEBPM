@@ -1,0 +1,75 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<style>
+    .chat-bubble { padding: 15px; border-radius: 20px; margin-bottom: 10px; max-width: 80%; }
+    .chat-guardian { background-color: #0d6efd; color: white; margin-left: auto; border-bottom-right-radius: 0; }
+    .chat-admin { background-color: #e9ecef; color: #212529; margin-right: auto; border-bottom-left-radius: 0; }
+    .chat-meta { font-size: 0.8rem; color: #6c757d; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{{ page_title }}</h1>
+    <a href="{% url 'admin_panel:admin_tickets_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i> Volver a la lista
+    </a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="m-0 font-weight-bold text-primary">{{ ticket.subject }}</h6>
+            <small class="text-muted">
+                Solicitante: {{ ticket.guardian.get_full_name }} ({{ ticket.guardian.email }})
+            </small>
+        </div>
+        <span class="badge 
+            {% if ticket.status == 'abierto' %}bg-warning
+            {% elif ticket.status == 'respondido' %}bg-success
+            {% else %}bg-secondary{% endif %}">
+            {{ ticket.get_status_display }}
+        </span>
+    </div>
+    
+    <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+        {% for reply in replies %}
+            <div class="chat-bubble {% if reply.user.is_staff or reply.user.admin_profile %}chat-admin{% else %}chat-guardian{% endif %}">
+                <p class="mb-1">{{ reply.message|linebreaksbr }}</p>
+                <div class="chat-meta text-end">
+                    <strong>{% if reply.user.is_staff or reply.user.admin_profile %}Tú (Admin){% else %}{{ reply.user.get_full_name }}{% endif %}</strong>
+                    <br>
+                    <small>{{ reply.created_at|date:"d M Y, H:i" }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="card-footer">
+        <form method="POST" class="mb-3">
+            {% csrf_token %}
+            <label class="form-label">Tu Respuesta:</label>
+            <div class="input-group">
+                {{ reply_form.message }}
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-send me-1"></i> Enviar Respuesta
+                </button>
+            </div>
+            {% if reply_form.message.errors %}<div class="text-danger small">{{ reply_form.message.errors }}</div>{% endif %}
+        </form>
+
+        {% if ticket.status != 'cerrado' %}
+        <hr>
+        <div class="d-flex justify-content-end">
+            <form method="POST" action="{% url 'admin_panel:admin_ticket_close' ticket.pk %}" 
+                  onsubmit="return confirm('¿Estás seguro de que quieres CERRAR este ticket? El apoderado no podrá responder.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-lock-fill me-2"></i> Forzar Cierre de Ticket
+                </button>
+            </form>
+        </div>
+        {% endif %}
+        </div>
+</div>
+{% endblock %}

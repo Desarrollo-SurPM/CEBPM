@@ -1,0 +1,70 @@
+<div class="col-md-6 col-lg-4 mb-3">
+    <div class="card border-{{ card_type }} h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+                {% if invoice.player.photo %}
+                    <img src="{{ invoice.player.photo.url }}" alt="{{ invoice.player.get_full_name }}" 
+                         class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
+                         style="width: 40px; height: 40px;">
+                        <i class="bi bi-person text-muted"></i>
+                    </div>
+                {% endif %}
+                <div>
+                    <h6 class="mb-0">{{ invoice.player.get_full_name }}</h6>
+                    <small class="text-muted">{{ invoice.player.category.name|default:"Sin categoría" }}</small>
+                </div>
+            </div>
+            
+            <h6 class="text-{{ card_type }}">{{ invoice.fee_definition.name }}</h6>
+            <p class="mb-2">
+                <strong class="text-{{ card_type }} fs-5">${{ invoice.amount|floatformat:0 }}</strong>
+            </p>
+            <p class="mb-2">
+                <small class="text-muted">
+                    <i class="bi bi-calendar-{% if invoice.status == 'atrasada' %}x{% else %}event{% endif %} me-1"></i>
+                    Vence: {{ invoice.due_date|date:"d/m/Y" }}
+                </small><br>
+                
+                {% if invoice.status == 'atrasada' %}
+                    <small class="text-danger fw-bold">
+                        <i class="bi bi-clock me-1"></i>{{ invoice.due_date|timesince }} de atraso
+                    </small>
+                {% elif invoice.status == 'pendiente' %}
+                    <small class="text-warning fw-bold">
+                        <i class="bi bi-clock me-1"></i>Vence en {{ invoice.due_date|timeuntil }}
+                    </small>
+                {% endif %}
+            </p>
+            
+            {% if invoice.status == 'en revisión' %}
+                <div class="d-grid">
+                    <button class="btn btn-outline-info btn-sm" disabled>
+                        <i class="bi bi-arrow-repeat me-2"></i>En Revisión
+                    </button>
+                </div>
+            {% elif invoice.status == 'pagada' %}
+                 <div class="d-grid">
+                    <button class="btn btn-outline-success btn-sm" disabled>
+                        <i class="bi bi-check-circle me-2"></i>Pagada
+                    </button>
+                </div>
+            {% else %}
+                <div class="d-grid mb-2">
+                    <a href="{% url 'guardian:guardian_pay_quota' invoice.id %}" class="btn btn-{{ card_type }} btn-sm">
+                        <i class="bi bi-credit-card me-2"></i>Pagar Ahora
+                    </a>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="invoices" value="{{ invoice.id }}" 
+                           class="form-check-input invoice-checkbox" 
+                           data-amount="{{ invoice.amount }}" id="invoice-{{ invoice.id }}">
+                    <label class="form-check-label small" for="invoice-{{ invoice.id }}">
+                        Seleccionar para pago múltiple
+                    </label>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

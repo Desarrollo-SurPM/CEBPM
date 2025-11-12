@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'sponsors',
     'communications',
     'pages',
+    'tickets',
 ]
 
 MIDDLEWARE = [

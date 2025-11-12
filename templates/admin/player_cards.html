@@ -1,188 +1,77 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'admin/base_admin.html' %}
 
-{% block title %}Fichas de Jugadores - Admin{% endblock %}
-
+{% block title %}Fichas de Jugadores{% endblock %}
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-person-badge me-2"></i>Fichas de Jugadores</h2>
-                <a href="{% url 'admin_panel:players' %}" class="btn btn-outline-primary">
-                    <i class="bi bi-list me-2"></i>Vista Lista
-                </a>
-            </div>
+<h1 class="h3 mb-4 text-gray-800">Fichas de Jugadores</h1>
 
-            <!-- Filtros -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="category" class="form-label">Categoría</label>
-                            <select name="category" id="category" class="form-select">
-                                <option value="">Todas las categorías</option>
-                                {% for category in categories %}
-                                    <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ category.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="search" class="form-label">Buscar</label>
-                            <input type="text" name="search" id="search" class="form-control" 
-                                   placeholder="Nombre, apellido o RUT" value="{{ search_query }}">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-outline-primary me-2">
-                                <i class="bi bi-search me-2"></i>Buscar
-                            </button>
-                            <a href="{% url 'admin_panel:admin_player_cards' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-2"></i>Limpiar
-                            </a>
-                        </div>
-                    </form>
-                </div>
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Buscar por nombre..." value="{{ search_query }}">
             </div>
-
-            <!-- Fichas de Jugadores -->
-            <div class="row">
-                {% if page_obj %}
-                    {% for player in page_obj %}
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 player-card">
-                                <div class="card-header bg-primary text-white">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">{{ player.category.name|default:"Sin categoría" }}</h6>
-                                        <span class="badge {% if player.status == 'active' %}bg-success{% elif player.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
-                                            {{ player.get_status_display }}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <div class="card-body">
-                                    <!-- Foto del jugador -->
-                                    <div class="text-center mb-3">
-                                        {% if player.photo %}
-                                            <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" 
-                                                 class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                                        {% else %}
-                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
-                                                 style="width: 80px; height: 80px; margin: 0 auto;">
-                                                <i class="bi bi-person text-muted" style="font-size: 2rem;"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <!-- Información básica -->
-                                    <h5 class="card-title text-center mb-3">{{ player.get_full_name }}</h5>
-                                    
-                                    <div class="row g-2 small">
-                                        <div class="col-6">
-                                            <strong>RUT:</strong><br>
-                                            <span class="text-muted">{{ player.rut|default:"No registrado" }}</span>
-                                        </div>
-                                        <div class="col-6">
-                                            <strong>Edad:</strong><br>
-                                            <span class="text-muted">{{ player.age|default:"No registrada" }} años</span>
-                                        </div>
-                                        <div class="col-6">
-                                            <strong>Posición:</strong><br>
-                                            <span class="text-muted">{{ player.position|default:"No definida" }}</span>
-                                        </div>
-                                        <div class="col-6">
-                                            <strong>Equipo:</strong><br>
-                                            <span class="text-muted">{{ player.team|default:"Sin equipo" }}</span>
-                                        </div>
-                                        <div class="col-12">
-                                            <strong>Apoderado:</strong><br>
-                                            <span class="text-muted">
-                                                {% if player.guardian %}
-                                                    {{ player.guardian.get_full_name }}
-                                                    <br><small>{{ player.guardian.email }}</small>
-                                                {% else %}
-                                                    No asignado
-                                                {% endif %}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="card-footer">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            Registrado: {{ player.created_at|date:"d/m/Y" }}
-                                        </small>
-                                        <div class="btn-group" role="group">
-                                            <a href="{% url 'admin:players_player_change' player.pk %}" 
-                                               class="btn btn-sm btn-outline-primary" title="Editar">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <a href="{% url 'guardian_player_detail' player.pk %}" 
-                                               class="btn btn-sm btn-outline-info" title="Ver detalle">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">Todas las Categorías</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
                     {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="text-center py-5">
-                            <i class="bi bi-person-badge text-muted" style="font-size: 4rem;"></i>
-                            <h4 class="text-muted mt-3">No hay jugadores</h4>
-                            <p class="text-muted">No se encontraron jugadores con los filtros aplicados.</p>
-                            <a href="{% url 'admin_panel:admin_player_cards' %}" class="btn btn-primary">
-                                <i class="bi bi-arrow-clockwise me-2"></i>Ver todos
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
+                </select>
             </div>
-
-            <!-- Paginación -->
-            {% if page_obj.has_other_pages %}
-                <nav aria-label="Paginación de jugadores">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if category_filter %}&category={{ category_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo; Primera</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
-                            </li>
-                        {% endif %}
-
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-                        </li>
-
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Última &raquo;</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            {% endif %}
-        </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
-<style>
-.player-card {
-    transition: transform 0.2s;
-}
+<div class="row">
+    {% for player in page_obj %}
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            {% if player.photo %}
+                <img src="{{ player.photo.url }}" class="card-img-top" alt="{{ player.get_full_name }}" style="height: 300px; object-fit: cover; object-position: top;">
+            {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                    <i class="bi bi-person text-muted" style="font-size: 8rem;"></i>
+                </div>
+            {% endif %}
+            <div class="card-body text-center">
+                <h5 class="card-title fw-bold">{{ player.get_full_name }}</h5>
+                <p class="card-text text-primary">{{ player.category.name|default:"Sin Categoría" }}</p>
+                <p class="card-text text-muted">{{ player.get_position_display|default:"Sin Posición" }}</p>
+                
+                <a href="{% url 'admin_panel:admin_player_detail' player.pk %}" class="btn btn-primary">
+                    Ver Ficha Completa
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-center text-muted">No se encontraron jugadores con esos filtros.</p>
+    </div>
+    {% endfor %}
+</div>
 
-.player-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-</style>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ category_filter }}">Anterior</a>
+            </li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ category_filter }}">Siguiente</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% endblock %}

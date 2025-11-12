@@ -1,4 +1,5 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
 {% block title %}Gestión Financiera - Admin Panel{% endblock %}
 
@@ -11,49 +12,64 @@
                 <i class="bi bi-download"></i> Exportar
             </button>
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                <i class="bi bi-plus"></i> Registrar Pago
+                <i class="bi bi-plus"></i> Registrar Transacción
             </button>
         </div>
     </div>
 </div>
 
-<!-- Resumen financiero -->
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">${{ total_income|floatformat:0 }}</h5>
-                <p class="card-text">Ingresos Totales</p>
-            </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <a href="{% url 'admin_panel:manage_pending_payments' %}" class="text-decoration-none">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Pagos Pendientes (Cuotas)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_payments_count|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clock-history fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-danger text-white">
-            <div class="card-body">
-                <h5 class="card-title">${{ total_expenses|floatformat:0 }}</h5>
-                <p class="card-text">Gastos Totales</p>
-            </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-left-success shadow h-100 py-2">
+            <a href="{% url 'admin_panel:manage_fees' %}" class="text-decoration-none">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Definir Cuotas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Gestionar</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-pencil-square fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">${{ pending_payments|floatformat:0 }}</h5>
-                <p class="card-text">Pagos Pendientes</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-info text-white">
-            <div class="card-body">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center bg-info text-white h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title">${{ balance|floatformat:0 }}</h5>
-                <p class="card-text">Balance</p>
+                <p class="card-text mb-0">Balance General</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center bg-success text-white h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h5 class="card-title">${{ total_income|floatformat:0 }}</h5>
+                <p class="card-text mb-0">Ingresos Totales (Trans.)</p>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Gráfico de ingresos/gastos mensuales -->
 <div class="row mb-4">
     <div class="col-md-8">
         <div class="card">
@@ -77,23 +93,27 @@
     </div>
 </div>
 
-<!-- Filtros -->
 <div class="row mb-4">
     <div class="col-md-2">
         <select class="form-select" id="typeFilter">
             <option value="">Todos los tipos</option>
-            <option value="income">Ingresos</option>
-            <option value="expense">Gastos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="gasto">Gastos</option>
         </select>
     </div>
     <div class="col-md-2">
         <select class="form-select" id="categoryFilter">
             <option value="">Todas las categorías</option>
-            <option value="mensualidad">Mensualidades</option>
-            <option value="inscripcion">Inscripciones</option>
+            <option value="sponsor">Auspiciador</option>
+            <option value="evento">Evento</option>
+            <option value="donacion">Donación</option>
+            <option value="entrada">Entradas</option>
+            <option value="arriendo">Arriendo Gimnasio</option>
+            <option value="arbitraje">Pago Árbitros</option>
+            <option value="proveedor">Pago Proveedores</option>
+            <option value="cuerpo_tecnico">Cuerpo Técnico</option>
             <option value="equipamiento">Equipamiento</option>
             <option value="transporte">Transporte</option>
-            <option value="arbitraje">Arbitraje</option>
             <option value="otros">Otros</option>
         </select>
     </div>
@@ -113,10 +133,9 @@
     </div>
 </div>
 
-<!-- Tabla de transacciones -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">Historial de Transacciones</h5>
+        <h5 class="mb-0">Historial de Transacciones (Ingresos/Gastos Generales)</h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -129,7 +148,6 @@
                         <th>Descripción</th>
                         <th>Jugador/Concepto</th>
                         <th>Monto</th>
-                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -138,50 +156,41 @@
                     <tr>
                         <td>{{ transaction.date|date:"d/m/Y" }}</td>
                         <td>
-                            {% if transaction.type == 'income' %}
+                            {% if transaction.type == 'ingreso' %}
                                 <span class="badge bg-success">Ingreso</span>
                             {% else %}
                                 <span class="badge bg-danger">Gasto</span>
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-secondary">{{ transaction.category|capfirst }}</span>
+                            <span class="badge bg-secondary">{{ transaction.get_category_display }}</span>
                         </td>
                         <td>{{ transaction.description }}</td>
                         <td>
                             {% if transaction.player %}
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm me-2">
-                                        {% if transaction.player.photo %}
-                                            <img src="{{ transaction.player.photo.url }}" alt="{{ transaction.player.first_name }}" class="rounded-circle">
-                                        {% else %}
-                                            <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
-                                                {{ transaction.player.first_name|first }}{{ transaction.player.last_name|first }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div>
-                                        <small>{{ transaction.player.first_name }} {{ transaction.player.last_name }}</small>
-                                    </div>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2">
+                                    {% if transaction.player.photo %}
+                                        <img src="{{ transaction.player.photo.url }}" alt="{{ transaction.player.first_name }}" class="rounded-circle">
+                                    {% else %}
+                                        <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                            {{ transaction.player.first_name|first }}{{ transaction.player.last_name|first }}
+                                        </div>
+                                    {% endif %}
                                 </div>
+                                <div>
+                                    <small>{{ transaction.player.first_name }} {{ transaction.player.last_name }}</small>
+                                </div>
+                            </div>
                             {% else %}
                                 <span class="text-muted">-</span>
                             {% endif %}
                         </td>
                         <td>
-                            <strong class="{% if transaction.type == 'income' %}text-success{% else %}text-danger{% endif %}">
-                                {% if transaction.type == 'income' %}+{% else %}-{% endif %}
+                            <strong class="{% if transaction.type == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                                {% if transaction.type == 'ingreso' %}+{% else %}-{% endif %}
                                 ${{ transaction.amount|floatformat:0 }}
                             </strong>
-                        </td>
-                        <td>
-                            {% if transaction.status == 'completed' %}
-                                <span class="badge bg-success">Completado</span>
-                            {% elif transaction.status == 'pending' %}
-                                <span class="badge bg-warning">Pendiente</span>
-                            {% else %}
-                                <span class="badge bg-danger">Cancelado</span>
-                            {% endif %}
                         </td>
                         <td>
                             <div class="btn-group" role="group">
@@ -189,23 +198,12 @@
                                         onclick="viewTransaction('{{ transaction.id }}')" title="Ver detalles">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                {% if transaction.status == 'pending' %}
-                                    <button class="btn btn-sm btn-outline-warning" 
-                                            onclick="editTransaction('{{ transaction.id }}')" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" 
-                                            onclick="cancelTransaction('{{ transaction.id }}')" title="Cancelar">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                {% endif %}
-                            </div>
+                                </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <i class="bi bi-receipt display-4 text-muted"></i>
+                        <td colspan="7" class="text-center py-4"> <i class="bi bi-receipt display-4 text-muted"></i>
                             <p class="mt-2 text-muted">No hay transacciones registradas</p>
                         </td>
                     </tr>
@@ -214,7 +212,6 @@
             </table>
         </div>
         
-        <!-- Paginación -->
         {% if transactions.has_other_pages %}
         <nav aria-label="Paginación de transacciones">
             <ul class="pagination justify-content-center">
@@ -251,7 +248,6 @@
     </div>
 </div>
 
-<!-- Modal para agregar pago -->
 <div class="modal fade" id="addPaymentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -265,19 +261,24 @@
                         <label for="transactionType" class="form-label">Tipo</label>
                         <select class="form-select" id="transactionType" required>
                             <option value="">Seleccionar tipo</option>
-                            <option value="income">Ingreso</option>
-                            <option value="expense">Gasto</option>
+                            <option value="ingreso">Ingreso</option>
+                            <option value="gasto">Gasto</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="transactionCategory" class="form-label">Categoría</label>
                         <select class="form-select" id="transactionCategory" required>
                             <option value="">Seleccionar categoría</option>
-                            <option value="mensualidad">Mensualidad</option>
-                            <option value="inscripcion">Inscripción</option>
+                            <option value="sponsor">Auspiciador</option>
+                            <option value="evento">Evento</option>
+                            <option value="donacion">Donación</option>
+                            <option value="entrada">Entradas</option>
+                            <option value="arriendo">Arriendo Gimnasio</option>
+                            <option value="arbitraje">Pago Árbitros</option>
+                            <option value="proveedor">Pago Proveedores</option>
+                            <option value="cuerpo_tecnico">Cuerpo Técnico</option>
                             <option value="equipamiento">Equipamiento</option>
                             <option value="transporte">Transporte</option>
-                            <option value="arbitraje">Arbitraje</option>
                             <option value="otros">Otros</option>
                         </select>
                     </div>
@@ -315,6 +316,7 @@
 
 {% block extra_css %}
 <style>
+/* Estilos de tu plantilla original */
 .avatar-sm {
     width: 30px;
     height: 30px;
@@ -349,6 +351,23 @@
 .card {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Estilos de 'SB Admin' para los accesos directos */
+.border-left-primary {
+    border-left: .25rem solid #4e73df!important;
+}
+.border-left-success {
+    border-left: .25rem solid #1cc88a!important;
+}
+.text-xs {
+    font-size: .7rem;
+}
+.text-gray-300 {
+    color: #dddfeb!important;
+}
+.text-gray-800 {
+    color: #5a5c69!important;
 }
 </style>
 {% endblock %}
@@ -440,7 +459,8 @@ function filterTransactions() {
     if (dateTo) params.append('date_to', dateTo);
     if (search) params.append('search', search);
     
-    window.location.href = '?' + params.toString();
+    // Recargamos la página con los parámetros de filtro
+    window.location.href = `{% url 'admin_panel:finances_dashboard' %}?` + params.toString();
 }
 
 function viewTransaction(transactionId) {
@@ -455,6 +475,7 @@ function editTransaction(transactionId) {
 
 function cancelTransaction(transactionId) {
     if (confirm('¿Está seguro de que desea cancelar esta transacción?')) {
+        // Esta URL es un placeholder, necesitarías crearla en admin_urls.py
         fetch(`/admin-panel/finances/transaction/${transactionId}/cancel/`, {
             method: 'POST',
             headers: {
@@ -480,7 +501,8 @@ function cancelTransaction(transactionId) {
 function exportFinances() {
     const params = new URLSearchParams(window.location.search);
     params.append('export', 'true');
-    window.location.href = '?' + params.toString();
+    // Esta URL es un placeholder, necesitarías implementarla en admin_views.py
+    window.location.href = `{% url 'admin_panel:finances_dashboard' %}?` + params.toString();
 }
 
 // Manejo del formulario de nueva transacción
@@ -496,7 +518,8 @@ document.getElementById('addPaymentForm').addEventListener('submit', function(e)
         player: document.getElementById('transactionPlayer').value || null
     };
     
-    fetch('/admin-panel/finances/add/', {
+    // Usamos la URL que definimos en admin_urls.py
+    fetch("{% url 'admin_panel:add_transaction' %}", {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken'),
@@ -509,12 +532,12 @@ document.getElementById('addPaymentForm').addEventListener('submit', function(e)
         if (data.success) {
             location.reload();
         } else {
-            alert('Error al registrar la transacción');
+            alert('Error al registrar la transacción: ' + (data.error || 'Desconocido'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error al registrar la transacción');
+        alert('Error al registrar la transacción.');
     });
 });
 
@@ -540,7 +563,8 @@ document.getElementById('searchInput').addEventListener('keyup', function(e) {
     }
 });
 
-document.getElementById('typeFilter').addEventListener('change', filterTransactions);
-document.getElementById('categoryFilter').addEventListener('change', filterTransactions);
+// Hacemos que los filtros se apliquen con el botón, no en tiempo real
+// document.getElementById('typeFilter').addEventListener('change', filterTransactions);
+// document.getElementById('categoryFilter').addEventListener('change', filterTransactions);
 </script>
 {% endblock %}

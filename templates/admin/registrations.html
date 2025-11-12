@@ -1,4 +1,5 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
 {% block title %}Gestión de Inscripciones - Admin Panel{% endblock %}
 
@@ -14,43 +15,36 @@
     </div>
 </div>
 
-<!-- Filtros -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <select class="form-select" id="statusFilter">
-            <option value="">Todos los estados</option>
-            <option value="pending">Pendientes</option>
-            <option value="approved">Aprobadas</option>
-            <option value="rejected">Rechazadas</option>
-        </select>
-    </div>
+        <form method="GET" action="{% url 'admin_panel:registrations' %}" id="filterForm" class="d-flex gap-2">
+            <select class="form-select" id="statusFilter" name="status">
+                <option value="">Todos los estados</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendientes</option>
+                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Aprobadas</option>
+                <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazadas</option>
+            </select>
+        </div>
     <div class="col-md-3">
-        <select class="form-select" id="teamFilter">
+        <select class="form-select" id="teamFilter" name="team" disabled>
             <option value="">Todos los equipos</option>
-            <option value="primer_equipo">Primer Equipo</option>
-            <option value="sub_21">Sub 21</option>
-            <option value="sub_19">Sub 19</option>
-            <option value="sub_17">Sub 17</option>
-            <option value="sub_15">Sub 15</option>
-            <option value="escuela">Escuela de Básquet</option>
-        </select>
+            </select>
     </div>
     <div class="col-md-4">
-        <input type="text" class="form-control" id="searchInput" placeholder="Buscar por nombre o RUT...">
+        <input type="text" class="form-control" id="searchInput" name="search" placeholder="Buscar por nombre..." disabled>
     </div>
     <div class="col-md-2">
-        <button class="btn btn-primary w-100" onclick="filterRegistrations()">
+        <button class="btn btn-primary w-100" type="submit">
             <i class="bi bi-search"></i> Filtrar
         </button>
     </div>
-</div>
+    </form> </div>
 
-<!-- Estadísticas rápidas -->
 <div class="row mb-4">
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h5 class="card-title text-warning">{{ pending_count }}</h5>
+                <h5 class="card-title text-warning">{{ pending_count|default:0 }}</h5>
                 <p class="card-text">Pendientes</p>
             </div>
         </div>
@@ -58,7 +52,7 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h5 class="card-title text-success">{{ approved_count }}</h5>
+                <h5 class="card-title text-success">{{ approved_count|default:0 }}</h5>
                 <p class="card-text">Aprobadas</p>
             </div>
         </div>
@@ -66,7 +60,7 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h5 class="card-title text-danger">{{ rejected_count }}</h5>
+                <h5 class="card-title text-danger">{{ rejected_count|default:0 }}</h5>
                 <p class="card-text">Rechazadas</p>
             </div>
         </div>
@@ -74,17 +68,16 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h5 class="card-title text-info">{{ total_count }}</h5>
+                <h5 class="card-title text-info">{{ total_count|default:0 }}</h5>
                 <p class="card-text">Total</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Tabla de inscripciones -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">Lista de Inscripciones</h5>
+        <h5 class="mb-0">Lista de Inscripciones ({{ status_filter|capfirst }})</h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -92,9 +85,9 @@
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Jugador</th>
+                        <th>Jugador (Solicitud)</th>
                         <th>RUT</th>
-                        <th>Edad</th>
+                        <th>Nacimiento</th>
                         <th>Equipo</th>
                         <th>Apoderado</th>
                         <th>Estado</th>
@@ -102,34 +95,31 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for registration in registrations %}
+                    {% for registration in page_obj %}
                     <tr>
                         <td>{{ registration.created_at|date:"d/m/Y" }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar-sm me-2">
-                                    {% if registration.player.photo %}
-                                        <img src="{{ registration.player.photo.url }}" alt="{{ registration.player.first_name }}" class="rounded-circle">
-                                    {% else %}
-                                        <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
-                                            {{ registration.player.first_name|first }}{{ registration.player.last_name|first }}
-                                        </div>
-                                    {% endif %}
+                                    <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                        {{ registration.player_first_name|first }}{{ registration.player_last_name|first }}
+                                    </div>
                                 </div>
                                 <div>
-                                    <strong>{{ registration.player.first_name }} {{ registration.player.last_name }}</strong>
+                                    <strong>{{ registration.player_first_name }} {{ registration.player_last_name }}</strong>
                                 </div>
                             </div>
                         </td>
-                        <td>{{ registration.player.rut }}</td>
-                        <td>{{ registration.player.age }} años</td>
+                        <td>{{ registration.player_rut|default:"N/A" }}</td>
+                        <td>{{ registration.player_birth_date|date:"d/m/Y" }}</td>
                         <td>
                             <span class="badge bg-primary">{{ registration.team|capfirst }}</span>
                         </td>
                         <td>
                             <div>
-                                <strong>{{ registration.guardian.first_name }} {{ registration.guardian.last_name }}</strong><br>
-                                <small class="text-muted">{{ registration.guardian.email }}</small>
+                                <strong>{{ registration.guardian.get_full_name }}</strong><br>
+                                <small class="text-muted">{{ registration.guardian.email }}</small><br>
+                                <small class="text-muted">{{ registration.guardian.guardian_profile.phone|default:"Sin fono" }}</small>
                             </div>
                         </td>
                         <td>
@@ -144,16 +134,17 @@
                         <td>
                             <div class="btn-group" role="group">
                                 <button class="btn btn-sm btn-outline-primary" 
-                                        onclick="viewRegistration('{{ registration.id }}')" title="Ver detalles">
+                                        onclick="viewRegistration('{{ registration.id }}')" title="Ver detalles (No implementado)">
                                     <i class="bi bi-eye"></i>
                                 </button>
                                 {% if registration.status == 'pending' %}
-                                    <button class="btn btn-sm btn-success" 
-                                            onclick="approveRegistration('{{ registration.id }}')" title="Aprobar">
+                                    <button class="btn btn-sm btn-success btn-approve" 
+                                            data-id="{{ registration.id }}" title="Aprobar">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger" 
-                                            onclick="rejectRegistration('{{ registration.id }}')" title="Rechazar">
+                                    <button class="btn btn-sm btn-danger btn-reject" 
+                                            data-id="{{ registration.id }}" title="Rechazar"
+                                            data-bs-toggle="modal" data-bs-target="#rejectModal">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 {% endif %}
@@ -164,41 +155,40 @@
                     <tr>
                         <td colspan="8" class="text-center py-4">
                             <i class="bi bi-inbox display-4 text-muted"></i>
-                            <p class="mt-2 text-muted">No hay inscripciones registradas</p>
+                            <p class="mt-2 text-muted">No hay inscripciones con el estado "{{ status_filter }}".</p>
                         </td>
                     </tr>
                     {% endfor %}
-                </tbody>
+                    </tbody>
             </table>
         </div>
         
-        <!-- Paginación -->
-        {% if registrations.has_other_pages %}
+        {% if page_obj.has_other_pages %}
         <nav aria-label="Paginación de inscripciones">
             <ul class="pagination justify-content-center">
-                {% if registrations.has_previous %}
+                {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ registrations.previous_page_number }}">
+                        <a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
                 {% endif %}
                 
-                {% for num in registrations.paginator.page_range %}
-                    {% if registrations.number == num %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
                         <li class="page-item active">
                             <span class="page-link">{{ num }}</span>
                         </li>
                     {% else %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            <a class="page-link" href="?status={{ status_filter }}&page={{ num }}">{{ num }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
                 
-                {% if registrations.has_next %}
+                {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ registrations.next_page_number }}">
+                        <a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -209,42 +199,34 @@
     </div>
 </div>
 
-<!-- Modal para ver detalles de inscripción -->
 <div class="modal fade" id="registrationModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    </div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Detalles de Inscripción</h5>
+                <h5 class="modal-title">Rechazar Solicitud</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="registrationModalBody">
-                <!-- Contenido cargado dinámicamente -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+            <form id="rejectForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>¿Estás seguro de que quieres rechazar esta solicitud?</p>
+                    <div class="mb-3">
+                        <label for="rejection_reason" class="form-label">Motivo del Rechazo (Opcional):</label>
+                        <textarea class="form-control" id="rejection_reason" name="reason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Modal de confirmación -->
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmModalTitle">Confirmar Acción</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="confirmModalBody">
-                <!-- Contenido dinámico -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="confirmButton">Confirmar</button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_css %}
@@ -289,105 +271,66 @@
 
 {% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar filtros
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        filterRegistrations();
+    });
+
+    // --- JS para Aprobar (fetch) ---
+    document.querySelectorAll('.btn-approve').forEach(button => {
+        button.addEventListener('click', function() {
+            const registrationId = this.dataset.id;
+            if (confirm('¿Está seguro de que desea APROBAR esta inscripción?')) {
+                fetch(`/admin-panel/registrations/${registrationId}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('¡Inscripción aprobada!');
+                        location.reload();
+                    } else {
+                        alert('Error al aprobar: ' + (data.error || 'Error desconocido'));
+                    }
+                });
+            }
+        });
+    });
+
+    // --- JS para Rechazar (modal) ---
+    const rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    const rejectForm = document.getElementById('rejectForm');
+    
+    document.querySelectorAll('.btn-reject').forEach(button => {
+        button.addEventListener('click', function() {
+            const registrationId = this.dataset.id;
+            // Configuramos la URL del formulario del modal
+            rejectForm.action = `/admin-panel/registrations/${registrationId}/reject/`;
+            rejectModal.show();
+        });
+    });
+});
+
+
 function filterRegistrations() {
     const status = document.getElementById('statusFilter').value;
-    const team = document.getElementById('teamFilter').value;
-    const search = document.getElementById('searchInput').value;
+    // (Otros filtros no están implementados en la vista, pero se pueden añadir aquí)
     
     const params = new URLSearchParams();
     if (status) params.append('status', status);
-    if (team) params.append('team', team);
-    if (search) params.append('search', search);
     
-    window.location.href = '?' + params.toString();
+    window.location.href = `{% url 'admin_panel:registrations' %}?` + params.toString();
 }
 
 function viewRegistration(registrationId) {
-    fetch(`/admin-panel/registrations/${registrationId}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('registrationModalBody').innerHTML = data.html;
-            new bootstrap.Modal(document.getElementById('registrationModal')).show();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cargar los detalles de la inscripción');
-        });
-}
-
-function approveRegistration(registrationId) {
-    showConfirmModal(
-        'Aprobar Inscripción',
-        '¿Está seguro de que desea aprobar esta inscripción?',
-        () => {
-            fetch(`/admin-panel/registrations/${registrationId}/approve/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error al aprobar la inscripción');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al aprobar la inscripción');
-            });
-        }
-    );
-}
-
-function rejectRegistration(registrationId) {
-    showConfirmModal(
-        'Rechazar Inscripción',
-        '¿Está seguro de que desea rechazar esta inscripción?',
-        () => {
-            fetch(`/admin-panel/registrations/${registrationId}/reject/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error al rechazar la inscripción');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al rechazar la inscripción');
-            });
-        }
-    );
-}
-
-function exportRegistrations() {
-    const params = new URLSearchParams(window.location.search);
-    params.append('export', 'true');
-    window.location.href = '?' + params.toString();
-}
-
-function showConfirmModal(title, message, callback) {
-    document.getElementById('confirmModalTitle').textContent = title;
-    document.getElementById('confirmModalBody').textContent = message;
-    
-    const confirmButton = document.getElementById('confirmButton');
-    confirmButton.onclick = () => {
-        callback();
-        bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
-    };
-    
-    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    // (Esta función no está implementada en las vistas, solo muestra alerta)
+    alert('Función "Ver Detalles" aún no implementada.');
 }
 
 function getCookie(name) {
@@ -404,15 +347,5 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
-// Filtros en tiempo real
-document.getElementById('searchInput').addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') {
-        filterRegistrations();
-    }
-});
-
-document.getElementById('statusFilter').addEventListener('change', filterRegistrations);
-document.getElementById('teamFilter').addEventListener('change', filterRegistrations);
 </script>
 {% endblock %}

@@ -4,415 +4,78 @@
 {% block page_title %}Mis Jugadores{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-people me-2"></i>
-                    Jugadores Registrados
-                </h5>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerPlayerModal">
-                    <i class="bi bi-person-plus me-1"></i>
-                    Registrar Jugador
-                </button>
-            </div>
-            <div class="card-body">
-                <!-- Filtros -->
-                <form method="get" class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <select name="team" class="form-select">
-                            <option value="">Todos los equipos</option>
-                            {% for player in players %}
-                                {% if player.team %}
-                                    <option value="{{ player.team.id }}" {% if team_filter == player.team.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ player.team.name }}
-                                    </option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <select name="status" class="form-select">
-                            <option value="">Todos los estados</option>
-                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activo</option>
-                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactivo</option>
-                            <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspendido</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-outline-primary">
-                            <i class="bi bi-funnel me-1"></i>
-                            Filtrar
-                        </button>
-                        <a href="{% url 'guardian:players' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-1"></i>
-                            Limpiar
-                        </a>
-                    </div>
-                </form>
-                
-                <!-- Tabla de jugadores -->
-                {% if players %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Jugador</th>
-                                    <th>Edad</th>
-                                    <th>Equipo</th>
-                                    <th>Posición</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for player in players %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm me-3">
-                                                <i class="bi bi-person-circle text-primary" style="font-size: 2rem;"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold">{{ player.get_full_name }}</div>
-                                                <small class="text-muted">{{ player.rut }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if player.birth_date %}
-                                            {{ player.birth_date|timesince|truncatewords:1 }}
-                                        {% else %}
-                                            <span class="text-muted">No especificada</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if player.team %}
-                                            <span class="badge bg-info">{{ player.team.name }}</span>
-                                        {% else %}
-                                            <span class="text-muted">Sin equipo</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if player.position %}
-                                            {{ player.get_position_display }}
-                                        {% else %}
-                                            <span class="text-muted">No especificada</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if player.status == 'active' %}
-                                            <span class="badge bg-success">Activo</span>
-                                        {% elif player.status == 'inactive' %}
-                                            <span class="badge bg-secondary">Inactivo</span>
-                                        {% elif player.status == 'suspended' %}
-                                            <span class="badge bg-warning">Suspendido</span>
-                                        {% else %}
-                                            <span class="badge bg-light text-dark">{{ player.get_status_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                    onclick="viewPlayer('{{ player.id }}')" title="Ver detalles">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <a href="{% url 'guardian:payments' %}?player={{ player.id }}" 
-                                               class="btn btn-outline-success btn-sm" title="Ver pagos">
-                                                <i class="bi bi-credit-card"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Paginación -->
-                    {% if players.has_other_pages %}
-                        <nav aria-label="Paginación de jugadores">
-                            <ul class="pagination justify-content-center">
-                                {% if players.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ players.previous_page_number }}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                            Anterior
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% for num in players.paginator.page_range %}
-                                    {% if players.number == num %}
-                                        <li class="page-item active">
-                                            <span class="page-link">{{ num }}</span>
-                                        </li>
-                                    {% else %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ num }}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                                {{ num }}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                                
-                                {% if players.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ players.next_page_number }}{% if team_filter %}&team={{ team_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                            Siguiente
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
-                        <h4 class="text-muted mt-3">No tienes jugadores registrados</h4>
-                        <p class="text-muted">Registra tu primer jugador para comenzar</p>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerPlayerModal">
-                            <i class="bi bi-person-plus me-2"></i>
-                            Registrar Jugador
-                        </button>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-people me-2"></i>
+            Jugadoras Vinculadas a tu Cuenta
+        </h5>
+        <a href="{% url 'guardian:register_player' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> Registrar Nueva Jugadora
+        </a>
     </div>
-    
-    <!-- Panel de información -->
-    <div class="col-md-4">
-        <div class="card mb-3">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Información
-                </h6>
-            </div>
-            <div class="card-body">
-                <p class="small text-muted mb-2">
-                    <strong>Proceso de Registro:</strong>
-                </p>
-                <ol class="small text-muted">
-                    <li>Completa el formulario de registro</li>
-                    <li>Envía la solicitud</li>
-                    <li>Espera la aprobación del administrador</li>
-                    <li>Recibe confirmación por email</li>
-                </ol>
-                
-                <hr>
-                
-                <p class="small text-muted mb-2">
-                    <strong>Documentos Requeridos:</strong>
-                </p>
-                <ul class="small text-muted">
-                    <li>Certificado de nacimiento</li>
-                    <li>Certificado médico</li>
-                    <li>Autorización del apoderado</li>
-                    <li>Foto carnet</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="bi bi-telephone me-2"></i>
-                    Contacto
-                </h6>
-            </div>
-            <div class="card-body">
-                <p class="small text-muted">
-                    ¿Necesitas ayuda con el registro?
-                </p>
-                <p class="small">
-                    <strong>Teléfono:</strong> +56 9 1234 5678<br>
-                    <strong>Email:</strong> admin@clubpuertomontt.cl
-                </p>
-            </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Jugadora</th>
+                        <th>Categoría</th>
+                        <th>Relación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for link in guardian_links %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if link.player.photo %}
+                                    <img src="{{ link.player.photo.url }}" alt="{{ link.player.get_full_name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-person text-muted fs-5"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ link.player.get_full_name }}</strong><br>
+                                    <small class="text-muted">{{ link.player.rut|default:"Sin RUT" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ link.player.category.name|default:"N/A" }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ link.get_relation_display }}</span>
+                        </td>
+                        <td>
+                            {% if link.player.status == 'active' %}
+                                <span class="badge bg-success">Activa</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ link.player.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'guardian:player_detail' link.player.pk %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-eye me-1"></i> Ver Detalles
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="bi bi-people-fill fs-1 text-muted"></i>
+                            <h4 class="mt-3">No tienes jugadoras registradas</h4>
+                            <p class="text-muted">Usa el botón de arriba para registrar una nueva jugadora.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Modal para registrar jugador -->
-<div class="modal fade" id="registerPlayerModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-plus me-2"></i>
-                    Registrar Nuevo Jugador
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="registerPlayerForm">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="firstName" class="form-label">Nombres *</label>
-                            <input type="text" class="form-control" id="firstName" name="first_name" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="lastName" class="form-label">Apellidos *</label>
-                            <input type="text" class="form-control" id="lastName" name="last_name" required>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="rut" class="form-label">RUT *</label>
-                            <input type="text" class="form-control" id="rut" name="rut" placeholder="12.345.678-9" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="birthDate" class="form-label">Fecha de Nacimiento *</label>
-                            <input type="date" class="form-control" id="birthDate" name="birth_date" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="team" class="form-label">Equipo Solicitado</label>
-                        <select class="form-select" id="team" name="team">
-                            <option value="">Seleccionar equipo...</option>
-                            <!-- Las opciones se cargarán dinámicamente -->
-                        </select>
-                    </div>
-                    
-                    <hr>
-                    
-                    <h6 class="text-primary mb-3">
-                        <i class="bi bi-person-lines-fill me-2"></i>
-                        Contacto de Emergencia
-                    </h6>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="emergencyContact" class="form-label">Nombre Completo *</label>
-                            <input type="text" class="form-control" id="emergencyContact" name="emergency_contact" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="emergencyPhone" class="form-label">Teléfono *</label>
-                            <input type="tel" class="form-control" id="emergencyPhone" name="emergency_phone" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="medicalInfo" class="form-label">Información Médica Relevante</label>
-                        <textarea class="form-control" id="medicalInfo" name="medical_info" rows="3" 
-                                  placeholder="Alergias, medicamentos, condiciones médicas, etc."></textarea>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Nota:</strong> La solicitud será revisada por el administrador. 
-                        Recibirás una notificación cuando sea aprobada o rechazada.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg me-1"></i>
-                        Enviar Solicitud
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para ver detalles del jugador -->
-<div class="modal fade" id="playerDetailModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-person me-2"></i>
-                    Detalles del Jugador
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="playerDetailContent">
-                <!-- Contenido cargado dinámicamente -->
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .avatar-sm {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Función para ver detalles del jugador
-    function viewPlayer(playerId) {
-        // Aquí se cargarían los detalles del jugador
-        const modal = new bootstrap.Modal(document.getElementById('playerDetailModal'));
-        document.getElementById('playerDetailContent').innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
-            </div>
-        `;
-        modal.show();
-        
-        // Simular carga de datos
-        setTimeout(() => {
-            document.getElementById('playerDetailContent').innerHTML = `
-                <p>Detalles del jugador con ID: ${playerId}</p>
-                <p class="text-muted">Esta funcionalidad se implementará próximamente.</p>
-            `;
-        }, 1000);
-    }
-    
-    // Manejar envío del formulario de registro
-    document.getElementById('registerPlayerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-        
-        // Enviar datos al servidor
-        fetch('{% url "guardian:register_player" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Solicitud enviada correctamente');
-                location.reload();
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al enviar la solicitud');
-        });
-    });
-    
-    // Formatear RUT mientras se escribe
-    document.getElementById('rut').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/[^0-9kK]/g, '');
-        if (value.length > 1) {
-            value = value.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + value.slice(-1);
-        }
-        e.target.value = value;
-    });
-</script>
 {% endblock %}

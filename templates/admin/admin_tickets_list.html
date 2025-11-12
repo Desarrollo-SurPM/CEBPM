@@ -1,0 +1,85 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex">
+            <select name="status" class="form-select me-2" onchange="this.form.submit()">
+                <option value="abierto" {% if status_filter == 'abierto' %}selected{% endif %}>Abiertos</option>
+                <option value="respondido" {% if status_filter == 'respondido' %}selected{% endif %}>Respondidos</option>
+                <option value="cerrado" {% if status_filter == 'cerrado' %}selected{% endif %}>Cerrados</option>
+                <option value="todos" {% if status_filter == 'todos' %}selected{% endif %}>Todos</option>
+            </select>
+            <noscript><button type="submit" class="btn btn-primary">Filtrar</button></noscript>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Mostrando: {{ status_filter|capfirst }}</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Apoderado</th>
+                        <th>Asunto</th>
+                        <th>Estado</th>
+                        <th>Última Actualización</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in page_obj %}
+                    <tr>
+                        <td>#{{ ticket.id }}</td>
+                        <td>{{ ticket.guardian.get_full_name }}<br><small class="text-muted">{{ ticket.guardian.email }}</small></td>
+                        <td>{{ ticket.subject }}</td>
+                        <td>
+                            {% if ticket.status == 'abierto' %}
+                                <span class="badge bg-warning">Abierto</span>
+                            {% elif ticket.status == 'respondido' %}
+                                <span class="badge bg-success">Respondido</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Cerrado</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ticket.replies.last.created_at|timesince }}</td>
+                        <td>
+                            <a href="{% url 'admin_panel:admin_ticket_view' ticket.pk %}" class="btn btn-primary btn-sm">
+                                Ver / Responder
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <p class="text-muted mb-0">No hay tickets con el estado "{{ status_filter }}".</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

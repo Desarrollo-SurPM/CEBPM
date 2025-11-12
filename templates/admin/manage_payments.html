@@ -1,0 +1,58 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Pagos Pendientes{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Pagos esperando aprobación</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha de Pago</th>
+                        <th>Apoderado</th>
+                        <th>Jugador(a)</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Comprobante</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.paid_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ payment.invoice.guardian.get_full_name }}</td>
+                        <td>{{ payment.invoice.player.get_full_name }}</td>
+                        <td>${{ payment.amount|floatformat:0 }}</td>
+                        <td>{{ payment.get_method_display }}</td>
+                        <td>
+                            {% if payment.payment_proof %}
+                                <a href="{{ payment.payment_proof.url }}" target="_blank" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye-fill"></i> Ver
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_panel:review_payment' payment.pk %}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-search"></i> Revisar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No hay pagos pendientes de aprobación. ¡Buen trabajo!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

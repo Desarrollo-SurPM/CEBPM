@@ -1,0 +1,56 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{{ page_title }}</h1>
+    <a href="{% url 'admin_panel:admin_player_detail' player.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-x-lg me-2"></i> Cancelar Edición
+    </a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Formulario de Edición de Ficha</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <h5 class="text-muted">Datos Personales</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">{{ form.first_name.label_tag }} {{ form.first_name }}</div>
+                <div class="col-md-6 mb-3">{{ form.last_name.label_tag }} {{ form.last_name }}</div>
+                <div class="col-md-6 mb-3">{{ form.nickname.label_tag }} {{ form.nickname }}</div>
+                <div class="col-md-6 mb-3">{{ form.rut.label_tag }} {{ form.rut }}</div>
+                <div class="col-md-6 mb-3">{{ form.birthdate.label_tag }} {{ form.birthdate }}</div>
+                <div class="col-md-6 mb-3">{{ form.photo.label_tag }} {{ form.photo }}</div>
+                <div class="col-md-6 mb-3">{{ form.player_email.label_tag }} {{ form.player_email }}</div>
+                <div class="col-md-6 mb-3">{{ form.player_phone.label_tag }} {{ form.player_phone }}</div>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="text-muted">Datos Deportivos</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">{{ form.category.label_tag }} {{ form.category }}</div>
+                <div class="col-md-4 mb-3">{{ form.position.label_tag }} {{ form.position }}</div>
+                <div class="col-md-4 mb-3">{{ form.status.label_tag }} {{ form.status }}</div>
+                <div class="col-md-4 mb-3">{{ form.height.label_tag }} {{ form.height }}</div>
+                <div class="col-md-8 mb-3">{{ form.association.label_tag }} {{ form.association }}</div>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="text-muted">Datos Médicos y Permisos</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">{{ form.medical_conditions.label_tag }} {{ form.medical_conditions }}</div>
+                <div class="col-md-6 mb-3">{{ form.permissions_notes.label_tag }} {{ form.permissions_notes }}</div>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg mt-3">
+                <i class="bi bi-check-circle me-2"></i> Guardar Cambios
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

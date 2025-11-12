@@ -5,6 +5,7 @@ from players.models import Player, Category
 from schedules.models import Match, Activity
 from sponsors.models import Sponsor  # <-- ESTA LÍNEA ESTÁ CORREGIDA
 from django.utils import timezone
+from .models import ClubHistory, LandingNews, LandingEvent
 from datetime import datetime, timedelta
 
 
@@ -21,6 +22,26 @@ def landing_page(request):
         'total_players': Player.objects.count(),
         'total_categories': Category.objects.count(),
     }
+    # --- NUEVO CONTEXTO PARA LANDING ---
+    
+    # 1. Últimas 3 Noticias
+    latest_news = LandingNews.objects.all()[:3] # Ya está ordenado por '-created_at' en el modelo
+    
+    # 2. Próximos Eventos del Calendario
+    upcoming_events = LandingEvent.objects.filter(
+        date__gte=timezone.now()
+    ).order_by('date')[:5] # Tomamos los 5 más próximos
+    
+    # 3. Jugadoras Destacadas (Máx 4)
+    featured_players = Player.objects.filter(is_featured=True)[:4]
+
+    # Añadimos el nuevo contexto al existente
+    context.update({
+        'latest_news': latest_news,
+        'upcoming_events': upcoming_events,
+        'featured_players': featured_players,
+    })
+    
     return render(request, 'pages/landing.html', context)
 
 

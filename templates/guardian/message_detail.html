@@ -1,0 +1,39 @@
+{% extends 'guardian/base_guardian.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ message.title }}</h5>
+        <a href="{% url 'guardian:messages' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Buzón
+        </a>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            Enviado por: <strong>{{ message.created_by.get_full_name|default:"Administración" }}</strong>
+            <br>
+            Fecha: {{ recipient.sent_at|date:"d M Y, H:i" }}
+        </p>
+        
+        <hr>
+
+        <div class="message-body mt-4">
+            {{ message.body_html|linebreaksbr }}
+        </div>
+
+        {% if message.attachment %}
+            <hr>
+            <div class="mt-4">
+                <h5>Archivo Adjunto:</h5>
+                <a href="{{ message.attachment.url }}" target="_blank" class="btn btn-primary">
+                    <i class="bi bi-download me-1"></i> Descargar {{ message.attachment.name|cut:"communications_attachments/" }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

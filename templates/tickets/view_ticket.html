@@ -1,0 +1,71 @@
+{% extends 'guardian/base_guardian.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<style>
+    .chat-bubble {
+        padding: 15px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        max-width: 80%;
+    }
+    .chat-guardian {
+        background-color: #0d6efd; /* Azul Bootstrap */
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 0;
+    }
+    .chat-admin {
+        background-color: #e9ecef; /* Gris claro */
+        color: #212529;
+        margin-right: auto;
+        border-bottom-left-radius: 0;
+    }
+    .chat-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+</style>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="m-0 font-weight-bold text-primary">{{ ticket.subject }}</h6>
+            <small class="text-muted">Estado: 
+                {% if ticket.status == 'abierto' %} <span class="text-warning fw-bold">Abierto</span>
+                {% elif ticket.status == 'respondido' %} <span class="text-success fw-bold">Respondido por Admin</span>
+                {% else %} <span class="text-secondary fw-bold">Cerrado</span>
+                {% endif %}
+            </small>
+        </div>
+        <a href="{% url 'tickets:list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Volver a la lista
+        </a>
+    </div>
+    
+    <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+        {% for reply in replies %}
+            <div class="chat-bubble {% if reply.user == request.user %}chat-guardian{% else %}chat-admin{% endif %}">
+                <p class="mb-1">{{ reply.message|linebreaksbr }}</p>
+                <div class="chat-meta text-end">
+                    <strong>{% if reply.user.admin_profile %}Admin{% else %}Tú{% endif %}</strong>
+                    <br>
+                    <small>{{ reply.created_at|date:"d M Y, H:i" }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="card-footer">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                {{ reply_form.message }}
+                <button class="btn btn-primary" type="submit">Enviar Respuesta</button>
+            </div>
+            {% if reply_form.message.errors %}<div class="text-danger small">{{ reply_form.message.errors }}</div>{% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

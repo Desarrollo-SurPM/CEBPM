@@ -1,0 +1,81 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Revisar Pago{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Comprobante de Pago</h6>
+            </div>
+            <div class="card-body">
+                {% if payment.payment_proof %}
+                    <img src="{{ payment.payment_proof.url }}" alt="Comprobante de Pago" class="img-fluid rounded">
+                {% else %}
+                    <div class="alert alert-warning">No se adjuntó comprobante para este pago.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Detalles del Pago</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Apoderado:</strong> {{ guardian.get_full_name }}</p>
+                <p><strong>Jugador(a):</strong> {{ player.get_full_name }}</p>
+                <p><strong>Concepto:</strong> {{ invoice.fee_definition.name }}</p>
+                <p><strong>Monto:</strong> <span class="badge bg-success fs-6">${{ payment.amount|floatformat:0 }}</span></p>
+                <p><strong>Método:</strong> {{ payment.get_method_display }}</p>
+                <p><strong>Fecha de Pago (subida):</strong> {{ payment.paid_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Notas (Nro. Transacción):</strong> {{ payment.notes|default:"Sin notas" }}</p>
+                
+                <hr>
+                
+                <h5 class="mb-3">Acciones</h5>
+                
+                <form method="POST" action="{% url 'admin_panel:approve_payment' payment.pk %}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que quieres APROBAR este pago?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle-fill me-2"></i> Aprobar Pago
+                    </button>
+                </form>
+                
+                <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#rejectPaymentModal">
+                    <i class="bi bi-x-circle-fill me-2"></i> Rechazar Pago
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectPaymentModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rejectModalLabel">Rechazar Pago #{{ payment.id }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'admin_panel:reject_payment' payment.pk %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <p>Estás a punto de rechazar este pago. La factura volverá a estar pendiente para el apoderado.</p>
+            <div class="mb-3">
+                <label for="rejection_reason" class="form-label">Motivo del Rechazo (Opcional):</label>
+                <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="3" placeholder="Ej: El monto no coincide, comprobante ilegible..."></textarea>
+                <small class="form-text text-muted">Este motivo se enviará al apoderado (próximamente).</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</abutton>
+            <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

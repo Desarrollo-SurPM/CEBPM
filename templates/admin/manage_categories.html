@@ -1,0 +1,70 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Gestionar Categorías{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Agregar Nueva Categoría</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Crear Categoría</button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Categorías Existentes</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Nombre de Categoría</th>
+                        <th>Inscripciones</th>
+                        <th>Acción (Abrir/Cerrar)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td><strong>{{ category.name }}</strong></td>
+                        <td>
+                            {% if category.is_registration_open %}
+                                <span class="badge bg-success">Abiertas</span>
+                            {% else %}
+                                <span class="badge bg-danger">Cerradas</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'admin_panel:toggle_category_registration' category.pk %}">
+                                {% csrf_token %}
+                                {% if category.is_registration_open %}
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle-fill me-1"></i> Cerrar
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Abrir
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No hay categorías creadas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
