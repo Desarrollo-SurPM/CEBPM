@@ -1,338 +1,155 @@
 {% extends 'admin/base_admin.html' %}
-{% load static %}
-
-{% block title %}Gestión de Inscripciones - Admin Panel{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Gestión de Inscripciones</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportRegistrations()">
-                <i class="bi bi-download"></i> Exportar
-            </button>
-        </div>
-    </div>
-</div>
+<div class="container-fluid py-4">
+    <h2 class="h3 mb-4 text-gray-800">Gestión de Inscripciones</h2>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <form method="GET" action="{% url 'admin_panel:registrations' %}" id="filterForm" class="d-flex gap-2">
-            <select class="form-select" id="statusFilter" name="status">
-                <option value="">Todos los estados</option>
-                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendientes</option>
-                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Aprobadas</option>
-                <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazadas</option>
-            </select>
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="?status=pending" class="btn btn-{% if status_filter == 'pending' %}primary{% else %}outline-primary{% endif %}">
+                Pendientes
+            </a>
+            <a href="?status=approved" class="btn btn-{% if status_filter == 'approved' %}success{% else %}outline-success{% endif %}">
+                Aprobadas
+            </a>
+            <a href="?status=rejected" class="btn btn-{% if status_filter == 'rejected' %}danger{% else %}outline-danger{% endif %}">
+                Rechazadas
+            </a>
+            <a href="?status=" class="btn btn-{% if not status_filter %}secondary{% else %}outline-secondary{% endif %}">
+                Todas
+            </a>
         </div>
-    <div class="col-md-3">
-        <select class="form-select" id="teamFilter" name="team" disabled>
-            <option value="">Todos los equipos</option>
-            </select>
     </div>
-    <div class="col-md-4">
-        <input type="text" class="form-control" id="searchInput" name="search" placeholder="Buscar por nombre..." disabled>
-    </div>
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100" type="submit">
-            <i class="bi bi-search"></i> Filtrar
-        </button>
-    </div>
-    </form> </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title text-warning">{{ pending_count|default:0 }}</h5>
-                <p class="card-text">Pendientes</p>
-            </div>
+    {% if page_obj %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Solicitudes ({{ page_obj.paginator.count }})</h6>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title text-success">{{ approved_count|default:0 }}</h5>
-                <p class="card-text">Aprobadas</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title text-danger">{{ rejected_count|default:0 }}</h5>
-                <p class="card-text">Rechazadas</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title text-info">{{ total_count|default:0 }}</h5>
-                <p class="card-text">Total</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">Lista de Inscripciones ({{ status_filter|capfirst }})</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Jugador (Solicitud)</th>
-                        <th>RUT</th>
-                        <th>Nacimiento</th>
-                        <th>Equipo</th>
-                        <th>Apoderado</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for registration in page_obj %}
-                    <tr>
-                        <td>{{ registration.created_at|date:"d/m/Y" }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-sm me-2">
-                                    <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
-                                        {{ registration.player_first_name|first }}{{ registration.player_last_name|first }}
-                                    </div>
-                                </div>
-                                <div>
-                                    <strong>{{ registration.player_first_name }} {{ registration.player_last_name }}</strong>
-                                </div>
-                            </div>
-                        </td>
-                        <td>{{ registration.player_rut|default:"N/A" }}</td>
-                        <td>{{ registration.player_birth_date|date:"d/m/Y" }}</td>
-                        <td>
-                            <span class="badge bg-primary">{{ registration.team|capfirst }}</span>
-                        </td>
-                        <td>
-                            <div>
-                                <strong>{{ registration.guardian.get_full_name }}</strong><br>
-                                <small class="text-muted">{{ registration.guardian.email }}</small><br>
-                                <small class="text-muted">{{ registration.guardian.guardian_profile.phone|default:"Sin fono" }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            {% if registration.status == 'pending' %}
-                                <span class="badge bg-warning">Pendiente</span>
-                            {% elif registration.status == 'approved' %}
-                                <span class="badge bg-success">Aprobada</span>
-                            {% else %}
-                                <span class="badge bg-danger">Rechazada</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-outline-primary" 
-                                        onclick="viewRegistration('{{ registration.id }}')" title="Ver detalles (No implementado)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                {% if registration.status == 'pending' %}
-                                    <button class="btn btn-sm btn-success btn-approve" 
-                                            data-id="{{ registration.id }}" title="Aprobar">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger btn-reject" 
-                                            data-id="{{ registration.id }}" title="Rechazar"
-                                            data-bs-toggle="modal" data-bs-target="#rejectModal">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Jugador</th>
+                            <th>RUT</th>
+                            <th>Categoría</th>
+                            <th>Apoderado</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ req.player_first_name }} {{ req.player_last_name }}</strong><br>
+                                <small class="text-muted">{{ req.player_birth_date|date:"d/m/Y" }}</small>
+                            </td>
+                            <td>{{ req.player_rut }}</td>
+                            <td>{{ req.team }}</td>
+                            <td>
+                                {{ req.guardian.get_full_name }}<br>
+                                <small>{{ req.guardian.email }}</small>
+                            </td>
+                            <td>
+                                {% if req.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                {% elif req.status == 'approved' %}
+                                    <span class="badge bg-success">Aprobada</span>
+                                {% elif req.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rechazada</span>
                                 {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <i class="bi bi-inbox display-4 text-muted"></i>
-                            <p class="mt-2 text-muted">No hay inscripciones con el estado "{{ status_filter }}".</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                            </td>
+                            <td>{{ req.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetail{{ req.id }}" title="Ver Detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+
+                                {% if req.status == 'pending' %}
+                                <button type="button" class="btn btn-success btn-sm" onclick="approveRegistration({{ req.id }})" title="Aprobar">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="rejectRegistration({{ req.id }})" title="Rechazar">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
-            </table>
-        </div>
-        
-        {% if page_obj.has_other_pages %}
-        <nav aria-label="Paginación de inscripciones">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}">
-                            <i class="bi bi-chevron-left"></i>
-                        </a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}">Anterior</a>
                     </li>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ num }}</span>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="?status={{ status_filter }}&page={{ num }}">{{ num }}</a>
-                        </li>
                     {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}">
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
+                    <li class="page-item disabled">
+                        <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
                     </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
     </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        No hay solicitudes de registro en estado <strong>{{ status_filter|default:"Todas" }}</strong>.
+    </div>
+    {% endif %}
 </div>
 
-<div class="modal fade" id="registrationModal" tabindex="-1">
-    </div>
-
-<div class="modal fade" id="rejectModal" tabindex="-1">
+{% for req in page_obj %}
+<div class="modal fade" id="modalDetail{{ req.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Rechazar Solicitud</h5>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Detalle Solicitud #{{ req.id }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="rejectForm" method="POST">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <p>¿Estás seguro de que quieres rechazar esta solicitud?</p>
-                    <div class="mb-3">
-                        <label for="rejection_reason" class="form-label">Motivo del Rechazo (Opcional):</label>
-                        <textarea class="form-control" id="rejection_reason" name="reason" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <h6>Datos del Jugador</h6>
+                <p>
+                    <strong>Nombre:</strong> {{ req.player_first_name }} {{ req.player_last_name }}<br>
+                    <strong>RUT:</strong> {{ req.player_rut }}<br>
+                    <strong>Nacimiento:</strong> {{ req.player_birth_date|date:"d/m/Y" }}
+                </p>
+                <hr>
+                <h6>Contacto y Salud</h6>
+                <p>
+                    <strong>Emergencia:</strong> {{ req.emergency_contact }}<br>
+                    <strong>Teléfono:</strong> {{ req.emergency_phone }}<br>
+                    <strong>Info Médica:</strong> {{ req.medical_info|default:"Ninguna" }}
+                </p>
+                <hr>
+                <h6>Datos del Apoderado</h6>
+                <p>
+                    <strong>Nombre:</strong> {{ req.guardian.get_full_name }}<br>
+                    <strong>Email:</strong> {{ req.guardian.email }}<br>
+                    <strong>Teléfono:</strong> {{ req.guardian.guardian_profile.phone }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>
+{% endfor %}
 
-{% endblock %}
-
-{% block extra_css %}
-<style>
-.avatar-sm {
-    width: 40px;
-    height: 40px;
-}
-
-.avatar-sm img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.avatar-placeholder {
-    width: 40px;
-    height: 40px;
-    background-color: #6c757d;
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.table th {
-    border-top: none;
-    font-weight: 600;
-    color: #495057;
-}
-
-.btn-group .btn {
-    border-radius: 0.25rem;
-    margin-right: 2px;
-}
-
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.125);
-}
-</style>
-{% endblock %}
-
-{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Aplicar filtros
-    document.getElementById('filterForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        filterRegistrations();
-    });
-
-    // --- JS para Aprobar (fetch) ---
-    document.querySelectorAll('.btn-approve').forEach(button => {
-        button.addEventListener('click', function() {
-            const registrationId = this.dataset.id;
-            if (confirm('¿Está seguro de que desea APROBAR esta inscripción?')) {
-                fetch(`/admin-panel/registrations/${registrationId}/approve/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('¡Inscripción aprobada!');
-                        location.reload();
-                    } else {
-                        alert('Error al aprobar: ' + (data.error || 'Error desconocido'));
-                    }
-                });
-            }
-        });
-    });
-
-    // --- JS para Rechazar (modal) ---
-    const rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
-    const rejectForm = document.getElementById('rejectForm');
-    
-    document.querySelectorAll('.btn-reject').forEach(button => {
-        button.addEventListener('click', function() {
-            const registrationId = this.dataset.id;
-            // Configuramos la URL del formulario del modal
-            rejectForm.action = `/admin-panel/registrations/${registrationId}/reject/`;
-            rejectModal.show();
-        });
-    });
-});
-
-
-function filterRegistrations() {
-    const status = document.getElementById('statusFilter').value;
-    // (Otros filtros no están implementados en la vista, pero se pueden añadir aquí)
-    
-    const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    
-    window.location.href = `{% url 'admin_panel:registrations' %}?` + params.toString();
-}
-
-function viewRegistration(registrationId) {
-    // (Esta función no está implementada en las vistas, solo muestra alerta)
-    alert('Función "Ver Detalles" aún no implementada.');
-}
-
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -346,6 +163,42 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+function approveRegistration(id) {
+    if(confirm('¿Estás seguro de aprobar esta inscripción?')) {
+        fetch(`/admin-panel/registrations/approve/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) { location.reload(); } 
+            else { alert('Error: ' + (data.error || 'Error desconocido')); }
+        });
+    }
+}
+
+function rejectRegistration(id) {
+    let reason = prompt("Motivo del rechazo:");
+    if(reason) {
+        let formData = new FormData();
+        formData.append('reason', reason);
+        
+        fetch(`/admin-panel/registrations/reject/${id}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) { location.reload(); } 
+            else { alert('Error: ' + (data.error || 'Error desconocido')); }
+        });
+    }
 }
 </script>
 {% endblock %}

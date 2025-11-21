@@ -106,6 +106,21 @@ class Player(models.Model):
             return None
         today = timezone.now().date()
         return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        # Validar límite de 5 jugadoras destacadas
+        if self.is_featured:
+            # Contamos cuántas hay ya destacadas, excluyendo a la actual si ya existía
+            current_featured_count = Player.objects.filter(is_featured=True).exclude(pk=self.pk).count()
+            if current_featured_count >= 5:
+                raise ValidationError({
+                    'is_featured': 'Ya existen 5 jugadoras destacadas. Debes quitar una antes de agregar otra.'
+                })
+
+    def save(self, *args, **kwargs):
+        self.full_clean() # Llama a las validaciones (incluida clean) antes de guardar
+        super().save(*args, **kwargs)
 # ==============================================
 # FIN DE LA CLASE PLAYER MODIFICADA
 # ==============================================

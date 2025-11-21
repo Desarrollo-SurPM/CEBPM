@@ -19,7 +19,11 @@ class PlayerForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'nickname': forms.TextInput(attrs={'class': 'form-control'}),
             'rut': forms.TextInput(attrs={'class': 'form-control'}),
-            'birthdate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'birth_date': forms.DateInput(
+                # IMPORTANTE: format='%Y-%m-%d' es vital para que el input date lo lea
+                attrs={'type': 'date', 'class': 'form-control'}, 
+                format='%Y-%m-%d' 
+            ),
             'photo': forms.FileInput(attrs={'class': 'form-control'}),
             'player_email': forms.EmailInput(attrs={'class': 'form-control'}),
             'player_phone': forms.TextInput(attrs={'class': 'form-control'}),

@@ -119,9 +119,31 @@ class UserRegistrationForm(forms.ModelForm):
             registration.save()
         return registration
 
-# ===================================================================
-# FORMULARIOS ORIGINALES (MANTENIDOS)
-# ===================================================================
+class PlayerRegistrationForm(forms.ModelForm):
+    """Formulario para que un apoderado logueado inscriba una nueva jugadora"""
+    
+    team = forms.ModelChoiceField(
+        queryset=Category.objects.filter(is_registration_open=True),
+        label='Categoría',
+        empty_label="Selecciona Categoría"
+    )
+
+    class Meta:
+        model = Registration
+        fields = [
+            'player_first_name', 'player_last_name', 'player_rut', 
+            'player_birth_date', 'team', 'emergency_contact', 
+            'emergency_phone', 'medical_info'
+        ]
+        widgets = {
+            'player_birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'player_first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'player_last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'player_rut': forms.TextInput(attrs={'class': 'form-control'}),
+            'emergency_contact': forms.TextInput(attrs={'class': 'form-control'}),
+            'emergency_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'medical_info': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
 
 class GuardianProfileForm(forms.ModelForm):
     """Formulario para editar perfil de apoderado"""

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from players.models import Category, Player
 from decimal import Decimal
+from sponsors.models import Sponsor
 
 
 class FeeDefinition(models.Model):
@@ -132,6 +133,7 @@ class Transaction(models.Model):
         ('evento', 'Evento'),
         ('donacion', 'Donación'),
         ('entrada', 'Entradas'),
+        ('cuota', 'Cuota Social/Deportiva'), # Agregué esta por si acaso
         # Gastos
         ('arriendo', 'Arriendo Gimnasio'),
         ('arbitraje', 'Pago Árbitros'),
@@ -142,12 +144,36 @@ class Transaction(models.Model):
         ('otros', 'Otros'),
     ]
 
+    # --- NUEVO: Tipo de aporte (Dinero o Especies) ---
+    CONTRIBUTION_CHOICES = [
+        ('monetary', 'Monetario (Dinero)'),
+        ('goods', 'Implementos / Especies / Servicios'),
+    ]
+
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name='Tipo')
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name='Categoría')
     description = models.CharField(max_length=255, verbose_name='Descripción')
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto')
+    amount = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='Monto Estimado/Real') # Cambié decimales a 0 si usas pesos chilenos, si usas USD déjalo en 2
     date = models.DateField(verbose_name='Fecha de Transacción')
     
+    # --- NUEVO: Vínculo con Auspiciador ---
+    sponsor = models.ForeignKey(
+        Sponsor, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name='Auspiciador (Si aplica)',
+        related_name='transactions'
+    )
+
+    # --- NUEVO: Definir si es dinero o especies ---
+    contribution_type = models.CharField(
+        max_length=10, 
+        choices=CONTRIBUTION_CHOICES, 
+        default='monetary',
+        verbose_name='Tipo de Aporte'
+    )
+
     # Opcional: Para vincular un pago a un jugador específico
     player = models.ForeignKey(
         Player, 
@@ -165,6 +191,7 @@ class Transaction(models.Model):
         ordering = ['-date']
 
     def __str__(self):
-        return f"[{self.get_type_display()}] {self.description} - ${self.amount}"
-    # ELIMINAMOS EL MÉTODO SAVE() que auto-aprobaba la factura.
-    # El admin lo hará manualmente ahora.
+        prefix = ""
+        if self.sponsor:
+            prefix = f"[Sponsor: {self.sponsor.name}] "
+        return f"{prefix}[{self.get_type_display()}] {self.description} - ${self.amount}"

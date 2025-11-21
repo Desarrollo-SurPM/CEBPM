@@ -12,48 +12,50 @@
         </a>
     </div>
     <div class="card-body">
-        <p class="text-muted">Como apoderado, puedes actualizar la información de contacto, médica y los permisos de tu jugadora.</p>
-        
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <div class="mb-3">
-                {{ form.photo.label_tag }}
-                {{ form.photo }}
-                {% if form.photo.errors %}<div class="text-danger small">{{ form.photo.errors }}</div>{% endif %}
+            <div class="row mb-3">
+                <div class="col-md-4 text-center">
+                    {% if player.photo %}
+                        <img src="{{ player.photo.url }}" class="img-thumbnail mb-2" style="max-height: 150px;">
+                    {% endif %}
+                    {{ form.photo }}
+                </div>
+                <div class="col-md-8">
+                     <div class="mb-3">
+                        <label for="birthdate" class="form-label">Fecha de Nacimiento</label>
+                        <input type="date" name="birthdate" id="birthdate" class="form-control" 
+                               value="{{ player.birthdate|date:'Y-m-d' }}" required>
+                        <small class="text-muted">Si cambias esto, la categoría podría cambiar.</small>
+                    </div>
+                </div>
             </div>
             
             <hr>
-            <h5 class="mt-4">Datos de Contacto (Jugadora)</h5>
+            <h5 class="mt-4">Datos de Contacto</h5>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     {{ form.player_email.label_tag }}
                     {{ form.player_email }}
-                    {% if form.player_email.errors %}<div class="text-danger small">{{ form.player_email.errors }}</div>{% endif %}
                 </div>
                 <div class="col-md-6 mb-3">
                     {{ form.player_phone.label_tag }}
                     {{ form.player_phone }}
-                    {% if form.player_phone.errors %}<div class="text-danger small">{{ form.player_phone.errors }}</div>{% endif %}
                 </div>
             </div>
 
-            <hr>
-            <h5 class="mt-4">Información Médica y Permisos</h5>
+            <h5 class="mt-4">Información Médica</h5>
             <div class="mb-3">
                 {{ form.medical_conditions.label_tag }}
                 {{ form.medical_conditions }}
-                {% if form.medical_conditions.errors %}<div class="text-danger small">{{ form.medical_conditions.errors }}</div>{% endif %}
             </div>
             <div class="mb-3">
                 {{ form.permissions_notes.label_tag }}
                 {{ form.permissions_notes }}
-                {% if form.permissions_notes.errors %}<div class="text-danger small">{{ form.permissions_notes.errors }}</div>{% endif %}
             </div>
 
-            <button type="submit" class="btn btn-success btn-lg mt-3">
-                <i class="bi bi-check-circle me-2"></i> Guardar Cambios
-            </button>
+            <button type="submit" class="btn btn-success mt-3">Guardar Cambios</button>
         </form>
     </div>
 </div>
