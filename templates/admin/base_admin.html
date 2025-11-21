@@ -6,14 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Panel de Administración - CEB FEM{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Custom CSS -->
     <link href="{% static 'css/forms.css' %}" rel="stylesheet">
     
     <style>
@@ -163,6 +159,30 @@
             padding: 0 30px;
         }
         
+        .collapse-inner {
+            background-color: white;
+            padding: .5rem 1rem;
+            margin: .5rem 1rem;
+            border-radius: .35rem;
+        }
+        .collapse-header {
+            color: var(--admin-secondary);
+            font-size: .85rem;
+            font-weight: 700;
+            margin-bottom: .5rem;
+        }
+        .collapse-item {
+            display: block;
+            padding: .5rem 1rem;
+            color: var(--admin-primary);
+            text-decoration: none;
+            border-radius: .35rem;
+        }
+        .collapse-item:hover {
+            background-color: #f8f9fa;
+            color: var(--admin-accent);
+        }
+        
         @media (max-width: 768px) {
             .admin-sidebar {
                 position: fixed;
@@ -185,90 +205,163 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0">
-                <div class="admin-sidebar">
-                    <div class="sidebar-brand">
-                        <h4>Admin Panel</h4>
-                        <small class="text-light">CEB FEM</small>
-                    </div>
-                    
-                    <nav class="nav flex-column">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'admin_panel:dashboard' %}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                        <a class="nav-link {% if request.resolver_match.url_name == 'players' %}active{% endif %}" href="{% url 'admin_panel:players' %}">
-                            <i class="bi bi-people"></i> Jugadores
-                        </a>
-                        <a class="nav-link {% if request.resolver_match.url_name == 'registrations' %}active{% endif %}" href="{% url 'admin_panel:registrations' %}">
-                            <i class="bi bi-person-plus"></i> Registros
-                        </a>
-                        <a class="nav-link {% if request.resolver_match.url_name == 'finances' %}active{% endif %}" href="{% url 'admin_panel:finances' %}">
-                            <i class="bi bi-cash-stack"></i> Finanzas
-                        </a>
-                        <a class="nav-link {% if request.resolver_match.url_name == 'communications' %}active{% endif %}" href="{% url 'admin_panel:communications' %}">
-                            <i class="bi bi-chat-dots"></i> Comunicaciones
-                        </a>
-                        
-                        <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
-                        
-                        <a class="nav-link" href="{% url 'pages:landing' %}">
-                            <i class="bi bi-house"></i> Sitio Web
-                        </a>
-                        <form method="post" action="{% url 'logout' %}" class="d-inline">
-                             {% csrf_token %}
-                             <button type="submit" class="nav-link border-0 bg-transparent">
-                                 <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                             </button>
-                         </form>
-                    </nav>
+
+<body id="page-top">
+
+    <div id="wrapper">
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'admin_panel:dashboard' %}">
+                <div class="sidebar-brand-icon">
+                    <i class="bi bi-shield-fill"></i>
                 </div>
+                <div class="sidebar-brand-text mx-3">Admin CEBPM</div>
+            </a>
+
+            <hr class="sidebar-divider my-0">
+
+            <li class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <a class="nav-link" href="{% url 'admin_panel:dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">
+                Gestión
             </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10">
-                <!-- Header -->
-                <div class="admin-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-0">{% block page_title %}Panel de Administración{% endblock %}</h2>
-                        <small class="text-muted">{% block page_subtitle %}Gestión del club deportivo{% endblock %}</small>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="me-3">Bienvenido, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
-                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggle">
-                            <i class="bi bi-list"></i>
-                        </button>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLanding" aria-expanded="false" aria-controls="collapseLanding">
+                    <i class="bi bi-display"></i>
+                    <span>Gestión Landing</span>
+                </a>
+                <div id="collapseLanding" class="collapse" aria-labelledby="headingLanding" data-bs-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Secciones:</h6>
+                        <a class="collapse-item" href="{% url 'admin_panel:manage_news' %}">Últimas Noticias</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:manage_calendar' %}">Calendario</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:manage_featured_players' %}">Jugadoras Destacadas</a>
                     </div>
                 </div>
-                
-                <!-- Messages -->
-                {% if messages %}
-                    <div class="main-content">
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePlayers" aria-expanded="false" aria-controls="collapsePlayers">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Jugadores</span>
+                </a>
+                <div id="collapsePlayers" class="collapse" aria-labelledby="headingPlayers" data-bs-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Gestión de Jugadores:</h6>
+                        <a class="collapse-item" href="{% url 'admin_panel:players' %}">Ver Lista Jugadores</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:admin_player_cards' %}">Ver Fichas</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:registrations' %}">Solicitudes Registro</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:manage_categories' %}">Categorías (Cupos)</a>
                     </div>
-                {% endif %}
-                
-                <!-- Page Content -->
-                <div class="main-content">
+                </div>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFinances" aria-expanded="false" aria-controls="collapseFinances">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Finanzas</span>
+                </a>
+                <div id="collapseFinances" class="collapse" aria-labelledby="headingFinances" data-bs-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Gestión Financiera:</h6>
+                        <a class="collapse-item" href="{% url 'admin_panel:finances_dashboard' %}">Dashboard Finanzas</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:manage_pending_payments' %}">Pagos Pendientes</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:manage_fees' %}">Definir Cuotas</a>
+                        <a class="collapse-item" href="{% url 'admin_panel:assign_fees' %}">Asignar Cuotas</a>
+                    </div>
+                </div>
+            </li>
+            
+            <li class="nav-item {% if 'communications' in request.resolver_match.url_name %}active{% endif %}">
+                <a class="nav-link" href="{% url 'admin_panel:communications' %}">
+                    <i class="bi bi-broadcast"></i>
+                    <span>Comunicaciones</span></a>
+            </li>
+
+            <li class="nav-item {% if 'ticket' in request.resolver_match.url_name %}active{% endif %}">
+                <a class="nav-link" href="{% url 'admin_panel:admin_tickets_list' %}">
+                    <i class="bi bi-patch-question-fill"></i>
+                    <span>Solicitudes</span>
+                </a>
+            </li>
+            <li class="nav-item {% if 'sponsors' in request.resolver_match.url_name %}active{% endif %}">
+                <a class="nav-link" href="{% url 'admin_panel:admin_sponsors' %}">
+                    <i class="bi bi-star-fill"></i>
+                    <span>Patrocinadores</span></a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+
+            </ul>
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <div id="content">
+
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <button id="sidebarToggle" class="btn btn-link d-md-none rounded-circle me-3">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <ul class="navbar-nav ms-auto">
+
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.get_full_name|default:user.username }}</span>
+                                <i class="bi bi-person-circle"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person-fill text-gray-400"></i>
+                                    Perfil
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="bi bi-box-arrow-right text-gray-400"></i>
+                                    Cerrar Sesión
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <div class="container-fluid">
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
                     {% block content %}
                     {% endblock %}
+
                 </div>
+                </div>
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; CEBPM {% now "Y" %}</span>
+                    </div>
+                </div>
+            </footer>
             </div>
         </div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
     <script>
         // Sidebar toggle for mobile
         document.getElementById('sidebarToggle')?.addEventListener('click', function() {
@@ -281,6 +374,7 @@
             const toggle = document.getElementById('sidebarToggle');
             
             if (window.innerWidth <= 768 && 
+                toggle &&
                 !sidebar.contains(e.target) && 
                 !toggle.contains(e.target) && 
                 sidebar.classList.contains('show')) {

@@ -7,7 +7,6 @@
 
 {% block content %}
 <div class="row">
-    <!-- Statistics Cards -->
     <div class="col-md-3 mb-4">
         <div class="stat-card">
             <div class="stat-number">{{ total_players }}</div>
@@ -39,13 +38,12 @@
         <div class="stat-card danger">
             <div class="stat-number">${{ total_funds|floatformat:0 }}</div>
             <div class="stat-label">
-                <i class="bi bi-cash-stack me-2"></i>Fondos Totales
+                <i class="bi bi-cash-stack me-2"></i>Fondos Totales (Aprobados)
             </div>
         </div>
     </div>
 </div>
 
-<!-- Segunda fila de estadísticas -->
 <div class="row mb-4">
     <div class="col-md-3 mb-4">
         <div class="stat-card success">
@@ -84,7 +82,6 @@
     </div>
 </div>
 
-<!-- Monthly Statistics -->
 <div class="row mb-4">
     <div class="col-md-6">
         <div class="admin-card p-4">
@@ -118,10 +115,10 @@
                     {% for match in upcoming_matches %}
                         <div class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <div>
-                                <strong>{{ match.home_team }} vs {{ match.away_team }}</strong><br>
-                                <small class="text-muted">{{ match.date|date:"d/m/Y H:i" }}</small>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">{{ match.competition }}</span>
+                                <strong>{{ match.category.name }} vs {{ match.opponent }}</strong><br>
+                                <small class="text-muted">{{ match.starts_at|date:"d/m/Y H:i" }} - {{ match.location }}</small>
+                                </div>
+                            <span class="badge bg-primary rounded-pill">{{ match.category.name }}</span>
                         </div>
                     {% endfor %}
                 </div>
@@ -132,7 +129,6 @@
     </div>
 </div>
 
-<!-- Recent Activities -->
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="admin-card">
@@ -147,16 +143,14 @@
                         {% for registration in recent_registrations %}
                             <div class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <div>
-                                    <strong>{{ registration.first_name }} {{ registration.last_name }}</strong><br>
+                                    <strong>{{ registration.player_first_name }} {{ registration.player_last_name }}</strong><br>
                                     <small class="text-muted">{{ registration.team }} - {{ registration.created_at|date:"d/m/Y" }}</small>
                                 </div>
                                 <span class="badge badge-status 
                                     {% if registration.status == 'pending' %}bg-warning
                                     {% elif registration.status == 'approved' %}bg-success
                                     {% else %}bg-danger{% endif %}">
-                                    {% if registration.status == 'pending' %}Pendiente
-                                    {% elif registration.status == 'approved' %}Aprobado
-                                    {% else %}Rechazado{% endif %}
+                                    {{ registration.get_status_display|capfirst }}
                                 </span>
                             </div>
                         {% endfor %}
@@ -177,7 +171,7 @@
         <div class="admin-card">
             <div class="card-header bg-transparent border-0 pb-0">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-cash text-success me-2"></i>Pagos Recientes
+                    <i class="bi bi-cash text-success me-2"></i>Pagos Recientes (Aprobados)
                 </h5>
             </div>
             <div class="card-body">
@@ -187,17 +181,17 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <div>
                                     <strong>${{ payment.amount|floatformat:0 }}</strong><br>
-                                    <small class="text-muted">{{ payment.invoice.player.first_name }} {{ payment.invoice.player.last_name }} - {{ payment.created_at|date:"d/m/Y" }}</small>
+                                    <small class="text-muted">{{ payment.invoice.player.get_full_name|default:"N/A" }} - {{ payment.created_at|date:"d/m/Y" }}</small>
                                 </div>
                                 <span class="badge bg-success">Completado</span>
                             </div>
                         {% endfor %}
                     </div>
                     <div class="text-center mt-3">
-                        <a href="{% url 'admin_panel:finances' %}" class="btn btn-admin btn-sm">
+                        <a href="{% url 'admin_panel:finances_dashboard' %}" class="btn btn-admin btn-sm">
                             Ver Todas las Finanzas
                         </a>
-                    </div>
+                        </div>
                 {% else %}
                     <p class="text-muted">No hay pagos recientes.</p>
                 {% endif %}
@@ -206,7 +200,6 @@
     </div>
 </div>
 
-<!-- Quick Actions -->
 <div class="row">
     <div class="col-12">
         <div class="admin-card p-4">
@@ -230,10 +223,10 @@
                     </a>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:finances' %}" class="btn btn-outline-warning w-100">
+                    <a href="{% url 'admin_panel:finances_dashboard' %}" class="btn btn-outline-warning w-100">
                         <i class="bi bi-cash-stack me-2"></i>Ver Finanzas
                     </a>
-                </div>
+                    </div>
                 <div class="col-md-3 mb-2">
                     <a href="{% url 'admin_panel:admin_sponsors' %}" class="btn btn-outline-success w-100">
                         <i class="bi bi-building me-2"></i>Gestionar Auspiciadores

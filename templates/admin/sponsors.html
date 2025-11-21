@@ -1,129 +1,144 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'admin/base_admin.html' %}
 
 {% block title %}Gestión de Auspiciadores - Admin{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
+    <h1 class="h3 mb-4 text-gray-800">Gestión de Auspiciadores</h1>
+    
     <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-building me-2"></i>Gestión de Auspiciadores</h2>
-                <a href="{% url 'admin:finance_sponsor_add' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-2"></i>Nuevo Auspiciador
-                </a>
-            </div>
-
-            <!-- Filtros -->
-            <div class="card mb-4">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Nuevo Auspiciador</h6>
+                </div>
                 <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <label for="status" class="form-label">Estado</label>
-                            <select name="status" id="status" class="form-select">
-                                <option value="">Todos</option>
-                                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activos</option>
-                                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactivos</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-outline-primary me-2">
-                                <i class="bi bi-funnel me-2"></i>Filtrar
-                            </button>
-                            <a href="{% url 'admin_panel:admin_sponsors' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-2"></i>Limpiar
-                            </a>
-                        </div>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ field.errors|striptags }}
+                                    </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save me-2"></i>Guardar Auspiciador
+                        </button>
                     </form>
                 </div>
             </div>
-
-            <!-- Lista de Auspiciadores -->
-            <div class="card">
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Listado de Auspiciadores</h6>
+                    <div class="btn-group btn-group-sm">
+                        <a href="?status=" class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">Todos</a>
+                        <a href="?status=active" class="btn btn-outline-success {% if status_filter == 'active' %}active{% endif %}">Visibles</a>
+                        <a href="?status=inactive" class="btn btn-outline-secondary {% if status_filter == 'inactive' %}active{% endif %}">Ocultos</a>
+                    </div>
+                </div>
                 <div class="card-body">
-                    {% if page_obj %}
-                        <div class="row">
-                            {% for sponsor in page_obj %}
-                                <div class="col-md-6 col-lg-4 mb-4">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            {% if sponsor.logo %}
-                                                <img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" class="img-fluid mb-3" style="max-height: 100px; object-fit: contain;">
-                                            {% else %}
-                                                <div class="bg-light d-flex align-items-center justify-content-center mb-3" style="height: 100px;">
-                                                    <i class="bi bi-building text-muted" style="font-size: 2rem;"></i>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <h5 class="card-title">{{ sponsor.name }}</h5>
-                                            
-                                            {% if sponsor.url %}
-                                                <p class="card-text">
-                                                    <a href="{{ sponsor.url }}" target="_blank" class="text-decoration-none">
-                                                        <i class="bi bi-globe me-1"></i>{{ sponsor.url|truncatechars:30 }}
-                                                    </a>
-                                                </p>
-                                            {% endif %}
-                                            
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="badge {% if sponsor.active %}bg-success{% else %}bg-secondary{% endif %}">
-                                                    {% if sponsor.active %}Activo{% else %}Inactivo{% endif %}
-                                                </span>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{% url 'admin:finance_sponsor_change' sponsor.pk %}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                    <a href="{% url 'admin:finance_sponsor_delete' sponsor.pk %}" class="btn btn-sm btn-outline-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-footer text-muted small">
-                                            Creado: {{ sponsor.created_at|date:"d/m/Y" }}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 100px;">Logo</th>
+                                    <th>Información</th>
+                                    <th>Contacto</th>
+                                    <th style="width: 80px;">Visible</th>
+                                    <th style="width: 100px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sponsor in sponsors %}
+                                <tr>
+                                    <td class="text-center bg-light">
+                                        {% if sponsor.logo %}
+                                            <img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" class="img-fluid" style="max-height: 50px; max-width: 80px;">
+                                        {% else %}
+                                            <i class="bi bi-image text-muted"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ sponsor.name }}</strong>
+                                        {% if sponsor.website %}
+                                            <br>
+                                            <a href="{{ sponsor.website }}" target="_blank" class="small text-decoration-none">
+                                                <i class="bi bi-link-45deg"></i> Sitio Web
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if sponsor.contact_name %}
+                                            <small class="d-block"><i class="bi bi-person me-1"></i>{{ sponsor.contact_name }}</small>
+                                        {% endif %}
+                                        {% if sponsor.contact_email %}
+                                            <small class="d-block text-muted"><i class="bi bi-envelope me-1"></i>{{ sponsor.contact_email }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if sponsor.is_visible %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Sí</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="POST" action="{% url 'admin_panel:admin_sponsors' %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este auspiciador?');">
+                                            {% csrf_token %}
+                                            <button type="button" class="btn btn-sm btn-danger disabled" title="Eliminar (Próximamente)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        No se encontraron auspiciadores.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                        <!-- Paginación -->
-                        {% if page_obj.has_other_pages %}
-                            <nav aria-label="Paginación de auspiciadores">
-                                <ul class="pagination justify-content-center">
-                                    {% if page_obj.has_previous %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo; Primera</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Anterior</a>
-                                        </li>
-                                    {% endif %}
-
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-                                    </li>
-
-                                    {% if page_obj.has_next %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Siguiente</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Última &raquo;</a>
-                                        </li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
-                        {% endif %}
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-building text-muted" style="font-size: 4rem;"></i>
-                            <h4 class="text-muted mt-3">No hay auspiciadores</h4>
-                            <p class="text-muted">Agrega el primer auspiciador para comenzar.</p>
-                            <a href="{% url 'admin:finance_sponsor_add' %}" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-2"></i>Agregar Auspiciador
-                            </a>
-                        </div>
+                    {% if sponsors.has_other_pages %}
+                    <nav aria-label="Navegación">
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if sponsors.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ sponsors.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Anterior</a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Pág. {{ sponsors.number }} de {{ sponsors.paginator.num_pages }}</span>
+                            </li>
+                            {% if sponsors.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ sponsors.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Siguiente</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
                     {% endif %}
                 </div>
             </div>

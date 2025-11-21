@@ -1,0 +1,56 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Asignar Cuotas{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Asignar Cuota a Categoría</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.fee_definition.id_for_label }}" class="form-label">{{ form.fee_definition.label }}</label>
+                        {{ form.fee_definition }}
+                        <small class="form-text text-muted">Selecciona la cuota que quieres cobrar (ej. "Matrícula 2025").</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                        <small class="form-text text-muted">Todas las jugadoras activas en esta categoría recibirán la factura.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.due_date.id_for_label }}" class="form-label">{{ form.due_date.label }}</label>
+                        {{ form.due_date }}
+                        <small class="form-text text-muted">{{ form.due_date.help_text }}</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-send-check me-2"></i>
+                        Asignar Cuotas
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h6 class="m-0 font-weight-bold text-dark"><i class="bi bi-exclamation-triangle-fill me-2"></i>¡Atención!</h6>
+            </div>
+            <div class="card-body">
+                <p>Esta acción generará una nueva factura (cuota) para <strong>todas</strong> las jugadoras activas en la categoría seleccionada.</p>
+                <p>El sistema omitirá automáticamente a las jugadoras que ya tengan esta cuota asignada (ej. si ya les asignaste "Matrícula 2025").</p>
+                <p class="mb-0">Esta acción no se puede deshacer masivamente.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

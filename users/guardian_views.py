@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.paginator import Paginator
@@ -11,12 +11,23 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
 
-from .models import User, GuardianProfile, Registration
-from players.models import Category, Player, GuardianPlayer
-from finance.models import Payment, Invoice
+# --- INICIO DE IMPORTACIONES CORREGIDAS ---
+from players.forms import PlayerGuardianEditForm, PlayerDocumentForm
+from players.models import Player, GuardianPlayer, Category, PlayerDocument 
+# Formularios
+from .forms import GuardianProfileForm, UserUpdateForm, PlayerRegistrationForm
+from players.forms import PlayerGuardianEditForm
+# Usamos el 'PlayerForm' completo (del admin) para registrar jugadoras nuevas
+from players.forms import PlayerForm as PlayerFullForm 
+
+# Modelos (importados desde sus apps correctas)
+from .models import GuardianProfile, Registration # Modelos de Users
+from players.models import Player, GuardianPlayer, Category # Modelos de Players
+from finance.models import Invoice, Payment
 from schedules.models import Match, Activity
-from communications.models import BulkEmail, EmailRecipient
+from communications.models import EmailRecipient, BulkEmail
 
 def is_guardian(user):
     """Verificar si el usuario es un apoderado"""
@@ -30,7 +41,6 @@ def is_guardian(user):
 
 @login_required
 def guardian_dashboard(request):
-    """Dashboard principal para apoderados"""
     if not is_guardian(request.user):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
@@ -38,15 +48,21 @@ def guardian_dashboard(request):
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
+    # Estadísticas
     total_players = players.count()
     active_players = players.filter(status='active').count()
     
-    pending_payments_agg = Invoice.objects.filter(
+    pending_payments = Invoice.objects.filter(
         player__in=players,
         status__in=['pendiente', 'atrasada']
-    ).aggregate(total=Sum('amount'))
-    pending_payments = pending_payments_agg['total'] or 0
+    ).aggregate(total=Sum('amount'))['total'] or 0
     
+    unread_messages = EmailRecipient.objects.filter(
+        user=request.user,
+        read_at__isnull=True
+    ).count()
+    
+    # Eventos próximos
     today = timezone.now().date()
     player_categories = players.values_list('category', flat=True)
     upcoming_matches = Match.objects.filter(
@@ -54,18 +70,8 @@ def guardian_dashboard(request):
         starts_at__gte=today
     ).order_by('starts_at')[:5]
     
-    upcoming_trainings = Activity.objects.filter(
-        starts_at__gte=today
-    ).order_by('starts_at')[:5]
-    
-    unread_messages = EmailRecipient.objects.filter(
-        user=request.user,
-        status='enviado' # Idealmente, esto debería ser un campo `is_read=False`
-    ).count()
-    
     recent_payments = Payment.objects.filter(
-        invoice__player__in=players,
-        status='completado'
+        invoice__player__in=players
     ).order_by('-paid_at')[:5]
     
     context = {
@@ -73,14 +79,122 @@ def guardian_dashboard(request):
         'total_players': total_players,
         'active_players': active_players,
         'pending_payments': pending_payments,
-        'upcoming_matches': upcoming_matches,
-        'upcoming_trainings': upcoming_trainings,
         'unread_messages': unread_messages,
+        'upcoming_matches': upcoming_matches,
         'recent_payments': recent_payments,
-        'today': today,
     }
-    
     return render(request, 'guardian/dashboard.html', context)
+
+@login_required
+def guardian_profile(request):
+    """Muestra y actualiza el perfil del apoderado (Maneja JSON para el template actual)."""
+    if not is_guardian(request.user):
+        return redirect('pages:landing')
+
+    profile, created = GuardianProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        # Detectar si es una petición AJAX (fetch)
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('Content-Type') == 'multipart/form-data' or True # Forzamos compatibilidad con tu JS
+        
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = GuardianProfileForm(request.POST, instance=profile)
+        
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            if is_ajax:
+                return JsonResponse({'success': True, 'message': 'Perfil actualizado'})
+            messages.success(request, 'Perfil actualizado.')
+            return redirect('guardian:profile')
+        else:
+            errors = {**u_form.errors, **p_form.errors}
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': str(errors)})
+            messages.error(request, 'Error al actualizar.')
+    
+    password_form = PasswordChangeForm(request.user)
+    context = {
+        'user': request.user,
+        'profile': profile,
+        'password_form': password_form,
+    }
+    return render(request, 'guardian/profile.html', context)
+
+@login_required
+def add_new_player(request):
+    """Registrar nueva jugadora desde el panel del apoderado"""
+    if not is_guardian(request.user):
+        return redirect('pages:landing')
+
+    if request.method == 'POST':
+        form = PlayerRegistrationForm(request.POST)
+        if form.is_valid():
+            # Crear la solicitud (Registration) vinculada al apoderado actual
+            registration = form.save(commit=False)
+            registration.guardian = request.user
+            registration.status = 'pending'
+            
+            # Asignar categoría automáticamente si es posible o dejar que el admin decida
+            # Aquí asumimos que el formulario ya trae el 'team' (Categoría) seleccionado
+            
+            registration.save()
+            messages.success(request, 'Solicitud de inscripción enviada. Esperando aprobación.')
+            return redirect('guardian:guardian_players')
+        else:
+            messages.error(request, 'Error en el formulario. Revisa los datos.')
+    else:
+        form = PlayerRegistrationForm()
+
+    return render(request, 'guardian/player_add.html', {'form': form})
+
+@login_required
+def guardian_edit_player(request, pk):
+    """Edición de ficha de jugadora"""
+    if not is_guardian(request.user):
+        return redirect('pages:landing')
+
+    # Verificar propiedad
+    guardian_player = get_object_or_404(GuardianPlayer, guardian=request.user, player_id=pk)
+    player = guardian_player.player
+
+    if request.method == 'POST':
+        form = PlayerGuardianEditForm(request.POST, request.FILES, instance=player)
+        
+        # Capturamos la fecha manualmente si el formulario no la incluye pero el template sí
+        birthdate = request.POST.get('birthdate')
+        if birthdate:
+            player.birthdate = birthdate
+
+        if form.is_valid():
+            player.save() # Esto guarda el form y la fecha asignada manualmente
+            messages.success(request, 'Datos actualizados correctamente.')
+            return redirect('guardian:player_detail', player_id=player.pk)
+    else:
+        form = PlayerGuardianEditForm(instance=player)
+
+    context = {'form': form, 'player': player, 'page_title': f'Editar: {player.get_full_name()}'}
+    return render(request, 'guardian/player_edit.html', context)
+
+# ... (Mantener el resto de las vistas como guardian_players, guardian_payments, etc. que ya funcionaban bien)
+# Asegúrate de incluir change_password, update_notifications, etc.
+@login_required
+@require_http_methods(["POST"])
+def change_password(request):
+    form = PasswordChangeForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': form.errors.as_text()})
+
+@login_required
+@require_http_methods(["POST"])
+def update_notifications(request):
+    profile = get_object_or_404(GuardianProfile, user=request.user)
+    profile.email_notifications = 'email_notifications' in request.POST
+    profile.save()
+    return JsonResponse({'success': True})
 
 @login_required
 def guardian_players(request):
@@ -112,7 +226,6 @@ def guardian_players(request):
     }
     
     return render(request, 'guardian/players.html', context)
-
 
 @login_required
 def guardian_payments(request):
@@ -196,24 +309,54 @@ def guardian_schedule(request):
 
 @login_required
 def guardian_messages(request):
-    """Centro de mensajes para apoderados."""
+    """Muestra los mensajes y notificaciones enviadas por el admin al apoderado."""
     if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
 
-    # La lógica correcta es buscar los 'EmailRecipient' que pertenecen al usuario
-    messages_received = EmailRecipient.objects.filter(user=request.user).select_related('bulk_email', 'bulk_email__created_by').order_by('-created_at')
+    # 1. Obtener los *recibos* de email para este usuario
+    user_messages = EmailRecipient.objects.filter(
+        user=request.user
+    ).select_related('bulk_email').order_by('-sent_at')
 
-    paginator = Paginator(messages_received, 10)
-    page_number = request.GET.get('page')
-    messages_page = paginator.get_page(page_number)
+    # --- CORRECCIÓN ---
+    # 2. YA NO marcamos como leídos automáticamente.
+    # user_messages.filter(read_at__isnull=True).update(read_at=timezone.now())
+    # --- FIN CORRECCIÓN ---
 
     context = {
-        'messages': messages_page,
-        'is_paginated': messages_page.has_other_pages(),
-        'page_obj': messages_page,
+        'messages_list': user_messages,
+        'page_title': 'Mis Mensajes y Notificaciones'
     }
     return render(request, 'guardian/messages.html', context)
 
+@login_required
+def guardian_view_message(request, pk):
+    """
+    Muestra un mensaje específico y lo marca como leído.
+    """
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('pages:landing')
+    
+    # 1. Obtener el "recibo" del mensaje
+    recipient_message = get_object_or_404(
+        EmailRecipient, 
+        pk=pk, 
+        user=request.user
+    )
+    
+    # 2. Marcar como leído (¡Esta es la lógica clave!)
+    if recipient_message.read_at is None:
+        recipient_message.read_at = timezone.now()
+        recipient_message.save()
+
+    context = {
+        'recipient': recipient_message,
+        'message': recipient_message.bulk_email, # El contenido del mensaje
+        'page_title': 'Leyendo Mensaje'
+    }
+    return render(request, 'guardian/message_detail.html', context)
 
 @login_required
 def message_detail(request, recipient_id):
@@ -246,7 +389,6 @@ def mark_message_as_read(request, recipient_id):
         recipient_msg.save()
     return JsonResponse({'success': True})
 
-
 @login_required
 @require_http_methods(["POST"])
 def mark_all_as_read(request):
@@ -254,68 +396,6 @@ def mark_all_as_read(request):
     updated_count = EmailRecipient.objects.filter(user=request.user, read_at__isnull=True).update(read_at=timezone.now())
     messages.success(request, f'{updated_count} mensajes fueron marcados como leídos.')
     return JsonResponse({'success': True, 'count': updated_count})
-
-@login_required
-def guardian_profile(request):
-    """Muestra y actualiza el perfil del apoderado."""
-    if not is_guardian(request.user):
-        return redirect('pages:landing')
-
-    profile = get_object_or_404(GuardianProfile, user=request.user)
-
-    if request.method == 'POST':
-        user = request.user
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
-        user.email = request.POST.get('email', user.email)
-        user.save()
-        
-        profile.phone = request.POST.get('phone', profile.phone)
-        profile.address = request.POST.get('address', profile.address)
-        profile.save()
-        
-        messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
-        return redirect('guardian:profile')
-    
-    # Creamos un formulario de cambio de contraseña para pasarlo al template
-    password_form = PasswordChangeForm(request.user)
-
-    context = {
-        'user': request.user,
-        'profile': profile,
-        'password_form': password_form, # Enviamos el form al template
-    }
-    return render(request, 'guardian/profile.html', context)
-
-@login_required
-@require_http_methods(["POST"])
-def change_password(request):
-    """Procesa el cambio de contraseña."""
-    form = PasswordChangeForm(request.user, request.POST)
-    if form.is_valid():
-        user = form.save()
-        # Mantiene al usuario logueado después de cambiar la contraseña
-        update_session_auth_hash(request, user)  
-        messages.success(request, 'Tu contraseña ha sido cambiada exitosamente.')
-    else:
-        for error in form.errors.values():
-            messages.error(request, error.as_text())
-    return redirect('guardian:profile')
-
-@login_required
-@require_http_methods(["POST"])
-def update_notifications(request):
-    """Actualiza las preferencias de notificación."""
-    profile = get_object_or_404(GuardianProfile, user=request.user)
-    
-    profile.email_notifications = 'email_notifications' in request.POST
-    profile.payment_notifications = 'payment_notifications' in request.POST
-    profile.schedule_notifications = 'schedule_notifications' in request.POST
-    profile.general_notifications = 'general_notifications' in request.POST
-    profile.save()
-    
-    messages.success(request, 'Tus preferencias de notificación han sido actualizadas.')
-    return redirect('guardian:profile')
 
 @login_required
 @require_http_methods(["POST"])
@@ -436,7 +516,9 @@ def guardian_player_detail(request, player_id):
     
     # Entrenamientos próximos (si existe el modelo)
     upcoming_trainings = []
-    
+    documents = PlayerDocument.objects.filter(player=player)
+    upload_form = PlayerDocumentForm()
+
     context = {
         'player': player,
         'invoices': invoices[:10],  # Últimas 10 facturas
@@ -444,6 +526,8 @@ def guardian_player_detail(request, player_id):
         'pending_invoices_count': pending_invoices.count(),
         'overdue_invoices_count': overdue_invoices.count(),
         'total_paid': total_paid,
+        'documents': documents,       # <-- AÑADIDO
+        'upload_form': upload_form,
         'total_pending': total_pending,
         'total_overdue': total_overdue,
         'upcoming_matches': upcoming_matches,
@@ -452,6 +536,68 @@ def guardian_player_detail(request, player_id):
     
     return render(request, 'guardian/player_detail.html', context)
 
+@login_required
+def guardian_add_player_document(request, player_pk):
+    """
+    Maneja la subida de un nuevo documento para la jugadora desde el panel del apoderado.
+    """
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos.')
+        return redirect('pages:landing')
+    
+    # Seguridad: Asegurarse de que esta jugadora pertenece a este apoderado
+    try:
+        player = Player.objects.get(pk=player_pk)
+        GuardianPlayer.objects.get(player=player, guardian=request.user)
+    except (Player.DoesNotExist, GuardianPlayer.DoesNotExist):
+        messages.error(request, 'No tienes permiso para esta acción.')
+        return redirect('guardian:guardian_players')
+
+    if request.method == 'POST':
+        form = PlayerDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.player = player
+            doc.uploaded_by = request.user
+            doc.save()
+            messages.success(request, f"Documento '{doc.title}' subido exitosamente.")
+        else:
+            messages.error(request, "Error al subir el documento.")
+    
+    return redirect('guardian:player_detail', pk=player_pk)
+
+@login_required
+def guardian_edit_player(request, pk):
+    """
+    Permite al apoderado editar la información de su jugadora.
+    """
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('pages:landing')
+
+    # Seguridad: Asegurarse de que esta jugadora pertenece a este apoderado
+    try:
+        player = Player.objects.get(pk=pk)
+        GuardianPlayer.objects.get(player=player, guardian=request.user)
+    except (Player.DoesNotExist, GuardianPlayer.DoesNotExist):
+        messages.error(request, 'No tienes permiso para editar esta jugadora.')
+        return redirect('guardian:guardian_players')
+
+    if request.method == 'POST':
+        form = PlayerGuardianEditForm(request.POST, request.FILES, instance=player)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Datos de {player.get_full_name()} actualizados.')
+            return redirect('guardian:player_detail', pk=player.pk)
+    else:
+        form = PlayerGuardianEditForm(instance=player)
+
+    context = {
+        'form': form,
+        'player': player,
+        'page_title': f'Editando Ficha: {player.get_full_name()}'
+    }
+    return render(request, 'guardian/player_edit.html', context)
 
 @login_required
 def guardian_quotas_paid(request):
@@ -556,46 +702,88 @@ def guardian_quotas_upcoming(request):
 
 @login_required
 def guardian_pay_quota(request, invoice_id):
-    """Vista para pagar una cuota específica"""
-    try:
-        guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
-        player_ids = guardian_players.values_list('player_id', flat=True)
-        invoice = Invoice.objects.get(id=invoice_id, player_id__in=player_ids)
-        
-        if invoice.status == 'pagada':
-            messages.warning(request, 'Esta cuota ya ha sido pagada.')
-            return redirect('guardian:guardian_quotas_paid')
-        
-        if request.method == 'POST':
-            payment_method = request.POST.get('payment_method')
-            reference_number = request.POST.get('reference_number', '')
-            
-            # Crear el pago
-            payment = Payment.objects.create(
-                invoice=invoice,
-                amount=invoice.amount,
-                method=payment_method,
-                status='completado',
-                reference_number=reference_number
-            )
-            
-            # Actualizar el estado de la factura
-            invoice.status = 'pagada'
-            invoice.save()
-            
-            messages.success(request, f'Pago de ${invoice.amount:,.0f} realizado exitosamente.')
-            return redirect('guardian:guardian_quotas_paid')
-        
-        context = {
-            'invoice': invoice,
-            'player': invoice.player,
-        }
-        
-        return render(request, 'guardian/pay_quota.html', context)
-        
-    except Invoice.DoesNotExist:
-        messages.error(request, 'La cuota solicitada no existe o no tienes permisos para acceder a ella.')
+    """Vista para pagar una cuota específica (subir comprobante)"""
+    if not is_guardian(request.user):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('pages:landing')
+    
+    guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
+    player_ids = guardian_players.values_list('player_id', flat=True)
+    invoice = get_object_or_404(Invoice, id=invoice_id, player_id__in=player_ids)
+    
+    # Verificar que la cuota no esté ya pagada o en revisión
+    if invoice.status == 'pagada':
+        messages.warning(request, 'Esta cuota ya ha sido pagada.')
+        return redirect('guardian:guardian_quotas_paid')
+    if invoice.status == 'en revisión':
+        messages.warning(request, 'Esta cuota ya está en revisión.')
         return redirect('guardian:guardian_quotas_upcoming')
+
+    if request.method == 'POST':
+        # --- Lógica para procesar el formulario ---
+        payment_method = request.POST.get('payment_method')
+        reference_number = request.POST.get('reference_number', '')
+        payment_proof_file = request.FILES.get('payment_proof') # <-- OBTENER EL ARCHIVO
+
+        # Validaciones
+        if not payment_method:
+            messages.error(request, 'Debes seleccionar un método de pago.')
+            return redirect('guardian:guardian_pay_quota', invoice_id=invoice.id)
+        
+        if not payment_proof_file:
+            messages.error(request, 'Debes subir un comprobante de pago.')
+            return redirect('guardian:guardian_pay_quota', invoice_id=invoice.id)
+
+        # Crear el objeto Payment
+        Payment.objects.create(
+            invoice=invoice,
+            amount=invoice.amount,
+            paid_at=timezone.now(), # Se marca la fecha de subida
+            method=payment_method,
+            status='pendiente', # Pendiente de aprobación
+            payment_proof=payment_proof_file, # Guardar el archivo
+            notes=reference_number
+        )
+        
+        # Actualizar el estado de la factura a "En Revisión"
+        invoice.status = 'en revisión'
+        invoice.save()
+        
+        messages.success(request, f'Pago de ${invoice.amount:,.0f} enviado para revisión. Será aprobado por un administrador.')
+        return redirect('guardian:guardian_quotas_upcoming')
+    
+    # --- Lógica GET (mostrar la página) ---
+    context = {
+        'invoice': invoice,
+        'player': invoice.player,
+        'today': timezone.now().date() # Añadido para la lógica del template
+    }
+    
+    return render(request, 'guardian/pay_quota.html', context)
+
+@login_required
+def profile_view(request):
+    # CORRECCIÓN: Usar get_or_create para evitar error si el perfil no existe
+    profile, created = GuardianProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = GuardianProfileForm(request.POST, request.FILES, instance=profile)
+        
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, '¡Tu cuenta ha sido actualizada!')
+            return redirect('guardian_profile') # Asegúrate que este name exista en urls.py
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = GuardianProfileForm(instance=profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+    return render(request, 'guardian/profile.html', context)
 
 @login_required
 def guardian_pay_multiple(request):

@@ -1,231 +1,114 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'guardian/base_guardian.html' %}
 
-{% block title %}{{ player.get_full_name }} - Ficha del Jugador{% endblock %}
+{% block title %}Detalle de Jugadora{% endblock %}
+{% block page_title %}Perfil de Jugadora{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-person-badge me-2"></i>Ficha de {{ player.get_full_name }}</h2>
-                <a href="{% url 'guardian_dashboard' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
-                </a>
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{{ player.get_full_name }}</h5>
             </div>
-
-            <div class="row">
-                <!-- Información del Jugador -->
-                <div class="col-lg-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="bi bi-person me-2"></i>Información Personal</h5>
-                        </div>
-                        <div class="card-body text-center">
-                            <!-- Foto del jugador -->
-                            {% if player.photo %}
-                                <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" 
-                                     class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
-                            {% else %}
-                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3" 
-                                     style="width: 120px; height: 120px; margin: 0 auto;">
-                                    <i class="bi bi-person text-muted" style="font-size: 3rem;"></i>
-                                </div>
-                            {% endif %}
-                            
-                            <h4 class="mb-3">{{ player.get_full_name }}</h4>
-                            
-                            <div class="row g-3 text-start">
-                                <div class="col-12">
-                                    <strong>RUT:</strong><br>
-                                    <span class="text-muted">{{ player.rut|default:"No registrado" }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <strong>Edad:</strong><br>
-                                    <span class="text-muted">{{ player.age|default:"No registrada" }} años</span>
-                                </div>
-                                <div class="col-6">
-                                    <strong>Estado:</strong><br>
-                                    <span class="badge {% if player.status == 'active' %}bg-success{% elif player.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
-                                        {{ player.get_status_display }}
-                                    </span>
-                                </div>
-                                <div class="col-12">
-                                    <strong>Categoría:</strong><br>
-                                    <span class="text-muted">{{ player.category.name|default:"Sin categoría" }}</span>
-                                </div>
-                                <div class="col-12">
-                                    <strong>Equipo:</strong><br>
-                                    <span class="text-muted">{{ player.team|default:"Sin equipo" }}</span>
-                                </div>
-                                <div class="col-12">
-                                    <strong>Posición:</strong><br>
-                                    <span class="text-muted">{{ player.position|default:"No definida" }}</span>
-                                </div>
-                                <div class="col-12">
-                                    <strong>Fecha de registro:</strong><br>
-                                    <span class="text-muted">{{ player.created_at|date:"d/m/Y" }}</span>
-                                </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        {% if player.photo %}
+                            <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                <i class="bi bi-person text-muted" style="font-size: 4rem;"></i>
                             </div>
-                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4>Detalles de la Jugadora</h4>
+                        <p><strong>Categoría:</strong> {{ player.category.name|default:"N/A" }}</p>
+                        <p><strong>Posición:</strong> {{ player.get_position_display|default:"N/A" }}</p>
+                        <p><strong>Edad:</strong> {{ player.age|default:"N/A" }} años ({{ player.birthdate|date:"d/m/Y" }})</p>
+                        
+                        <a href="{% url 'guardian:guardian_player_edit' player.pk %}" class="btn btn-warning mt-3">
+                            <i class="bi bi-pencil-fill me-1"></i> Editar Ficha (Textos)
+                        </a>
                     </div>
                 </div>
 
-                <!-- Estadísticas de Pagos -->
-                <div class="col-lg-8 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Estado de Cuotas</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-4">
-                                    <div class="stat-card success">
-                                        <div class="stat-number">${{ total_paid|floatformat:0 }}</div>
-                                        <div class="stat-label">
-                                            <i class="bi bi-check-circle me-2"></i>Pagado ({{ paid_invoices_count }})
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="stat-card warning">
-                                        <div class="stat-number">${{ total_pending|floatformat:0 }}</div>
-                                        <div class="stat-label">
-                                            <i class="bi bi-clock me-2"></i>Pendiente ({{ pending_invoices_count }})
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="stat-card danger">
-                                        <div class="stat-number">${{ total_overdue|floatformat:0 }}</div>
-                                        <div class="stat-label">
-                                            <i class="bi bi-exclamation-triangle me-2"></i>Atrasado ({{ overdue_invoices_count }})
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <hr class="my-4">
+                <h5 class="mb-3">Documentos y Permisos</h5>
+                
+                <strong>Condiciones Médicas (Informadas):</strong>
+                <p class="text-muted">
+                    {{ player.medical_conditions|linebreaksbr|default:"No se ha ingresado información." }}
+                </p>
 
-                            <!-- Últimas Facturas -->
-                            <h6 class="mb-3">Últimas Facturas</h6>
-                            {% if invoices %}
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Concepto</th>
-                                                <th>Vencimiento</th>
-                                                <th>Monto</th>
-                                                <th>Estado</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for invoice in invoices %}
-                                                <tr>
-                                                    <td>{{ invoice.fee_definition.name }}</td>
-                                                    <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
-                                                    <td>${{ invoice.amount|floatformat:0 }}</td>
-                                                    <td>
-                                                        <span class="badge {% if invoice.status == 'pagada' %}bg-success{% elif invoice.status == 'pendiente' %}bg-warning{% else %}bg-danger{% endif %}">
-                                                            {{ invoice.get_status_display }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="text-center mt-3">
-                                    <a href="{% url 'guardian_quotas_paid' %}?player={{ player.id }}" class="btn btn-outline-primary me-2">
-                                        <i class="bi bi-list me-2"></i>Ver Todas las Cuotas
-                                    </a>
-                                    <a href="{% url 'guardian_quotas_upcoming' %}" class="btn btn-outline-warning">
-                                        <i class="bi bi-clock me-2"></i>Cuotas Pendientes
-                                    </a>
-                                </div>
-                            {% else %}
-                                <div class="text-center py-3">
-                                    <i class="bi bi-receipt text-muted" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mt-2">No hay facturas registradas</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                <strong>Notas de Permisos:</strong>
+                <p class="text-muted">
+                    {{ player.permissions_notes|linebreaksbr|default:"No se ha ingresado información." }}
+                </p>
+
+                <strong class="mt-2">Archivos Adjuntos (Permisos, etc.)</strong>
+                <div class="list-group list-group-flush mb-3">
+                    {% for doc in documents %}
+                        <a href="{{ doc.file.url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                {{ doc.title }}
+                            </div>
+                            <small class="text-muted">{{ doc.uploaded_at|date:"d/m/Y" }}</small>
+                        </a>
+                    {% empty %}
+                        <p class="text-muted">No has subido documentos para esta jugadora.</p>
+                    {% endfor %}
                 </div>
+
+                <strong>Subir Nuevo Documento:</strong>
+                <form method="POST" action="{% url 'guardian:guardian_add_player_document' player.pk %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <label for="{{ upload_form.title.id_for_label }}" class="form-label small">{{ upload_form.title.label }}</label>
+                        {{ upload_form.title }}
+                    </div>
+                    <div class="mb-2">
+                        <label for="{{ upload_form.file.id_for_label }}" class="form-label small">{{ upload_form.file.label }}</label>
+                        {{ upload_form.file }}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">
+                        <i class="bi bi-upload me-1"></i> Subir Archivo
+                    </button>
+                </form>
+                </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Estado Financiero de {{ player.first_name }}</h5>
             </div>
-
-            <!-- Próximos Eventos -->
-            <div class="row">
-                <!-- Próximos Partidos -->
-                <div class="col-lg-6 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Próximos Partidos</h5>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="stat-card danger" style="padding: 15px; margin-bottom: 0;">
+                            <div class="stat-number fs-4">${{ total_debt|floatformat:0 }}</div>
+                            <div class="stat-label fs-6">Deuda Pendiente</div>
                         </div>
-                        <div class="card-body">
-                            {% if upcoming_matches %}
-                                {% for match in upcoming_matches %}
-                                    <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
-                                        <div>
-                                            <strong>{{ match.home_team }} vs {{ match.away_team }}</strong><br>
-                                            <small class="text-muted">
-                                                <i class="bi bi-calendar me-1"></i>{{ match.date|date:"d/m/Y" }}
-                                                {% if match.time %}<i class="bi bi-clock ms-2 me-1"></i>{{ match.time }}{% endif %}
-                                            </small>
-                                        </div>
-                                        {% if match.location %}
-                                            <small class="text-muted">
-                                                <i class="bi bi-geo-alt me-1"></i>{{ match.location }}
-                                            </small>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                                <div class="text-center mt-3">
-                                    <a href="{% url 'guardian_schedule' %}" class="btn btn-outline-info btn-sm">
-                                        <i class="bi bi-calendar me-2"></i>Ver Calendario Completo
-                                    </a>
-                                </div>
-                            {% else %}
-                                <div class="text-center py-3">
-                                    <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mt-2">No hay partidos programados</p>
-                                </div>
-                            {% endif %}
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card success" style="padding: 15px; margin-bottom: 0;">
+                            <div class="stat-number fs-4">${{ total_paid|floatformat:0 }}</div>
+                            <div class="stat-label fs-6">Total Pagado</div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Próximos Entrenamientos -->
-                <div class="col-lg-6 mb-4">
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Próximos Entrenamientos</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if upcoming_trainings %}
-                                {% for training in upcoming_trainings %}
-                                    <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
-                                        <div>
-                                            <strong>{{ training.title|default:"Entrenamiento" }}</strong><br>
-                                            <small class="text-muted">
-                                                <i class="bi bi-calendar me-1"></i>{{ training.date|date:"d/m/Y" }}
-                                                {% if training.time %}<i class="bi bi-clock ms-2 me-1"></i>{{ training.time }}{% endif %}
-                                            </small>
-                                        </div>
-                                        {% if training.location %}
-                                            <small class="text-muted">
-                                                <i class="bi bi-geo-alt me-1"></i>{{ training.location }}
-                                            </small>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="text-center py-3">
-                                    <i class="bi bi-trophy text-muted" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mt-2">No hay entrenamientos programados</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                <h5 class="mt-4">Cuotas Pendientes o Atrasadas</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm">
+                        </table>
+                </div>
+                <h5>Historial de Pagos Completados</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        </table>
                 </div>
             </div>
         </div>

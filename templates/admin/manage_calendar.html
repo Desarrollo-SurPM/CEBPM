@@ -1,0 +1,62 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Agregar Nuevo Evento</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Guardar Evento</button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Eventos Programados</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in event_list %}
+                    <tr>
+                        <td>{{ event.date|date:"d/m/Y H:i" }}</td>
+                        <td>{{ event.title }}</td>
+                        <td><span class="badge bg-info">{{ event.get_event_type_display }}</span></td>
+                        <td>
+                            <a href="{% url 'admin_panel:edit_event' event.pk %}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil-fill"></i> Editar
+                            </a>
+                            <form method="POST" action="{% url 'admin_panel:delete_event' event.pk %}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este evento?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash-fill"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No hay eventos programados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

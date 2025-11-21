@@ -1,0 +1,75 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Seleccionar Jugadoras (Máximo 4)</h6>
+    </div>
+    <div class="card-body">
+        
+        <div class="alert alert-info">
+            Actualmente has seleccionado <strong>{{ featured_count }}</strong> de 4 jugadoras.
+        </div>
+
+        <form method="POST" id="featuredPlayersForm">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Destacar</th>
+                            <th>Foto</th>
+                            <th>Nombre Completo</th>
+                            <th>Categoría</th>
+                            <th>Posición</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in all_players %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input" name="featured_players" value="{{ player.id }}" 
+                                       {% if player.is_featured %}checked{% endif %}>
+                            </td>
+                            <td>
+                                {% if player.photo %}
+                                <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                {% endif %}
+                            </td>
+                            <td>{{ player.get_full_name }}</td>
+                            <td>{{ player.category.name }}</td>
+                            <td>{{ player.get_position_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <button type
+="submit" class="btn btn-primary">Guardar Selección</button>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Script simple para limitar checkboxes a 4
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('featuredPlayersForm');
+    const checkboxes = form.querySelectorAll('input[name="featured_players"]');
+    const limit = 4;
+
+    form.addEventListener('submit', function(e) {
+        const checkedCount = form.querySelectorAll('input[name="featured_players"]:checked').length;
+        if (checkedCount > limit) {
+            alert('¡Solo puedes seleccionar un máximo de 4 jugadoras!');
+            e.preventDefault(); // Detiene el envío del formulario
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

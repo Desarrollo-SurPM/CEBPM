@@ -1609,11 +1609,7 @@ main {
 {% endblock %}
 
 {% block content %}
-<!-- Cursor dinámico eliminado -->
-
-<!-- Hero Section -->
 <section class="hero-section" id="heroSection">
-    <!-- Elementos Decorativos Variados -->
     <div class="decoration-element jersey">🎽</div>
     <div class="decoration-element jersey">🤼</div>
     <div class="decoration-element trophy">🏆</div>
@@ -1650,7 +1646,6 @@ main {
     </div>
 </section>
 
-<!-- Match Ticker -->
 <div class="match-ticker">
     <div class="ticker-content">
         {% for i in "123456" %}
@@ -1682,7 +1677,6 @@ main {
     </div>
 </div>
 
-<!-- Stats Section -->
 <section class="stats-section">
     <div class="container">
         <div class="stats-grid">
@@ -1718,7 +1712,6 @@ main {
     </div>
 </section>
 
-<!-- Next Match -->
 {% if recent_matches %}
 <section class="next-match-section">
     <div class="container">
@@ -1758,61 +1751,44 @@ main {
 </section>
 {% endif %}
 
-<!-- News/Highlights -->
 <section class="news-section">
     <div class="container">
         <div class="section-header">
             <h2>Últimas Noticias</h2>
             <div class="section-underline"></div>
         </div>
+        
         <div class="news-grid">
-            <div class="news-card fade-in">
-                <div class="news-image">
-                    <img src="{% static 'img/equipo2.png' %}" alt="Noticia CEBPM - equipo" loading="lazy" />
-                </div>
-                <div class="news-content">
-                    <span class="news-category">🎆 Playoff</span>
-                    <h3 class="news-title">Clasificación dramática a semifinales</h3>
-                    <p class="news-excerpt">Con una jugada defensiva espectacular en los últimos 3 segundos, sellamos nuestro pase a la siguiente ronda...</p>
-                    <div class="news-meta">
-                        <span>⏰ Hace 2 días</span>
-                        <span><i class="fas fa-basketball-ball"></i></span>
+            {% if latest_news %}
+                {% for news in latest_news %}
+                <div class="news-card fade-in">
+                    <div class="news-image">
+                        {% if news.image %}
+                            <img src="{{ news.image.url }}" alt="{{ news.title }}" loading="lazy" />
+                        {% else %}
+                            <img src="{% static 'img/equipo2.png' %}" alt="Noticia CEBPM" loading="lazy" />
+                        {% endif %}
+                    </div>
+                    <div class="news-content">
+                        {% if news.tag %}
+                        <span class="news-category">{{ news.tag|upper }}</span>
+                        {% endif %}
+                        <h3 class="news-title">{{ news.title }}</h3>
+                        <p class="news-excerpt">{{ news.content|truncatewords:20 }}</p>
+                        <div class="news-meta">
+                            <span>⏰ Hace {{ news.created_at|timesince }}</span>
+                            <span><i class="fas fa-basketball-ball"></i></span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="news-card fade-in">
-                <div class="news-image">
-                    <img src="{% static 'img/player.png' %}" alt="Noticia CEBPM - jugador" loading="lazy" />
-                </div>
-                <div class="news-content">
-                    <span class="news-category">⭐ MVP</span>
-                    <h3 class="news-title">Nuestro capitán elegido MVP de la liga</h3>
-                    <p class="news-excerpt">Con promedios de 25.8 puntos y 8.2 asistencias, lidera el ranking de mejores jugadores de la temporada...</p>
-                    <div class="news-meta">
-                        <span>⏰ Hace 5 días</span>
-                        <span><i class="fas fa-star"></i></span>
-                    </div>
-                </div>
-            </div>
-            <div class="news-card fade-in">
-                <div class="news-image">
-                    <img src="{% static 'img/Equipo.png' %}" alt="Noticia CEBPM - formación" loading="lazy" />
-                </div>
-                <div class="news-content">
-                    <span class="news-category">🌟 Cantera</span>
-                    <h3 class="news-title">Triple corona juvenil en torneo regional</h3>
-                    <p class="news-excerpt">Nuestras categorías U15, U17 y U19 conquistan los tres campeonatos regionales en una temporada histórica...</p>
-                    <div class="news-meta">
-                        <span>⏰ Hace 1 semana</span>
-                        <span><i class="fas fa-basketball-ball"></i></span>
-                    </div>
-                </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center text-muted">No hay noticias disponibles en este momento.</p>
+            {% endif %}
         </div>
-    </div>
+        </div>
 </section>
 
-<!-- Fixtures Table -->
 <section class="fixtures-section">
     <div class="container">
         <div class="section-header">
@@ -1820,88 +1796,65 @@ main {
         </div>
         <div class="fixtures-table">
             <div class="fixtures-header">
-                Próximos Partidos
+                Próximos Eventos
             </div>
-            {% for match in recent_matches|slice:":5" %}
-            <div class="fixture-row">
-                <div class="fixture-date">{{ match.starts_at|date:"d M" }}</div>
-                <div class="fixture-team text-end">CEBPM</div>
-                <div class="fixture-vs">vs</div>
-                <div class="fixture-team">{{ match.opponent|default:"Por confirmar" }}</div>
-                <div class="fixture-competition">
-                    <span class="competition-badge">{{ match.category.name }}</span>
+            
+            {% if upcoming_events %}
+                {% for event in upcoming_events %}
+                <div class="fixture-row">
+                    <div class="fixture-date">{{ event.date|date:"d M" }}</div>
+                    <div class="fixture-team text-end" style="color: var(--primary-bg);">{{ event.title }}</div>
+                    <div class="fixture-vs"><i class="fas fa-clock"></i></div>
+                    <div class="fixture-team">{{ event.date|time:"H:i" }} hrs</div>
+                    <div class="fixture-competition">
+                        <span class="competition-badge">{{ event.get_event_type_display }}</span>
+                    </div>
                 </div>
+                {% endfor %}
+            {% else %}
+            <div class="fixture-row" style="display: block; text-align: center; padding: 20px;">
+                <p class="text-muted mb-0">No hay eventos programados próximamente.</p>
             </div>
-            {% empty %}
-            <div class="fixture-row">
-                <div class="text-center w-100 py-4">
-                    <p class="text-muted mb-0">No hay partidos programados</p>
-                </div>
-            </div>
-            {% endfor %}
+            {% endif %}
         </div>
-        {% if recent_matches %}
+        
         <div class="text-center mt-4">
             <a href="{% url 'pages:schedule' %}" class="btn btn-primary-hero">
                 Ver Calendario Completo
             </a>
         </div>
-        {% endif %}
-    </div>
+        </div>
 </section>
 
-<!-- Players Showcase -->
 <section class="players-section">
     <div class="container">
         <div class="section-header">
             <h2>Nuestros Jugadores</h2>
         </div>
         <div class="players-carousel">
-            <div class="player-card fade-in">
-                <div class="player-image">
-                    <div class="player-number">10</div>
-                    <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM - Diego Morales" loading="lazy" />
+            {% if featured_players %}
+                {% for player in featured_players %}
+                <div class="player-card fade-in">
+                    <div class="player-image">
+                        {% if player.photo %}
+                            <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" loading="lazy" />
+                        {% else %}
+                            <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM" loading="lazy" />
+                        {% endif %}
+                    </div>
+                    <div class="player-info">
+                        <div class="player-name">{{ player.get_full_name }}</div>
+                        <div class="player-position">{{ player.get_position_display }}</div>
+                    </div>
                 </div>
-                <div class="player-info">
-                    <div class="player-name">Diego "Flash" Morales</div>
-                    <div class="player-position">Base - Playmaker</div>
-                </div>
-            </div>
-            <div class="player-card fade-in">
-                <div class="player-image">
-                    <div class="player-number">9</div>
-                    <img src="{% static 'img/player2.png' %}" alt="Jugador CEBPM - Carlos Vega" loading="lazy" />
-                </div>
-                <div class="player-info">
-                    <div class="player-name">Carlos "Sniper" Vega</div>
-                    <div class="player-position">Escolta - Tirador Elite</div>
-                </div>
-            </div>
-            <div class="player-card fade-in">
-                <div class="player-image">
-                    <div class="player-number">1</div>
-                    <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM - Miguel Torres" loading="lazy" />
-                </div>
-                <div class="player-info">
-                    <div class="player-name">Miguel "La Muralla" Torres</div>
-                    <div class="player-position">Pívot - Bloqueador</div>
-                </div>
-            </div>
-            <div class="player-card fade-in">
-                <div class="player-image">
-                    <div class="player-number">4</div>
-                    <img src="{% static 'img/player2.png' %}" alt="Jugador CEBPM - Javier Silva" loading="lazy" />
-                </div>
-                <div class="player-info">
-                    <div class="player-name">Javier "Rocket" Silva</div>
-                    <div class="player-position">Alero - Versatilidad Pura</div>
-                </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center text-muted">Pronto destacaremos a nuestras jugadoras.</p>
+            {% endif %}
         </div>
-    </div>
+        </div>
 </section>
 
-<!-- Sponsors -->
 {% if sponsors %}
 <section class="sponsors-section">
     <div class="container">
@@ -1925,7 +1878,6 @@ main {
 </section>
 {% endif %}
 
-<!-- CTA Section -->
 <section class="cta-section">
     <div class="container cta-content">
         <h2 class="cta-title">Sé Parte del Equipo</h2>

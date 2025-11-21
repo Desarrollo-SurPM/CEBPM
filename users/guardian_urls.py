@@ -28,7 +28,8 @@ urlpatterns = [
     path('profile/update-notifications/', guardian_views.update_notifications, name='update_notifications'),
     # Player detail view
     path('player/<int:player_id>/', guardian_views.guardian_player_detail, name='guardian_player_detail'),
-    
+    path('players/<int:pk>/edit/', guardian_views.guardian_edit_player, name='guardian_player_edit'),
+    path('players/<int:player_pk>/add_document/', guardian_views.guardian_add_player_document, name='guardian_add_player_document'),
     # Quotas management
     path('quotas/paid/', guardian_views.guardian_quotas_paid, name='guardian_quotas_paid'),
     path('quotas/upcoming/', guardian_views.guardian_quotas_upcoming, name='guardian_quotas_upcoming'),
@@ -42,6 +43,7 @@ urlpatterns = [
     path('messages/', guardian_views.guardian_messages, name='messages'),
     path('messages/<int:recipient_id>/detail/', guardian_views.message_detail, name='message_detail'),
     path('messages/<int:recipient_id>/read/', guardian_views.mark_message_as_read, name='mark_message_read'),
-    path('messages/read-all/', guardian_views.mark_all_as_read, name='mark_all_messages_read'), # Corregido el nombre
+    path('messages/read-all/', guardian_views.mark_all_as_read, name='mark_all_messages_read'),
+    path('messages/<int:pk>/', guardian_views.guardian_view_message, name='view_message'),
     
 ]

@@ -1,665 +1,111 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Registrarse - {{ block.super }}{% endblock %}
-
-{% block extra_css %}
-<style>
-/* Variables de colores */
-:root {
-    --banner-color: #c07ccd;
-    --button-color: #c860b0;
-    --primary-bg: #581d93;
-    --secondary-bg: #e7617c;
-    --dark-bg: #1a0d2e;
-}
-
-/* Eliminar márgenes del container principal y body */
-body {
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow-x: hidden;
-}
-
-main.container {
-    margin: 0 !important;
-    padding: 0 !important;
-    max-width: 100% !important;
-}
-
-/* Ocultar navbar y footer en la página de registro */
-nav.navbar,
-footer {
-    display: none !important;
-}
-
-/* Sección de registro con fondo completo */
-.register-section {
-    background:
-        radial-gradient(ellipse at 20% 30%, var(--secondary-bg) 0%, transparent 40%),
-        radial-gradient(ellipse at 80% 70%, var(--button-color) 0%, transparent 40%),
-        linear-gradient(135deg, var(--primary-bg) 0%, var(--dark-bg) 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow-y: auto;
-    padding: 40px 20px;
-    margin: 0 !important;
-}
-
-/* Partículas animadas */
-.particle {
-    position: fixed;
-    background: radial-gradient(circle, var(--banner-color) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-.particle:nth-child(odd) {
-    width: 4px;
-    height: 4px;
-    animation: float-up 15s linear infinite;
-}
-
-.particle:nth-child(even) {
-    width: 6px;
-    height: 6px;
-    animation: float-diagonal 20s linear infinite;
-}
-
-@keyframes float-up {
-    0% {
-        transform: translateY(100vh) translateX(0) scale(0);
-        opacity: 0;
-    }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% {
-        transform: translateY(-100vh) translateX(100px) scale(1.5);
-        opacity: 0;
-    }
-}
-
-@keyframes float-diagonal {
-    0% {
-        transform: translate(0, 100vh) rotate(0deg);
-        opacity: 0;
-    }
-    100% {
-        transform: translate(100vw, -100vh) rotate(720deg);
-        opacity: 0;
-    }
-}
-
-/* Elementos decorativos flotantes */
-.decoration-element {
-    position: fixed;
-    pointer-events: none;
-    font-size: 4rem;
-    animation: jerseyFloat 8s ease-in-out infinite;
-    opacity: 0.15;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
-}
-
-.decoration-element:nth-child(1) {
-    top: 10%;
-    left: 10%;
-    animation-delay: 0s;
-}
-
-.decoration-element:nth-child(2) {
-    top: 70%;
-    right: 10%;
-    animation-delay: 2s;
-    font-size: 3.5rem;
-}
-
-.decoration-element:nth-child(3) {
-    bottom: 15%;
-    left: 15%;
-    animation-delay: 1.5s;
-    font-size: 3rem;
-}
-
-.decoration-element:nth-child(4) {
-    top: 30%;
-    right: 20%;
-    animation-delay: 3s;
-    font-size: 2.5rem;
-}
-
-@keyframes jerseyFloat {
-    0%, 100% {
-        transform: translateY(0) rotate(-5deg) scale(1);
-        opacity: 0.15;
-    }
-    50% {
-        transform: translateY(-25px) rotate(5deg) scale(1.15);
-        opacity: 0.25;
-    }
-}
-
-/* Botón de volver al inicio */
-.back-home {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    color: var(--primary-bg);
-    padding: 12px 24px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.back-home:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
-    color: var(--button-color);
-    background: white;
-}
-
-/* Tarjeta de registro mejorada */
-.register-card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(30px);
-    border-radius: 35px;
-    padding: 50px 45px;
-    box-shadow:
-        0 30px 70px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    max-width: 650px;
-    width: 90%;
-    margin: 0 auto;
-    position: relative;
-    z-index: 10;
-    animation: fadeInUp 0.8s ease-out;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.register-card::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    background: linear-gradient(135deg, var(--banner-color), var(--secondary-bg), var(--button-color));
-    border-radius: 35px;
-    z-index: -1;
-    opacity: 0.3;
-    filter: blur(15px);
-}
-
-/* Header del registro */
-.register-header {
-    text-align: center;
-    margin-bottom: 35px;
-}
-
-.register-logo {
-    width: 80px;
-    height: auto;
-    margin-bottom: 20px;
-    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.3));
-    animation: logoFloat 3s ease-in-out infinite;
-}
-
-@keyframes logoFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.register-header h1 {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: white;
-    margin-bottom: 10px;
-    letter-spacing: -1px;
-    text-shadow:
-        0 2px 10px rgba(0, 0, 0, 0.3),
-        0 0 30px rgba(200, 96, 176, 0.5);
-}
-
-.register-header p {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1.1rem;
-    font-weight: 500;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Formulario mejorado */
-.form-group {
-    margin-bottom: 25px;
-    position: relative;
-}
-
-.form-label {
-    font-weight: 800;
-    color: white;
-    margin-bottom: 10px;
-    display: block;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    position: relative;
-    padding-left: 32px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.form-label i {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    color: white;
-    font-size: 1.2rem;
-    animation: iconPulse 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
-}
-
-@keyframes iconPulse {
-    0%, 100% {
-        transform: translateY(-50%) scale(1);
-    }
-    50% {
-        transform: translateY(-50%) scale(1.1);
-    }
-}
-
-.form-control, textarea.form-control {
-    border: none;
-    border-radius: 14px;
-    padding: 16px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.95);
-    width: 100%;
-    color: var(--primary-bg);
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.form-control::placeholder, textarea.form-control::placeholder {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.form-control:hover, textarea.form-control:hover {
-    background: white;
-    transform: translateY(-2px);
-    box-shadow:
-        0 8px 25px rgba(200, 96, 176, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-.form-control:focus, textarea.form-control:focus {
-    background: white;
-    box-shadow:
-        0 0 0 4px rgba(255, 255, 255, 0.3),
-        0 12px 35px rgba(200, 96, 176, 0.4),
-        inset 0 2px 4px rgba(200, 96, 176, 0.1);
-    outline: none;
-    transform: translateY(-3px) scale(1.01);
-}
-
-/* Texto de ayuda */
-.form-text {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.875rem;
-    margin-top: 8px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.form-text ul {
-    color: rgba(255, 255, 255, 0.85);
-    padding-left: 20px;
-}
-
-.form-text small {
-    color: rgba(255, 255, 255, 0.85);
-}
-
-/* Divisor elegante */
-.register-divider {
-    margin: 30px 0;
-    border: 0;
-    height: 2px;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-}
-
-/* Botón de registro espectacular */
-.btn-register-submit {
-    background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 50%, var(--banner-color) 100%);
-    background-size: 200% 200%;
-    border: none;
-    color: white;
-    padding: 16px 40px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    border-radius: 14px;
-    width: 100%;
-    font-size: 1.1rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow:
-        0 12px 30px rgba(200, 96, 176, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.btn-register-submit::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-    transition: left 0.6s;
-}
-
-.btn-register-submit:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow:
-        0 18px 40px rgba(200, 96, 176, 0.5),
-        0 0 30px var(--banner-color);
-    background-position: 100% 100%;
-}
-
-.btn-register-submit:hover::before {
-    left: 100%;
-}
-
-/* Footer del registro */
-.register-footer {
-    text-align: center;
-    margin-top: 25px;
-}
-
-.register-footer p {
-    color: white;
-    margin-bottom: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.btn-login-link {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    color: white;
-    padding: 12px 30px;
-    border-radius: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    text-decoration: none;
-    display: inline-block;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn-login-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 100%;
-    background: white;
-    transition: width 0.4s ease;
-    z-index: -1;
-}
-
-.btn-login-link:hover {
-    color: var(--primary-bg);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
-    border-color: white;
-}
-
-.btn-login-link:hover::before {
-    width: 100%;
-}
-
-/* Errores bonitos */
-.alert-danger {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-    border: none;
-    color: white;
-    border-radius: 15px;
-    padding: 16px 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
-    font-weight: 500;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .register-card {
-        padding: 35px 25px;
-        margin: 10px;
-    }
-
-    .register-header h1 {
-        font-size: 2rem;
-    }
-
-    .decoration-element {
-        font-size: 2.5rem;
-    }
-
-    .back-home {
-        padding: 10px 18px;
-        font-size: 0.85rem;
-    }
-
-    .form-label {
-        font-size: 0.85rem;
-    }
-}
-
-/* Animaciones */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-</style>
-{% endblock %}
+{% block title %}Registro de Apoderado - CEBPM{% endblock %}
 
 {% block content %}
-<div class="register-section" id="registerSection">
-    <!-- Botón para volver al inicio -->
-    <a href="{% url 'pages:landing' %}" class="back-home">
-        <i class="fas fa-arrow-left"></i>
-        <span>Volver al Inicio</span>
-    </a>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center text-primary fw-bold mb-4">Solicitud de Registro</h2>
+                    <p class="text-center text-muted mb-4">Completa tus datos como apoderado y los datos de la jugadora que deseas inscribir.</p>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
 
-    <!-- Elementos Decorativos -->
-    <div class="decoration-element">🏀</div>
-    <div class="decoration-element">🎽</div>
-    <div class="decoration-element">🏆</div>
-    <div class="decoration-element">⚡</div>
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <fieldset class="mb-4">
+                            <legend class="fs-5 fw-semibold text-secondary border-bottom pb-2 mb-3">
+                                <i class="bi bi-person-badge me-2"></i>Tus Datos (Apoderado)
+                            </legend>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }} *</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }} *</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }} *</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.guardian_phone.id_for_label }}" class="form-label">{{ form.guardian_phone.label }} *</label>
+                                    {{ form.guardian_phone }}
+                                    {% if form.guardian_phone.errors %}<div class="text-danger small">{{ form.guardian_phone.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }} *</label>
+                                    {{ form.password }}
+                                    {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }} *</label>
+                                    {{ form.password_confirm }}
+                                    {% if form.password_confirm.errors %}<div class="text-danger small">{{ form.password_confirm.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
 
-    <div class="register-card">
-        <div class="register-header">
-            <img src="{% static 'img/LOGOCEB.svg' %}" alt="Logo CEBPM" class="register-logo">
-            <h1>Crear Cuenta</h1>
-            <p>Únete a la familia CEBPM</p>
-        </div>
+                        <fieldset>
+                            <legend class="fs-5 fw-semibold text-secondary border-bottom pb-2 mb-3">
+                                <i class="bi bi-person-fill me-2"></i>Datos de la Jugadora
+                            </legend>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.player_first_name.id_for_label }}" class="form-label">{{ form.player_first_name.label }} *</label>
+                                    {{ form.player_first_name }}
+                                    {% if form.player_first_name.errors %}<div class="text-danger small">{{ form.player_first_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.player_last_name.id_for_label }}" class="form-label">{{ form.player_last_name.label }} *</label>
+                                    {{ form.player_last_name }}
+                                    {% if form.player_last_name.errors %}<div class="text-danger small">{{ form.player_last_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.player_birth_date.id_for_label }}" class="form-label">{{ form.player_birth_date.label }} *</label>
+                                    {{ form.player_birth_date }}
+                                    {% if form.player_birth_date.errors %}<div class="text-danger small">{{ form.player_birth_date.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.player_rut.id_for_label }}" class="form-label">{{ form.player_rut.label }}</label>
+                                    {{ form.player_rut }}
+                                    {% if form.player_rut.errors %}<div class="text-danger small">{{ form.player_rut.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12">
+                                    <label for="{{ form.team.id_for_label }}" class="form-label">{{ form.team.label }} *</label>
+                                    {{ form.team }}
+                                    {% if form.team.errors %}<div class="text-danger small">{{ form.team.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
 
-        <form method="post">
-            {% csrf_token %}
-
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    <strong>¡Ups!</strong> Por favor corrige los errores en el formulario
+                        <div class="d-grid mt-4">
+                            {% if form.fields.team.queryset.exists %}
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold">Enviar Solicitud de Registro</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold" disabled>Inscripciones Cerradas</button>
+                            {% endif %}
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></small>
+                    </div>
                 </div>
-            {% endif %}
-
-            <div class="row">
-                <div class="col-md-6 form-group">
-                    <label for="first_name" class="form-label">
-                        <i class="fas fa-user"></i>Nombre *
-                    </label>
-                    <input type="text" class="form-control" id="first_name" name="first_name" required>
-                </div>
-                <div class="col-md-6 form-group">
-                    <label for="last_name" class="form-label">
-                        <i class="fas fa-user"></i>Apellido *
-                    </label>
-                    <input type="text" class="form-control" id="last_name" name="last_name" required>
-                </div>
             </div>
-
-            <div class="form-group">
-                <label for="email" class="form-label">
-                    <i class="fas fa-envelope"></i>Email *
-                </label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="phone" class="form-label">
-                    <i class="fas fa-phone"></i>Teléfono
-                </label>
-                <input type="tel" class="form-control" id="phone" name="phone">
-            </div>
-
-            <div class="form-group">
-                <label for="address" class="form-label">
-                    <i class="fas fa-map-marker-alt"></i>Dirección
-                </label>
-                <textarea class="form-control" id="address" name="address" rows="2"></textarea>
-            </div>
-
-            <hr class="register-divider">
-
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}" class="form-label">
-                    <i class="fas fa-user-circle"></i>Nombre de Usuario *
-                </label>
-                {{ form.username }}
-                <div class="form-text">150 caracteres o menos. Solo letras, dígitos y @/./+/-/_</div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 form-group">
-                    <label for="{{ form.password1.id_for_label }}" class="form-label">
-                        <i class="fas fa-lock"></i>Contraseña *
-                    </label>
-                    {{ form.password1 }}
-                </div>
-                <div class="col-md-6 form-group">
-                    <label for="{{ form.password2.id_for_label }}" class="form-label">
-                        <i class="fas fa-lock"></i>Confirmar *
-                    </label>
-                    {{ form.password2 }}
-                </div>
-            </div>
-
-            <div class="form-text mb-3">
-                <small>
-                    <ul class="mb-0">
-                        <li>Mínimo 8 caracteres</li>
-                        <li>No puede ser completamente numérica</li>
-                        <li>No puede ser muy similar a tu información personal</li>
-                    </ul>
-                </small>
-            </div>
-
-            <button type="submit" class="btn-register-submit">
-                <i class="fas fa-user-plus me-2"></i>Crear Cuenta
-            </button>
-        </form>
-
-        <div class="register-footer">
-            <p>¿Ya tienes cuenta?</p>
-            <a href="{% url 'login' %}" class="btn-login-link">
-                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-            </a>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const registerSection = document.getElementById('registerSection');
-
-    // Generar partículas flotantes
-    function createParticle() {
-        if (!registerSection) return;
-
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + 'vw';
-        particle.style.animationDelay = Math.random() * 2 + 's';
-        registerSection.appendChild(particle);
-
-        setTimeout(() => particle.remove(), 25000);
-    }
-
-    // Crear partículas cada 1.5 segundos
-    setInterval(createParticle, 1500);
-
-    // Efectos de click con emojis
-    document.addEventListener('click', (e) => {
-        const effects = ['⚡', '✨', '💫', '🌟', '💥', '🏀'];
-        const randomEffect = effects[Math.floor(Math.random() * effects.length)];
-
-        const effect = document.createElement('div');
-        effect.innerHTML = randomEffect;
-        effect.style.position = 'fixed';
-        effect.style.left = e.clientX + 'px';
-        effect.style.top = e.clientY + 'px';
-        effect.style.fontSize = '1.5rem';
-        effect.style.pointerEvents = 'none';
-        effect.style.zIndex = '9999';
-        effect.style.animation = 'clickEffect 1.2s ease-out forwards';
-
-        document.body.appendChild(effect);
-        setTimeout(() => effect.remove(), 1200);
-    });
-});
-
-// Animaciones CSS dinámicas para efectos de click
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes clickEffect {
-        0% {
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-            opacity: 1;
-        }
-        100% {
-            transform: translate(-50%, -200%) scale(2.5) rotate(180deg);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-</script>
 {% endblock %}

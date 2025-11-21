@@ -15,6 +15,8 @@ urlpatterns = [
     path('admin-panel/', include('users.admin_urls')),
     path('guardian/', include('users.guardian_urls')),
     
+    # --- AÑADIR ESTA LÍNEA ---
+    path('tickets/', include('tickets.urls', namespace='tickets')),
     # Nuevas URLs funcionales
     path('finance/', include('finance.urls')),
     path('schedules/', include('schedules.urls')),

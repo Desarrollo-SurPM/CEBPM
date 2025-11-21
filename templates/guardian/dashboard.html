@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="row mb-4">
-    <!-- Estadísticas principales -->
     <div class="col-md-3 mb-3">
         <div class="stat-card">
             <div class="d-flex align-items-center">
@@ -64,7 +63,6 @@
 </div>
 
 <div class="row">
-    <!-- Mis Jugadores -->
     <div class="col-lg-6 mb-4">
         <div class="card">
             <div class="card-header">
@@ -80,8 +78,7 @@
                             <thead>
                                 <tr>
                                     <th>Jugador</th>
-                                    <th>Equipo</th>
-                                    <th>Estado</th>
+                                    <th>Equipo</th> <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -90,19 +87,23 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm me-2">
-                                                <i class="bi bi-person-circle text-primary"></i>
+                                                {% if player.photo %}
+                                                    <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% else %}
+                                                    <i class="bi bi-person-circle text-primary" style="font-size: 2rem;"></i>
+                                                {% endif %}
                                             </div>
                                             <div>
                                                 <div class="fw-bold">
                                                     <a href="{% url 'guardian:guardian_player_detail' player.id %}" class="text-decoration-none">{{ player.get_full_name }}</a>
                                                 </div>
-                                                <small class="text-muted">{{ player.rut }}</small>
+                                                <small class="text-muted">{{ player.rut|default:"Sin RUT" }}</small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        {% if player.team %}
-                                            <span class="badge bg-info">{{ player.team.name }}</span>
+                                        {% if player.category %}
+                                            <span class="badge bg-info">{{ player.category.name }}</span>
                                         {% else %}
                                             <span class="text-muted">Sin equipo</span>
                                         {% endif %}
@@ -112,8 +113,6 @@
                                             <span class="badge bg-success">Activo</span>
                                         {% elif player.status == 'inactive' %}
                                             <span class="badge bg-secondary">Inactivo</span>
-                                        {% elif player.status == 'suspended' %}
-                                            <span class="badge bg-warning">Suspendido</span>
                                         {% else %}
                                             <span class="badge bg-light text-dark">{{ player.get_status_display }}</span>
                                         {% endif %}
@@ -141,7 +140,6 @@
         </div>
     </div>
     
-    <!-- Próximos Eventos -->
     <div class="col-lg-6 mb-4">
         <div class="card">
             <div class="card-header">
@@ -159,10 +157,10 @@
                                 <div>
                                     <div class="fw-bold text-primary">
                                         <i class="bi bi-trophy me-1"></i>
-                                        {{ match.home_team.name }} vs {{ match.away_team.name }}
+                                        {{ match.category.name }} vs {{ match.opponent }}
                                     </div>
                                     <small class="text-muted">
-                                        {{ match.date|date:"d/m/Y" }} - {{ match.time|time:"H:i" }}
+                                        {{ match.starts_at|date:"d/m/Y" }} - {{ match.starts_at|time:"H:i" }}
                                         {% if match.location %} | {{ match.location }}{% endif %}
                                     </small>
                                 </div>
@@ -177,14 +175,14 @@
                                 <div>
                                     <div class="fw-bold text-success">
                                         <i class="bi bi-person-workspace me-1"></i>
-                                        Entrenamiento - {{ training.team.name }}
+                                        {{ training.title }}
                                     </div>
                                     <small class="text-muted">
-                                        {{ training.date|date:"d/m/Y" }} - {{ training.time|time:"H:i" }}
+                                        {{ training.starts_at|date:"d/m/Y" }} - {{ training.starts_at|time:"H:i" }}
                                         {% if training.location %} | {{ training.location }}{% endif %}
                                     </small>
                                 </div>
-                                <span class="badge bg-success">Entrenamiento</span>
+                                <span class="badge bg-success">{{ training.get_type_display }}</span>
                             </div>
                         </div>
                         {% endfor %}
@@ -206,7 +204,6 @@
 </div>
 
 <div class="row">
-    <!-- Pagos Recientes -->
     <div class="col-lg-8 mb-4">
         <div class="card">
             <div class="card-header">
@@ -224,26 +221,23 @@
                                     <th>Jugador</th>
                                     <th>Concepto</th>
                                     <th>Monto</th>
-                                    <th>Vencimiento</th>
-                                    <th>Estado</th>
+                                    <th>Vencimiento</th> <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for payment in recent_payments %}
                                 <tr>
                                     <td>{{ payment.invoice.player.get_full_name }}</td>
-                                    <td>{{ payment.concept }}</td>
+                                    <td>{{ payment.invoice.fee_definition.name }}</td>
                                     <td>${{ payment.amount|floatformat:0 }}</td>
-                                    <td>{{ payment.due_date|date:"d/m/Y" }}</td>
+                                    <td>{{ payment.invoice.due_date|date:"d/m/Y" }}</td>
                                     <td>
-                                        {% if payment.status == 'paid' %}
-                                            <span class="badge bg-success">Pagado</span>
-                                        {% elif payment.status == 'pending' %}
-                                            {% if payment.due_date < today %}
-                                                <span class="badge bg-danger">Vencido</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">Pendiente</span>
-                                            {% endif %}
+                                        {% if payment.status == 'completado' %}
+                                            <span class="badge bg-success">Completado</span>
+                                        {% elif payment.status == 'pendiente' %}
+                                            <span class="badge bg-warning">En Revisión</span>
+                                        {% elif payment.status == 'fallido' %}
+                                            <span class="badge bg-danger">Rechazado</span>
                                         {% else %}
                                             <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
                                         {% endif %}
@@ -254,7 +248,7 @@
                         </table>
                     </div>
                     <div class="text-center mt-3">
-                        <a href="{% url 'guardian:payments' %}" class="btn btn-primary btn-sm">
+                        <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-primary btn-sm">
                             Ver todos los pagos
                         </a>
                     </div>
@@ -268,7 +262,6 @@
         </div>
     </div>
     
-    <!-- Acciones Rápidas -->
     <div class="col-lg-4 mb-4">
         <div class="card">
             <div class="card-header">
@@ -281,20 +274,14 @@
                 <div class="d-grid gap-2">
                     <a href="{% url 'guardian:players' %}" class="btn btn-outline-primary">
                         <i class="bi bi-person-plus me-2"></i>
-                        Registrar Jugador
+                        Mis Jugadores
                     </a>
-                    <a href="{% url 'guardian:payments' %}" class="btn btn-outline-success">
-                        <i class="bi bi-credit-card me-2"></i>
-                        Ver Pagos
+
+                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-success">
+                        <i class="bi bi-cash-coin me-2"></i>
+                        Gestionar Mis Pagos
                     </a>
-                    <a href="{% url 'guardian:guardian_quotas_paid' %}" class="btn btn-outline-success">
-                        <i class="bi bi-check-circle me-2"></i>
-                        Cuotas Pagadas
-                    </a>
-                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-warning">
-                        <i class="bi bi-clock me-2"></i>
-                        Próximas Cuotas
-                    </a>
+                    
                     <a href="{% url 'guardian:schedule' %}" class="btn btn-outline-info">
                         <i class="bi bi-calendar-event me-2"></i>
                         Ver Calendario

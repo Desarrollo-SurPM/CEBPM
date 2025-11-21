@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,22 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Panel de Apoderado - Club Deportivo Puerto Montt{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
             --primary-color: #06236B;
-        --secondary-color: #13623D;
-        --success-color: #2E9841;
-        --warning-color: #E46618;
-        --danger-color: #ef4444;
-        --dark-color: #06236B;
-        --light-color: #FFFFFF;
+            --secondary-color: #13623D;
+            --success-color: #2E9841;
+            --warning-color: #E46618;
+            --danger-color: #ef4444;
+            --dark-color: #06236B;
+            --light-color: #FFFFFF;
             --sidebar-width: 280px;
         }
         
@@ -40,6 +38,9 @@
             z-index: 1000;
             transition: transform 0.3s ease;
             overflow-y: auto;
+            /* Para que el user-info se quede abajo */
+            display: flex;
+            flex-direction: column;
         }
         
         .sidebar.collapsed {
@@ -53,6 +54,7 @@
         
         .sidebar-nav {
             padding: 1rem 0;
+            flex-grow: 1; /* Hace que el nav ocupe el espacio disponible */
         }
         
         .nav-item {
@@ -74,6 +76,36 @@
             color: white;
             background-color: rgba(255, 255, 255, 0.1);
             border-left: 4px solid white;
+        }
+
+        /* Estilo para el enlace del menú desplegable */
+        .nav-link[data-bs-toggle="collapse"]::after {
+            content: '\F282'; /* Ícono de flecha de Bootstrap */
+            font-family: 'bootstrap-icons';
+            margin-left: auto;
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+            transform: rotate(90deg);
+        }
+
+        /* Estilo para los sub-items */
+        .collapse-inner {
+            background: rgba(0,0,0,0.2);
+            margin: 0.25rem 1rem;
+            border-radius: 8px;
+        }
+        
+        .collapse-inner .nav-link {
+            padding-left: 3rem; /* Indentación */
+            font-size: 0.9rem;
+        }
+        
+        .collapse-inner .nav-link:hover,
+        .collapse-inner .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: none; /* Quitamos el borde para sub-items */
         }
         
         .nav-link i {
@@ -175,7 +207,7 @@
         .user-info {
             padding: 1rem 1.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: auto;
+            margin-top: auto; /* Esto empuja el bloque al final */
         }
         
         .user-avatar {
@@ -212,25 +244,24 @@
         }
         
         .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
+            /* Ajustado para que quede bien en el nuevo enlace */
+            margin-left: auto;
             background: var(--danger-color);
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
+            width: 22px;
+            height: 22px;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h4 class="mb-0">
@@ -248,20 +279,38 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'guardian:players' %}" class="nav-link {% if request.resolver_match.url_name == 'players' %}active{% endif %}">
+                <a href="{% url 'guardian:players' %}" class="nav-link {% if 'player' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="bi bi-people"></i>
                     Mis Jugadores
                 </a>
             </li>
+            
             <li class="nav-item">
-                <a href="{% url 'guardian:payments' %}" class="nav-link {% if request.resolver_match.url_name == 'payments' %}active{% endif %}">
+                <a href="#collapseFinance" class="nav-link {% if 'quota' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}" 
+                   data-bs-toggle="collapse" role="button" 
+                   aria-expanded="{% if 'quota' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}true{% else %}false{% endif %}" 
+                   aria-controls="collapseFinance">
+                    
                     <i class="bi bi-credit-card"></i>
-                    Pagos
+                    Finanzas
+                    
                     {% if pending_payments > 0 %}
                         <span class="notification-badge">{{ pending_payments }}</span>
                     {% endif %}
                 </a>
+                
+                <div class="collapse {% if 'quota' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}show{% endif %}" id="collapseFinance">
+                    <div class="collapse-inner">
+                        <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="nav-link {% if request.resolver_match.url_name == 'guardian_quotas_upcoming' %}active{% endif %}">
+                            <i class="bi bi-clock-history"></i> Cuotas Pendientes
+                        </a>
+                        <a href="{% url 'guardian:guardian_quotas_paid' %}" class="nav-link {% if request.resolver_match.url_name == 'guardian_quotas_paid' %}active{% endif %}">
+                            <i class="bi bi-check-circle"></i> Historial Pagos
+                        </a>
+                    </div>
+                </div>
             </li>
+            
             <li class="nav-item">
                 <a href="{% url 'guardian:schedule' %}" class="nav-link {% if request.resolver_match.url_name == 'schedule' %}active{% endif %}">
                     <i class="bi bi-calendar-event"></i>
@@ -277,6 +326,14 @@
                     {% endif %}
                 </a>
             </li>
+            
+            <li class="nav-item">
+                <a href="{% url 'tickets:list' %}" class="nav-link {% if request.resolver_match.app_name == 'tickets' %}active{% endif %}">
+                    <i class="bi bi-patch-question"></i>
+                    Solicitudes
+                </a>
+            </li>
+
             <li class="nav-item">
                 <a href="{% url 'guardian:profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
                     <i class="bi bi-person-gear"></i>
@@ -306,9 +363,7 @@
         </div>
     </nav>
     
-    <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Top Navbar -->
         <div class="top-navbar">
             <div class="d-flex align-items-center">
                 <button class="btn btn-outline-primary mobile-toggle me-3" id="sidebarToggle">
@@ -324,7 +379,6 @@
             </div>
         </div>
         
-        <!-- Content Area -->
         <div class="content-area">
             {% if messages %}
                 {% for message in messages %}
@@ -340,7 +394,6 @@
         </div>
     </div>
     
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
@@ -350,7 +403,7 @@
             const mainContent = document.getElementById('mainContent');
             
             sidebar.classList.toggle('show');
-            mainContent.classList.toggle('expanded');
+            // mainContent.classList.toggle('expanded'); // Esta línea no es necesaria con tu CSS actual
         });
         
         // Close sidebar when clicking outside on mobile
@@ -359,6 +412,7 @@
             const toggle = document.getElementById('sidebarToggle');
             
             if (window.innerWidth <= 768 && 
+                toggle && // Añadida comprobación
                 !sidebar.contains(event.target) && 
                 !toggle.contains(event.target) &&
                 sidebar.classList.contains('show')) {
