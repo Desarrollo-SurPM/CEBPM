@@ -1837,7 +1837,7 @@ main {
                 <div class="player-card fade-in">
                     <div class="player-image">
                         {% if player.photo %}
-                            <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" loading="lazy" />
+                            <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" loading="lazy" onerror="this.onerror=null;this.src='{% static 'img/player.png' %}'" />
                         {% else %}
                             <img src="{% static 'img/player.png' %}" alt="Jugador CEBPM" loading="lazy" />
                         {% endif %}
