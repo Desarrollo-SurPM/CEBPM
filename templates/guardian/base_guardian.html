@@ -12,12 +12,17 @@
     
     <style>
         :root {
-            --primary-color: #06236B;
-            --secondary-color: #13623D;
+            --banner-color: #c07ccd;
+            --button-color: #c860b0;
+            --primary-bg: #581d93;
+            --secondary-bg: #e7617c;
+            --dark-bg: #1a0d2e;
+            --primary-color: var(--primary-bg);
+            --secondary-color: var(--secondary-bg);
             --success-color: #2E9841;
-            --warning-color: #E46618;
-            --danger-color: #ef4444;
-            --dark-color: #06236B;
+            --warning-color: #ff6b35;
+            --danger-color: #dc3545;
+            --dark-color: var(--dark-bg);
             --light-color: #FFFFFF;
             --sidebar-width: 280px;
         }
@@ -33,7 +38,7 @@
             left: 0;
             height: 100vh;
             width: var(--sidebar-width);
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -144,7 +149,7 @@
         }
         
         .card-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 100%);
             color: white;
             border-radius: 10px 10px 0 0 !important;
             border: none;
@@ -174,13 +179,13 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 100%);
             border: none;
             border-radius: 8px;
         }
-        
+
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--button-color) 100%);
         }
         
         .table {
@@ -189,7 +194,7 @@
         }
         
         .table thead th {
-            background-color: var(--primary-color);
+            background-color: var(--dark-bg);
             color: white;
             border: none;
             font-weight: 600;
@@ -237,10 +242,13 @@
             .mobile-toggle {
                 display: block;
             }
-            
-            .content-area {
-                padding: 1rem;
-            }
+x            
+            .content-area { padding: 1rem; }
+            .table { font-size: 0.9rem; }
+            .table thead { display: none; }
+            .table tbody tr { display: block; margin-bottom: .75rem; border: 1px solid #eee; border-radius: 8px; }
+            .table tbody td { display: flex; justify-content: space-between; padding: .5rem .75rem; border-bottom: 1px dashed #eee; }
+            .table tbody td:last-child { border-bottom: none; }
         }
         
         .notification-badge {

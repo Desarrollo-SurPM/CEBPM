@@ -1,4 +1,5 @@
 {% extends 'guardian/base_guardian.html' %}
+{% load static %}
 
 {% block title %}Dashboard - Panel de Apoderado{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
@@ -8,7 +9,7 @@
     <div class="col-md-3 mb-3">
         <div class="stat-card">
             <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1e40af);">
+                <div class="stat-icon" style="background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));">
                     <i class="bi bi-people"></i>
                 </div>
                 <div class="ms-3">
@@ -22,7 +23,7 @@
     <div class="col-md-3 mb-3">
         <div class="stat-card">
             <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <div class="stat-icon" style="background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));">
                     <i class="bi bi-check-circle"></i>
                 </div>
                 <div class="ms-3">
@@ -36,7 +37,7 @@
     <div class="col-md-3 mb-3">
         <div class="stat-card">
             <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning-color), var(--secondary-bg));">
                     <i class="bi bi-credit-card"></i>
                 </div>
                 <div class="ms-3">
@@ -50,7 +51,7 @@
     <div class="col-md-3 mb-3">
         <div class="stat-card">
             <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <div class="stat-icon" style="background: linear-gradient(135deg, var(--secondary-bg), var(--button-color));">
                     <i class="bi bi-envelope"></i>
                 </div>
                 <div class="ms-3">
@@ -88,7 +89,7 @@
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm me-2">
                                                 {% if player.photo %}
-                                                    <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" onerror="this.onerror=null;this.src='{% static 'img/player.png' %}'">
                                                 {% else %}
                                                     <i class="bi bi-person-circle text-primary" style="font-size: 2rem;"></i>
                                                 {% endif %}
