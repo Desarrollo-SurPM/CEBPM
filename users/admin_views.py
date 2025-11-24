@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
+from datetime import date, timedelta
 import json
 
 # Importaciones de Modelos
@@ -175,6 +176,33 @@ def admin_finances(request):
     paginator = Paginator(transactions_list, 25)
     transactions_page = paginator.get_page(request.GET.get('page'))
     
+    today = timezone.now().date()
+    current_month_start = date(today.year, today.month, 1)
+    months_dt = []
+    cm = current_month_start
+    for _ in range(12):
+        months_dt.insert(0, cm)
+        if cm.month == 1:
+            cm = date(cm.year - 1, 12, 1)
+        else:
+            cm = date(cm.year, cm.month - 1, 1)
+    monthly_labels = [m.strftime('%b %Y') for m in months_dt]
+    monthly_income = []
+    monthly_expenses = []
+    for m in months_dt:
+        income_total = Transaction.objects.filter(type='ingreso', date__year=m.year, date__month=m.month).aggregate(Sum('amount'))['amount__sum'] or 0
+        expense_total = Transaction.objects.filter(type='gasto', date__year=m.year, date__month=m.month).aggregate(Sum('amount'))['amount__sum'] or 0
+        monthly_income.append(float(income_total))
+        monthly_expenses.append(float(expense_total))
+
+    category_display = dict(Transaction.CATEGORY_CHOICES)
+    income_agg = Transaction.objects.filter(type='ingreso').values('category').annotate(total=Sum('amount')).order_by('-total')
+    expense_agg = Transaction.objects.filter(type='gasto').values('category').annotate(total=Sum('amount')).order_by('-total')
+    income_categories = [category_display.get(row['category'], row['category']) for row in income_agg]
+    income_amounts = [float(row['total'] or 0) for row in income_agg]
+    expense_categories = [category_display.get(row['category'], row['category']) for row in expense_agg]
+    expense_amounts = [float(row['total'] or 0) for row in expense_agg]
+
     context = {
         'total_income': total_income,
         'total_expenses': total_expenses,
@@ -183,7 +211,14 @@ def admin_finances(request):
         'players': Player.objects.all().order_by('first_name'),
         'pending_payments': Payment.objects.filter(status='pendiente').aggregate(Sum('amount'))['amount__sum'] or 0,
         'pending_payments_count': Payment.objects.filter(status='pendiente').count(),
-        'page_title': 'Gestión Financiera'
+        'page_title': 'Gestión Financiera',
+        'monthly_labels': monthly_labels,
+        'monthly_income': monthly_income,
+        'monthly_expenses': monthly_expenses,
+        'income_categories': income_categories,
+        'income_amounts': income_amounts,
+        'expense_categories': expense_categories,
+        'expense_amounts': expense_amounts,
     }
     return render(request, 'admin/finances.html', context)
 

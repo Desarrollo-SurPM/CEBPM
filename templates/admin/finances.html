@@ -70,6 +70,7 @@
         </div>
     </div>
 </div>
+
 <div class="row mb-4">
     <div class="col-md-8">
         <div class="card">
@@ -88,6 +89,19 @@
             </div>
             <div class="card-body">
                 <canvas id="incomeChart" width="200" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Distribución de Gastos</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expenseChart" width="200" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -385,9 +399,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeCharts() {
     // Gráfico de ingresos vs gastos
     const ctx1 = document.getElementById('financialChart').getContext('2d');
-    const monthlyLabels = JSON.parse('{{ monthly_labels|escapejs }}' || '[]');
-    const monthlyIncome = JSON.parse('{{ monthly_income|escapejs }}' || '[]');
-    const monthlyExpenses = JSON.parse('{{ monthly_expenses|escapejs }}' || '[]');
+    const monthlyLabels = {{ monthly_labels|default:'[]' }};
+    const monthlyIncome = {{ monthly_income|default:'[]' }};
+    const monthlyExpenses = {{ monthly_expenses|default:'[]' }};
     
     new Chart(ctx1, {
         type: 'line',
@@ -419,8 +433,8 @@ function initializeCharts() {
     
     // Gráfico de distribución de ingresos
     const ctx2 = document.getElementById('incomeChart').getContext('2d');
-    const incomeCategories = JSON.parse('{{ income_categories|escapejs }}' || '[]');
-    const incomeAmounts = JSON.parse('{{ income_amounts|escapejs }}' || '[]');
+    const incomeCategories = {{ income_categories|default:'[]' }};
+    const incomeAmounts = {{ income_amounts|default:'[]' }};
     
     new Chart(ctx2, {
         type: 'doughnut',
@@ -435,6 +449,32 @@ function initializeCharts() {
                     '#4BC0C0',
                     '#9966FF',
                     '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    const ctx3 = document.getElementById('expenseChart').getContext('2d');
+    const expenseCategories = {{ expense_categories|default:'[]' }};
+    const expenseAmounts = {{ expense_amounts|default:'[]' }};
+
+    new Chart(ctx3, {
+        type: 'doughnut',
+        data: {
+            labels: expenseCategories,
+            datasets: [{
+                data: expenseAmounts,
+                backgroundColor: [
+                    '#E46618',
+                    '#CE1F6A',
+                    '#581d93',
+                    '#c860b0',
+                    '#36A2EB',
+                    '#FFCE56'
                 ]
             }]
         },
