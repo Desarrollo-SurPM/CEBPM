@@ -12,6 +12,7 @@ import json
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
+from django.utils.html import strip_tags
 
 # --- INICIO DE IMPORTACIONES CORREGIDAS ---
 from players.forms import PlayerGuardianEditForm, PlayerDocumentForm
@@ -45,10 +46,11 @@ def guardian_dashboard(request):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('pages:landing')
     
+    # --- Lógica existente de jugadores ---
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
     players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
     
-    # Estadísticas
+    # --- KPIs ---
     total_players = players.count()
     active_players = players.filter(status='active').count()
     
@@ -57,31 +59,50 @@ def guardian_dashboard(request):
         status__in=['pendiente', 'atrasada']
     ).aggregate(total=Sum('amount'))['total'] or 0
     
-    unread_messages = EmailRecipient.objects.filter(
+    # --- MEJORA 1: Obtener el último mensaje completo, no solo el contador ---
+    # Esto soluciona la petición de "ver mensajes apenas entren"
+    last_message_receipt = EmailRecipient.objects.filter(
+        user=request.user
+    ).select_related('bulk_email').order_by('-sent_at').first()
+
+    unread_messages_count = EmailRecipient.objects.filter(
         user=request.user,
         read_at__isnull=True
     ).count()
     
-    # Eventos próximos
+    # --- MEJORA 2: Agenda más detallada para la UI ---
     today = timezone.now().date()
     player_categories = players.values_list('category', flat=True)
+    
+    # Traemos un poco más de eventos para llenar una "agenda" visual
     upcoming_matches = Match.objects.filter(
         category__id__in=player_categories,
         starts_at__gte=today
-    ).order_by('starts_at')[:5]
+    ).select_related('category').order_by('starts_at')[:3]
+    
+    upcoming_trainings = Activity.objects.filter(
+        type='entrenamiento',
+        starts_at__gte=today
+    ).order_by('starts_at')[:3]
     
     recent_payments = Payment.objects.filter(
         invoice__player__in=players
     ).order_by('-paid_at')[:5]
+
+    # Datos del perfil para el contacto
+    profile, created = GuardianProfile.objects.get_or_create(user=request.user)
     
     context = {
         'players': players,
         'total_players': total_players,
         'active_players': active_players,
         'pending_payments': pending_payments,
-        'unread_messages': unread_messages,
+        'unread_messages': unread_messages_count,
+        'last_message': last_message_receipt, # Pasamos el objeto completo
         'upcoming_matches': upcoming_matches,
+        'upcoming_trainings': upcoming_trainings,
         'recent_payments': recent_payments,
+        'guardian_profile': profile, # Para mostrar/editar teléfono rápido
     }
     return render(request, 'guardian/dashboard.html', context)
 
@@ -282,30 +303,41 @@ def guardian_payments(request):
 
 @login_required
 def guardian_schedule(request):
-    """Calendario de partidos y entrenamientos del apoderado."""
-    if not is_guardian(request.user):
-        return redirect('pages:landing')
-
+    """Calendario de actividades (Corregido)"""
+    # 1. Obtener los hijos/pupilos del apoderado
     guardian_players = GuardianPlayer.objects.filter(guardian=request.user)
-    player_categories_ids = guardian_players.values_list('player__category__id', flat=True).distinct()
+    players = Player.objects.filter(id__in=guardian_players.values_list('player_id', flat=True))
+    
+    # 2. Categorías de los hijos (Para filtrar PARTIDOS)
+    player_categories = players.values_list('category', flat=True)
+    today = timezone.now()
 
-    # **CORRECCIÓN**: Usar 'starts_at' en lugar de 'date' y 'time'
-    matches = Match.objects.filter(
-        category__id__in=player_categories_ids
+    # --- A) PARTIDOS (Match sí tiene category) ---
+    upcoming_matches = Match.objects.filter(
+        category__id__in=player_categories,
+        starts_at__gte=today
+    ).select_related('category').order_by('starts_at')
+
+    # --- B) ENTRENAMIENTOS (Activity NO tiene category, mostramos todos los 'entrenamiento') ---
+    # Nota: Como el modelo Activity no tiene 'category', no podemos filtrar por la serie del hijo.
+    # Mostramos todos los entrenamientos del club.
+    upcoming_trainings = Activity.objects.filter(
+        type='entrenamiento',  # CORREGIDO: 'type' en lugar de 'activity_type'
+        starts_at__gte=today
+    ).order_by('starts_at')[:10]
+
+    # --- C) OTRAS ACTIVIDADES ---
+    upcoming_events = Activity.objects.filter(
+        type='otro',          # CORREGIDO: 'type' en lugar de 'activity_type'
+        starts_at__gte=today
     ).order_by('starts_at')
 
-    # Por ahora, las actividades son generales
-    trainings = Activity.objects.filter(type='entrenamiento').order_by('starts_at')
-
     context = {
-        'matches': matches,
-        'trainings': trainings,
-        'teams': Category.objects.filter(id__in=player_categories_ids),
-        'today': timezone.now().date(),
-        'tomorrow': timezone.now().date() + timedelta(days=1),
+        'upcoming_matches': upcoming_matches,
+        'upcoming_trainings': upcoming_trainings,
+        'upcoming_events': upcoming_events,
     }
     return render(request, 'guardian/schedule.html', context)
-
 
 @login_required
 def guardian_messages(request):

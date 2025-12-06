@@ -1,45 +1,118 @@
 {% extends 'guardian/base_guardian.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_title %}Mensajes{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm">
-    <div class="card-header">
-        <h5 class="mb-0">Buzón de Entrada</h5>
-    </div>
-    <div class="card-body p-0">
-        <div class="list-group list-group-flush">
-            
-            {% for recipient in messages_list %}
-            <a href="{% url 'guardian:view_message' recipient.pk %}" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1 text-primary">
-                        {% if not recipient.read_at %}
-                            <span class="badge bg-warning me-2">NUEVO</span>
-                        {% endif %}
-                        {{ recipient.bulk_email.title }}
-                    </h5>
-                    <small class="text-muted">{{ recipient.sent_at|timesince }}</small>
-                </div>
-                
-                <p class="mb-1 text-muted">
-                    {{ recipient.bulk_email.body_html|striptags|truncatewords:20 }}
-                </p>
-                
-                <small class="text-muted d-block">
-                    Enviado por: {{ recipient.bulk_email.created_by.get_full_name|default:"Administración" }}
-                </small>
-            </a>
-            {% empty %}
-            <div class="text-center py-5">
-                <i class="bi bi-envelope-open fs-1 text-muted"></i>
-                <h4 class="mt-3">Buzón Vacío</h4>
-                <p class="text-muted">No tienes notificaciones nuevas.</p>
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Bandeja de Entrada</h4>
+                <p class="text-muted small mb-0">Comunicados oficiales del club.</p>
             </div>
-            {% endfor %}
+            <div class="d-flex gap-2">
+                <div class="bg-white p-1 rounded-pill shadow-sm d-inline-flex" role="group">
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" onclick="filterMessages('all', this)">Todos</button>
+                    <button type="button" class="btn btn-sm btn-light rounded-pill px-3 text-muted" onclick="filterMessages('unread', this)">No Leídos</button>
+                    <button type="button" class="btn btn-sm btn-light rounded-pill px-3 text-muted" onclick="filterMessages('read', this)">Leídos</button>
+                </div>
+            </div>
         </div>
+
+        {% if messages_list %}
+            <div class="d-flex flex-column gap-3" id="messagesContainer">
+                {% for recipient in messages_list %}
+                <a href="{% url 'guardian:guardian_view_message' recipient.id %}" 
+                   class="text-decoration-none message-item"
+                   data-status="{% if not recipient.read_at %}unread{% else %}read{% endif %}">
+                   
+                    <div class="card-modern p-4 border-start border-4 transition-transform hover-shadow
+                                {% if not recipient.read_at %}border-warning bg-white{% else %}border-light bg-light opacity-75{% endif %}">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                {% if not recipient.read_at %}
+                                    <span class="badge bg-warning text-dark rounded-pill mb-2 shadow-sm" style="font-size: 0.7rem;">
+                                        <i class="bi bi-envelope-fill me-1"></i> Nuevo
+                                    </span>
+                                {% endif %}
+                                <h5 class="fw-bold text-dark mb-1">{{ recipient.bulk_email.title }}</h5>
+                            </div>
+                            <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+                                {{ recipient.sent_at|date:"d M" }}
+                            </small>
+                        </div>
+
+                        <p class="text-muted mb-0 small text-truncate">
+                            {{ recipient.bulk_email.body_html|striptags }}
+                        </p>
+
+                        {% if recipient.bulk_email.attachment %}
+                        <div class="mt-2 text-primary small">
+                            <i class="bi bi-paperclip me-1"></i> Adjunto disponible
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            
+            <div id="emptyState" class="text-center py-5 d-none">
+                <i class="bi bi-filter-circle text-muted fs-1 mb-2"></i>
+                <p class="text-muted">No hay mensajes en esta categoría.</p>
+            </div>
+
+        {% else %}
+            <div class="text-center py-5">
+                <div class="bg-light rounded-circle d-inline-flex p-4 mb-3 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                </div>
+                <h5 class="fw-bold text-secondary">Bandeja Vacía</h5>
+                <p class="text-muted">No tienes mensajes nuevos por el momento.</p>
+            </div>
+        {% endif %}
+
     </div>
 </div>
+
+<style>
+    .hover-shadow:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.05); }
+    .transition-transform { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+</style>
+
+<script>
+    function filterMessages(status, btn) {
+        // 1. Actualizar estilos de botones
+        const buttons = btn.parentElement.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.classList.remove('btn-primary', 'fw-bold');
+            b.classList.add('btn-light', 'text-muted');
+        });
+        btn.classList.remove('btn-light', 'text-muted');
+        btn.classList.add('btn-primary', 'fw-bold');
+
+        // 2. Filtrar items
+        const items = document.querySelectorAll('.message-item');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            if (status === 'all' || item.dataset.status === status) {
+                item.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+
+        // 3. Mostrar estado vacío si no hay resultados
+        const emptyState = document.getElementById('emptyState');
+        if (visibleCount === 0) {
+            emptyState.classList.remove('d-none');
+        } else {
+            emptyState.classList.add('d-none');
+        }
+    }
+</script>
 {% endblock %}

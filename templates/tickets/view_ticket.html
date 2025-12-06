@@ -1,71 +1,72 @@
 {% extends 'guardian/base_guardian.html' %}
-{% block title %}{{ page_title }}{% endblock %}
-{% block page_title %}{{ page_title }}{% endblock %}
+{% block title %}Chat de Soporte{% endblock %}
 
 {% block content %}
-<style>
-    .chat-bubble {
-        padding: 15px;
-        border-radius: 20px;
-        margin-bottom: 10px;
-        max-width: 80%;
-    }
-    .chat-guardian {
-        background-color: #0d6efd; /* Azul Bootstrap */
-        color: white;
-        margin-left: auto;
-        border-bottom-right-radius: 0;
-    }
-    .chat-admin {
-        background-color: #e9ecef; /* Gris claro */
-        color: #212529;
-        margin-right: auto;
-        border-bottom-left-radius: 0;
-    }
-    .chat-meta {
-        font-size: 0.8rem;
-        color: #6c757d;
-    }
-</style>
-
-<div class="card shadow mb-4">
-    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <div>
-            <h6 class="m-0 font-weight-bold text-primary">{{ ticket.subject }}</h6>
-            <small class="text-muted">Estado: 
-                {% if ticket.status == 'abierto' %} <span class="text-warning fw-bold">Abierto</span>
-                {% elif ticket.status == 'respondido' %} <span class="text-success fw-bold">Respondido por Admin</span>
-                {% else %} <span class="text-secondary fw-bold">Cerrado</span>
-                {% endif %}
-            </small>
-        </div>
-        <a href="{% url 'tickets:list' %}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Volver a la lista
-        </a>
-    </div>
-    
-    <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-        {% for reply in replies %}
-            <div class="chat-bubble {% if reply.user == request.user %}chat-guardian{% else %}chat-admin{% endif %}">
-                <p class="mb-1">{{ reply.message|linebreaksbr }}</p>
-                <div class="chat-meta text-end">
-                    <strong>{% if reply.user.admin_profile %}Admin{% else %}Tú{% endif %}</strong>
-                    <br>
-                    <small>{{ reply.created_at|date:"d M Y, H:i" }}</small>
+<div class="row justify-content-center h-100">
+    <div class="col-lg-9 d-flex flex-column h-100">
+        
+        <div class="card-modern rounded-bottom-0 border-bottom-0 p-3 bg-white d-flex justify-content-between align-items-center shadow-sm z-10">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'tickets:list' %}" class="btn btn-light rounded-circle btn-sm"><i class="bi bi-arrow-left"></i></a>
+                <div>
+                    <h6 class="fw-bold mb-0 text-truncate" style="max-width: 200px;">{{ ticket.subject }}</h6>
+                    <small class="text-muted">#{{ ticket.id }} • {{ ticket.get_status_display }}</small>
                 </div>
             </div>
-        {% endfor %}
-    </div>
+            {% if ticket.status == 'cerrado' %}
+                <span class="badge bg-secondary">Cerrado</span>
+            {% else %}
+                <span class="badge bg-success">Activo</span>
+            {% endif %}
+        </div>
 
-    <div class="card-footer">
-        <form method="POST">
-            {% csrf_token %}
-            <div class="input-group">
-                {{ reply_form.message }}
-                <button class="btn btn-primary" type="submit">Enviar Respuesta</button>
+        <div class="card-modern rounded-0 border-0 flex-grow-1 bg-light p-4 overflow-auto d-flex flex-column gap-3" style="min-height: 400px; max-height: 60vh;">
+            
+            {% for reply in replies %}
+            <div class="d-flex {% if reply.user == user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                <div class="d-flex flex-column {% if reply.user == user %}align-items-end{% else %}align-items-start{% endif %}" style="max-width: 80%;">
+                    
+                    <div class="p-3 shadow-sm text-break
+                                {% if reply.user == user %}
+                                    bg-primary text-white rounded-3 rounded-tr-0
+                                {% else %}
+                                    bg-white text-dark rounded-3 rounded-tl-0 border
+                                {% endif %}">
+                        {{ reply.message|linebreaksbr }}
+                    </div>
+                    
+                    <small class="text-muted mt-1" style="font-size: 0.7rem;">
+                        {% if reply.user == user %}Tú{% else %}Administración{% endif %} • {{ reply.created_at|date:"H:i" }}
+                    </small>
+                </div>
             </div>
-            {% if reply_form.message.errors %}<div class="text-danger small">{{ reply_form.message.errors }}</div>{% endif %}
-        </form>
+            {% endfor %}
+            
+        </div>
+
+        {% if ticket.status != 'cerrado' %}
+        <div class="card-modern rounded-top-0 border-top-0 p-3 bg-white shadow-lg mt-auto">
+            <form method="POST" class="d-flex gap-2">
+                {% csrf_token %}
+                <textarea name="message" class="form-control rounded-pill bg-light border-0 px-4 py-3" 
+                          rows="1" placeholder="Escribe una respuesta..." style="resize: none;" required></textarea>
+                <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="card-modern rounded-top-0 p-3 bg-light text-center text-muted border-top">
+            <small><i class="bi bi-lock-fill me-1"></i> Este ticket ha sido cerrado y no admite más respuestas.</small>
+        </div>
+        {% endif %}
+
     </div>
 </div>
+
+<style>
+    /* Estilos para bordes de burbujas de chat */
+    .rounded-tr-0 { border-top-right-radius: 0 !important; }
+    .rounded-tl-0 { border-top-left-radius: 0 !important; }
+</style>
 {% endblock %}

@@ -1,59 +1,67 @@
 {% extends 'guardian/base_guardian.html' %}
-{% block title %}{{ page_title }}{% endblock %}
-{% block page_title %}{{ page_title }}{% endblock %}
+{% block title %}Ayuda y Soporte{% endblock %}
+{% block page_title %}Centro de Ayuda{% endblock %}
 
 {% block content %}
-<div class="card shadow mb-4">
-    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <h6 class="m-0 font-weight-bold text-primary">Mis Solicitudes</h6>
-        <a href="{% url 'tickets:create' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle me-1"></i> Crear Nueva Solicitud
-        </a>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Ticket ID</th>
-                        <th>Asunto</th>
-                        <th>Estado</th>
-                        <th>Última Actualización</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ticket in tickets %}
-                    <tr>
-                        <td>#{{ ticket.id }}</td>
-                        <td>{{ ticket.subject }}</td>
-                        <td>
-                            {% if ticket.status == 'abierto' %}
-                                <span class="badge bg-warning">Abierto</span>
-                            {% elif ticket.status == 'respondido' %}
-                                <span class="badge bg-success">Respondido</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Cerrado</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ ticket.replies.last.created_at|timesince }}</td>
-                        <td>
-                            <a href="{% url 'tickets:view' ticket.pk %}" class="btn btn-primary btn-sm">
-                                Ver / Responder
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4">
-                            <p class="text-muted mb-2">No has enviado ninguna solicitud.</p>
-                            <a href="{% url 'tickets:create' %}" class="btn btn-primary">Crear mi primera solicitud</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Mis Solicitudes</h4>
+                <p class="text-muted small mb-0">Historial de consultas al administrador.</p>
+            </div>
+            <a href="{% url 'tickets:create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                <i class="bi bi-plus-lg me-2"></i> Nueva Consulta
+            </a>
         </div>
+
+        {% if tickets %}
+            <div class="row g-3">
+                {% for ticket in tickets %}
+                <div class="col-md-6">
+                    <a href="{% url 'tickets:view' ticket.pk %}" class="text-decoration-none">
+                        <div class="card-modern p-4 h-100 border-start border-4 hover-shadow transition-transform
+                                    {% if ticket.status == 'abierto' %}border-warning{% elif ticket.status == 'respondido' %}border-success{% else %}border-secondary{% endif %}">
+                            
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge rounded-pill border
+                                    {% if ticket.status == 'abierto' %}bg-warning text-dark border-warning
+                                    {% elif ticket.status == 'respondido' %}bg-success text-white border-success
+                                    {% else %}bg-light text-muted border-light{% endif %}">
+                                    {% if ticket.status == 'abierto' %}⏳ Pendiente{% elif ticket.status == 'respondido' %}✅ Respuesta Nueva{% else %}🔒 Cerrado{% endif %}
+                                </span>
+                                <small class="text-muted font-monospace">#{{ ticket.id }}</small>
+                            </div>
+
+                            <h5 class="fw-bold text-dark mb-2">{{ ticket.subject }}</h5>
+                            
+                            <div class="d-flex align-items-center text-muted small mt-3">
+                                <i class="bi bi-clock me-2"></i>
+                                <span>Actualizado {{ ticket.replies.last.created_at|timesince }} atrás</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card-modern p-5 text-center">
+                <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex p-4 mb-3">
+                    <i class="bi bi-question-lg fs-1"></i>
+                </div>
+                <h4 class="fw-bold text-dark">¿Tienes alguna duda?</h4>
+                <p class="text-muted mb-4">Abre una solicitud directa con la administración para resolver dudas sobre pagos, horarios o inscripciones.</p>
+                <a href="{% url 'tickets:create' %}" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm">
+                    Crear mi primera solicitud
+                </a>
+            </div>
+        {% endif %}
     </div>
 </div>
+
+<style>
+    .hover-shadow:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .transition-transform { transition: all 0.2s ease; }
+</style>
 {% endblock %}

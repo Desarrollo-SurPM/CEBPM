@@ -1,474 +1,173 @@
 {% extends 'guardian/base_guardian.html' %}
+{% load static %}
 
-{% block title %}Calendario - Panel de Apoderado{% endblock %}
-{% block page_title %}Calendario de Eventos{% endblock %}
+{% block page_title %}Calendario de Actividades{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-calendar-event me-2"></i>
-                    Próximos Eventos
-                </h5>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('list')" id="listViewBtn">
-                        <i class="bi bi-list"></i> Lista
+<div class="row">
+    <div class="col-12">
+        
+        <div class="card-modern p-2 mb-4">
+            <ul class="nav nav-pills nav-fill" id="scheduleTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-pill fw-bold py-3" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab">
+                        <i class="bi bi-trophy-fill me-2"></i>Partidos
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('calendar')" id="calendarViewBtn">
-                        <i class="bi bi-calendar"></i> Calendario
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill fw-bold py-3" id="trainings-tab" data-bs-toggle="pill" data-bs-target="#trainings" type="button" role="tab">
+                        <i class="bi bi-stopwatch-fill me-2"></i>Entrenamientos
                     </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <!-- Filtros -->
-                <form method="get" class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <select name="team" class="form-select">
-                            <option value="">Todos los equipos</option>
-                            {% for team in teams %}
-                                <option value="{{ team.id }}" {% if team_filter == team.id|stringformat:'s' %}selected{% endif %}>
-                                    {{ team.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="month" name="month" class="form-control" value="{{ month_filter }}">
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-outline-primary">
-                            <i class="bi bi-funnel me-1"></i>
-                            Filtrar
-                        </button>
-                        <a href="{% url 'guardian:schedule' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-1"></i>
-                            Limpiar
-                        </a>
-                    </div>
-                </form>
-                
-                <!-- Vista de Lista -->
-                <div id="listView">
-                    {% if matches or trainings %}
-                        <div class="row">
-                            <!-- Partidos -->
-                            <div class="col-md-6 mb-4">
-                                <h6 class="text-primary mb-3">
-                                    <i class="bi bi-trophy me-2"></i>
-                                    Partidos
-                                </h6>
-                                {% if matches %}
-                                    <div class="list-group">
-                                        {% for match in matches %}
-                                        <div class="list-group-item">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div class="flex-grow-1">
-                                                    <h6 class="mb-1 text-primary">
-                                                        {{ match.home_team.name }} vs {{ match.away_team.name }}
-                                                    </h6>
-                                                    <p class="mb-1">
-                                                        <i class="bi bi-calendar me-1"></i>
-                                                        {{ match.date|date:"l, d \d\e F \d\e Y" }}
-                                                    </p>
-                                                    <p class="mb-1">
-                                                        <i class="bi bi-clock me-1"></i>
-                                                        {{ match.time|time:"H:i" }}
-                                                    </p>
-                                                    {% if match.location %}
-                                                        <p class="mb-1">
-                                                            <i class="bi bi-geo-alt me-1"></i>
-                                                            {{ match.location }}
-                                                        </p>
-                                                    {% endif %}
-                                                    {% if match.description %}
-                                                        <small class="text-muted">{{ match.description|truncatewords:10 }}</small>
-                                                    {% endif %}
-                                                </div>
-                                                <div class="text-end">
-                                                    <span class="badge bg-primary">Partido</span>
-                                                    {% if match.date == today %}
-                                                        <br><small class="text-success fw-bold">Hoy</small>
-                                                    {% elif match.date == tomorrow %}
-                                                        <br><small class="text-warning fw-bold">Mañana</small>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill fw-bold py-3" id="events-tab" data-bs-toggle="pill" data-bs-target="#events" type="button" role="tab">
+                        <i class="bi bi-calendar-event-fill me-2"></i>Actividades
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="scheduleTabContent">
+            
+            <div class="tab-pane fade show active" id="matches" role="tabpanel">
+                {% if upcoming_matches %}
+                    <div class="row g-3">
+                        {% for match in upcoming_matches %}
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card-modern border-start border-4 border-primary h-100 p-0 overflow-hidden">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                            {{ match.category.name }}
+                                        </span>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-dark" style="font-size: 1.1rem;">{{ match.starts_at|date:"d M" }}</div>
+                                            <small class="text-muted">{{ match.starts_at|date:"H:i" }} hrs</small>
                                         </div>
-                                        {% endfor %}
                                     </div>
-                                {% else %}
-                                    <div class="text-center py-3">
-                                        <i class="bi bi-trophy text-muted" style="font-size: 2rem;"></i>
-                                        <p class="text-muted mt-2">No hay partidos programados</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Entrenamientos -->
-                            <div class="col-md-6 mb-4">
-                                <h6 class="text-success mb-3">
-                                    <i class="bi bi-person-workspace me-2"></i>
-                                    Entrenamientos
-                                </h6>
-                                {% if trainings %}
-                                    <div class="list-group">
-                                        {% for training in trainings %}
-                                        <div class="list-group-item">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div class="flex-grow-1">
-                                                    <h6 class="mb-1 text-success">
-                                                        {{ training.team.name }}
-                                                    </h6>
-                                                    <p class="mb-1">
-                                                        <i class="bi bi-calendar me-1"></i>
-                                                        {{ training.date|date:"l, d \d\e F \d\e Y" }}
-                                                    </p>
-                                                    <p class="mb-1">
-                                                        <i class="bi bi-clock me-1"></i>
-                                                        {{ training.time|time:"H:i" }}
-                                                    </p>
-                                                    {% if training.location %}
-                                                        <p class="mb-1">
-                                                            <i class="bi bi-geo-alt me-1"></i>
-                                                            {{ training.location }}
-                                                        </p>
-                                                    {% endif %}
-                                                    {% if training.description %}
-                                                        <small class="text-muted">{{ training.description|truncatewords:10 }}</small>
-                                                    {% endif %}
-                                                </div>
-                                                <div class="text-end">
-                                                    <span class="badge bg-success">Entrenamiento</span>
-                                                    {% if training.date == today %}
-                                                        <br><small class="text-success fw-bold">Hoy</small>
-                                                    {% elif training.date == tomorrow %}
-                                                        <br><small class="text-warning fw-bold">Mañana</small>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
+                                    
+                                    <div class="d-flex align-items-center justify-content-between my-3">
+                                        <div class="text-center w-40">
+                                            <div class="fw-bold text-secondary">CEB PM</div>
                                         </div>
-                                        {% endfor %}
+                                        <div class="badge bg-dark text-white rounded-pill px-3">VS</div>
+                                        <div class="text-center w-40">
+                                            <div class="fw-bold text-secondary">{{ match.opponent }}</div>
+                                        </div>
                                     </div>
-                                {% else %}
-                                    <div class="text-center py-3">
-                                        <i class="bi bi-person-workspace text-muted" style="font-size: 2rem;"></i>
-                                        <p class="text-muted mt-2">No hay entrenamientos programados</p>
+
+                                    <div class="d-flex align-items-center text-muted small mt-3 pt-3 border-top">
+                                        <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                                        <span class="text-truncate">{{ match.location }}</span>
                                     </div>
-                                {% endif %}
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-emoji-smile fs-1 d-block mb-2"></i>
+                        <p>No hay partidos programados próximamente.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="trainings" role="tabpanel">
+                <div class="card-modern p-0 overflow-hidden">
+                    <div class="list-group list-group-flush">
+                        {% if upcoming_trainings %}
+                            {% for training in upcoming_trainings %}
+                            <div class="list-group-item p-4 d-flex align-items-center hover-bg-light">
+                                <div class="me-4 text-center text-secondary border rounded-3 p-2 bg-light" style="min-width: 70px;">
+                                    <span class="d-block fw-bold h4 m-0">{{ training.starts_at|date:"d" }}</span>
+                                    <span class="d-block small text-uppercase">{{ training.starts_at|date:"M" }}</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <h6 class="fw-bold mb-0 text-dark">{{ training.title }}</h6>
+                                        <span class="badge bg-success-subtle text-success">{{ training.starts_at|date:"H:i" }} - {{ training.ends_at|date:"H:i" }}</span>
+                                    </div>
+                                    <div class="small text-muted mb-1">
+                                        <i class="bi bi-people me-1"></i> {{ training.category.name|default:"General" }}
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-pin-map me-1"></i> {{ training.location }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-5 text-center text-muted">
+                                <i class="bi bi-calendar-x fs-1 mb-2"></i>
+                                <p>No hay entrenamientos visibles.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="events" role="tabpanel">
+                <div class="row g-3">
+                    {% if upcoming_events %}
+                        {% for event in upcoming_events %}
+                        <div class="col-md-6">
+                            <div class="card-modern p-4 border-start border-4 border-warning">
+                                <div class="d-flex align-items-start">
+                                    <div class="bg-warning-subtle text-warning p-3 rounded-circle me-3">
+                                        <i class="bi bi-megaphone-fill fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-1">{{ event.title }}</h5>
+                                        <p class="text-muted small mb-2">{{ event.description|truncatewords:20 }}</p>
+                                        
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-calendar3 me-1"></i> {{ event.starts_at|date:"D d M, Y" }}
+                                            </span>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-clock me-1"></i> {{ event.starts_at|date:"H:i" }}
+                                            </span>
+                                        </div>
+                                        
+                                        {% if event.location %}
+                                        <div class="mt-2 small text-muted">
+                                            <i class="bi bi-geo-alt me-1"></i> {{ event.location }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
-                            <h4 class="text-muted mt-3">No hay eventos programados</h4>
-                            <p class="text-muted">Los eventos aparecerán aquí cuando sean programados</p>
+                        <div class="col-12 text-center py-5 text-muted">
+                            <i class="bi bi-clipboard-check fs-1 mb-2"></i>
+                            <p>No hay reuniones ni actividades especiales pendientes.</p>
                         </div>
                     {% endif %}
                 </div>
-                
-                <!-- Vista de Calendario -->
-                <div id="calendarView" style="display: none;">
-                    <div id="calendar"></div>
-                </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Panel lateral -->
-    <div class="col-md-4">
-        <!-- Resumen del mes -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="bi bi-calendar-month me-2"></i>
-                    Resumen del Mes
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h4 class="text-primary mb-0">{{ matches.count }}</h4>
-                            <small class="text-muted">Partidos</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-success mb-0">{{ trainings.count }}</h4>
-                        <small class="text-muted">Entrenamientos</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Próximos eventos destacados -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="bi bi-star me-2"></i>
-                    Próximos Destacados
-                </h6>
-            </div>
-            <div class="card-body">
-                {% if matches %}
-                    {% for match in matches|slice:":3" %}
-                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                            <div class="me-2">
-                                <i class="bi bi-trophy text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold small">{{ match.home_team.name }} vs {{ match.away_team.name }}</div>
-                                <small class="text-muted">{{ match.date|date:"d/m" }} - {{ match.time|time:"H:i" }}</small>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                
-                {% if trainings %}
-                    {% for training in trainings|slice:":3" %}
-                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                            <div class="me-2">
-                                <i class="bi bi-person-workspace text-success"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold small">{{ training.team.name }}</div>
-                                <small class="text-muted">{{ training.date|date:"d/m" }} - {{ training.time|time:"H:i" }}</small>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                
-                {% if not matches and not trainings %}
-                    <div class="text-center py-3">
-                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-                        <p class="text-muted mt-2 mb-0">No hay eventos próximos</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Información útil -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Información Útil
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <h6 class="text-primary mb-2">
-                        <i class="bi bi-clock me-1"></i>
-                        Horarios Habituales
-                    </h6>
-                    <ul class="list-unstyled small">
-                        <li><strong>Entrenamientos:</strong> Martes y Jueves 18:00</li>
-                        <li><strong>Partidos:</strong> Sábados y Domingos</li>
-                    </ul>
-                </div>
-                
-                <div class="mb-3">
-                    <h6 class="text-success mb-2">
-                        <i class="bi bi-geo-alt me-1"></i>
-                        Ubicaciones
-                    </h6>
-                    <ul class="list-unstyled small">
-                        <li><strong>Cancha Principal:</strong> Estadio Municipal</li>
-                        <li><strong>Entrenamientos:</strong> Complejo Deportivo</li>
-                    </ul>
-                </div>
-                
-                <div class="alert alert-info small mb-0">
-                    <i class="bi bi-bell me-1"></i>
-                    <strong>Recordatorio:</strong> Llegar 30 minutos antes del evento.
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
-<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
-{% endblock %}
-
-{% block extra_js %}
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js'></script>
-
-<script>
-    let calendar;
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeCalendar();
-    });
-    
-    function initializeCalendar() {
-        const calendarEl = document.getElementById('calendar');
-        
-        // Preparar eventos para el calendario
-        const events = [];
-        
-        // Agregar partidos
-        {% for match in matches %}
-        events.push({
-            title: '{{ match.home_team.name|escapejs }} vs {{ match.away_team.name|escapejs }}',
-            start: '{{ match.date|date:"Y-m-d" }}T{{ match.time|time:"H:i" }}',
-            backgroundColor: '#3b82f6',
-            borderColor: '#1e40af',
-            textColor: '#ffffff',
-            extendedProps: {
-                type: 'match',
-                location: '{{ match.location|default:""|escapejs }}',
-                description: '{{ match.description|default:""|escapejs }}'
-            }
-        });
-        {% endfor %}
-        
-        // Agregar entrenamientos
-        {% for training in trainings %}
-        events.push({
-            title: 'Entrenamiento - {{ training.team.name|escapejs }}',
-            start: '{{ training.date|date:"Y-m-d" }}T{{ training.time|time:"H:i" }}',
-            backgroundColor: '#10b981',
-            borderColor: '#059669',
-            textColor: '#ffffff',
-            extendedProps: {
-                type: 'training',
-                location: '{{ training.location|default:""|escapejs }}',
-                description: '{{ training.description|default:""|escapejs }}'
-            }
-        });
-        {% endfor %}
-        
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'es',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listWeek'
-            },
-            events: events,
-            eventClick: function(info) {
-                showEventDetails(info.event);
-            },
-            height: 'auto',
-            eventDisplay: 'block',
-            dayMaxEvents: 3
-        });
-        
-        calendar.render();
+<style>
+    /* Estilos específicos para las tabs activas */
+    .nav-pills .nav-link.active {
+        background-color: var(--ceb-primary); /* Usa el morado del club */
+        color: white;
+        box-shadow: 0 4px 10px rgba(88, 29, 147, 0.3);
     }
-    
-    function toggleView(viewType) {
-        const listView = document.getElementById('listView');
-        const calendarView = document.getElementById('calendarView');
-        const listBtn = document.getElementById('listViewBtn');
-        const calendarBtn = document.getElementById('calendarViewBtn');
-        
-        if (viewType === 'list') {
-            listView.style.display = 'block';
-            calendarView.style.display = 'none';
-            listBtn.classList.add('active');
-            calendarBtn.classList.remove('active');
-        } else {
-            listView.style.display = 'none';
-            calendarView.style.display = 'block';
-            listBtn.classList.remove('active');
-            calendarBtn.classList.add('active');
-            
-            // Renderizar calendario si no está visible
-            if (calendar) {
-                setTimeout(() => {
-                    calendar.render();
-                }, 100);
-            }
-        }
+    .nav-pills .nav-link {
+        color: #64748b;
+        background-color: #fff;
+        margin: 0 5px;
+        transition: all 0.2s ease;
     }
-    
-    function showEventDetails(event) {
-        const props = event.extendedProps;
-        const eventType = props.type === 'match' ? 'Partido' : 'Entrenamiento';
-        const icon = props.type === 'match' ? 'bi-trophy' : 'bi-person-workspace';
-        
-        let content = `
-            <div class="modal fade" id="eventDetailModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="bi ${icon} me-2"></i>
-                                ${eventType}
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <h6 class="text-primary">${event.title}</h6>
-                            <p class="mb-2">
-                                <i class="bi bi-calendar me-2"></i>
-                                <strong>Fecha:</strong> ${event.start.toLocaleDateString('es-CL', { 
-                                    weekday: 'long', 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric' 
-                                })}
-                            </p>
-                            <p class="mb-2">
-                                <i class="bi bi-clock me-2"></i>
-                                <strong>Hora:</strong> ${event.start.toLocaleTimeString('es-CL', { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                })}
-                            </p>
-        `;
-        
-        if (props.location) {
-            content += `
-                <p class="mb-2">
-                    <i class="bi bi-geo-alt me-2"></i>
-                    <strong>Ubicación:</strong> ${props.location}
-                </p>
-            `;
-        }
-        
-        if (props.description) {
-            content += `
-                <p class="mb-2">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Descripción:</strong> ${props.description}
-                </p>
-            `;
-        }
-        
-        content += `
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remover modal anterior si existe
-        const existingModal = document.getElementById('eventDetailModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Agregar nuevo modal
-        document.body.insertAdjacentHTML('beforeend', content);
-        
-        // Mostrar modal
-        const modal = new bootstrap.Modal(document.getElementById('eventDetailModal'));
-        modal.show();
-        
-        // Limpiar modal cuando se cierre
-        document.getElementById('eventDetailModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
-        });
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: #e2e8f0;
     }
-</script>
+</style>
 {% endblock %}

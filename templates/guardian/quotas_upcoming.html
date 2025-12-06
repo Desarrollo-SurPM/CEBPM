@@ -1,277 +1,91 @@
-{% extends 'base.html' %}
+{% extends 'guardian/base_guardian.html' %}
 {% load static %}
 
-{% block title %}Cuotas Próximas a Pagar{% endblock %}
+{% block page_title %}Pagos Pendientes{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-clock me-2"></i>Cuotas Pendientes</h2>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <div class="card-modern bg-primary text-white p-4 mb-4 border-0" 
+             style="background: linear-gradient(135deg, var(--ceb-dark), var(--ceb-primary));">
+            <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <a href="{% url 'guardian:guardian_quotas_paid' %}" class="btn btn-outline-success me-2">
-                        <i class="bi bi-check-circle me-2"></i>Ver Pagadas
-                    </a>
-                    <a href="{% url 'guardian:dashboard' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
-                    </a>
+                    <h6 class="text-white-50 text-uppercase mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Total a Pagar</h6>
+                    <h1 class="fw-bold mb-0 display-5">${{ total_pending|floatformat:0|default:"0" }}</h1>
+                </div>
+                <div class="bg-white/10 rounded-circle p-3 d-none d-sm-block">
+                    <i class="bi bi-wallet2 fs-1 text-white-50"></i>
                 </div>
             </div>
-
-            <div class="row mb-4">
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card danger">
-                        <div class="stat-number">{{ overdue_invoices.count }}</div>
-                        <div class="stat-label">
-                            <i class="bi bi-exclamation-triangle me-2"></i>Atrasadas
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card warning">
-                        <div class="stat-number">{{ due_soon_invoices.count }}</div>
-                        <div class="stat-label">
-                            <i class="bi bi-clock-history me-2"></i>Vencen Pronto (7 días)
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card info">
-                        <div class="stat-number">{{ pending_invoices.count }}</div>
-                        <div class="stat-label">
-                            <i class="bi bi-calendar-week me-2"></i>Próximas (30 días)
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="stat-card primary">
-                        <div class="stat-number">${{ total_all|floatformat:0 }}</div>
-                        <div class="stat-label">
-                            <i class="bi bi-cash-stack me-2"></i>Total Pendiente
-                        </div>
-                    </div>
-                </div>
+            {% if total_pending > 0 %}
+            <div class="mt-4 pt-3 border-top border-white-50">
+                <a href="{% url 'guardian:guardian_pay_multiple' %}" class="btn btn-light rounded-pill px-4 fw-bold text-primary w-100 w-sm-auto">
+                    <i class="bi bi-check-all me-2"></i> Pagar Todo
+                </a>
             </div>
-            
-            <form id="multiplePaymentForm" action="{% url 'guardian:guardian_pay_multiple' %}" method="GET">
-                
-                {% if overdue_invoices %}
-                    <div class="card mb-4 border-danger">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Cuotas Atrasadas ({{ overdue_invoices|length }})</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-danger" role="alert">
-                                <strong>¡Atención!</strong> Estas cuotas están vencidas.
-                            </div>
-                            <div class="row">
-                                {% for invoice in overdue_invoices %}
-                                    {% include 'guardian/includes/quota_card.html' with invoice=invoice card_type='danger' %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
+            {% endif %}
+        </div>
 
-                {% if due_soon_invoices %}
-                    <div class="card mb-4 border-warning">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Cuotas Urgentes ({{ due_soon_invoices|length }})</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-warning" role="alert">
-                                Estas cuotas vencen en los próximos 7 días.
-                            </div>
-                            <div class="row">
-                                {% for invoice in due_soon_invoices %}
-                                    {% include 'guardian/includes/quota_card.html' with invoice=invoice card_type='warning' %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
+        <ul class="nav nav-pills nav-fill mb-4 gap-2 bg-white p-2 rounded-pill shadow-sm" style="max-width: 400px; margin: 0 auto;">
+            <li class="nav-item">
+                <a class="nav-link active rounded-pill fw-bold" href="#">
+                    Por Pagar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill text-muted" href="{% url 'guardian:guardian_quotas_paid' %}">
+                    Historial
+                </a>
+            </li>
+        </ul>
 
-                {% if pending_invoices %}
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="bi bi-calendar-week me-2"></i>Cuotas Próximas ({{ pending_invoices|length }})</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                {% for invoice in pending_invoices %}
-                                    {% include 'guardian/includes/quota_card.html' with invoice=invoice card_type='info' %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-
-                {% if not overdue_invoices and not due_soon_invoices and not pending_invoices %}
-                    <div class="card">
-                        <div class="card-body text-center py-5">
-                            <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
-                            <h4 class="text-success mt-3">¡Excelente!</h4>
-                            <p class="text-muted">No tienes cuotas pendientes por pagar en este momento.</p>
-                            <a href="{% url 'guardian:guardian_quotas_paid' %}" class="btn btn-success">
-                                <i class="bi bi-list me-2"></i>Ver Historial de Pagos
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
-
-                {% if overdue_invoices or due_soon_invoices or pending_invoices %}
-                    <div class="card mt-4 sticky-bottom shadow-lg">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h5 class="mb-1">Pago Múltiple</h5>
-                                    <p class="text-muted mb-0">
-                                        Total seleccionado: <strong class="text-primary fs-5" id="totalAmount">$0</strong>
-                                    </p>
+        <div class="row g-3">
+            {% if invoices %}
+                {% for invoice in invoices %}
+                <div class="col-md-6">
+                    <div class="card-modern p-0 h-100 border-start border-4 {% if invoice.is_overdue %}border-danger{% else %}border-primary{% endif %}">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between h-100">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge rounded-pill bg-light text-dark border">
+                                        <i class="bi bi-person me-1"></i> {{ invoice.player.first_name }}
+                                    </span>
+                                    {% if invoice.is_overdue %}
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill">Vencido</span>
+                                    {% else %}
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill">Pendiente</span>
+                                    {% endif %}
                                 </div>
-                                <div class="col-md-4 text-end">
-                                    <button type="submit" class="btn btn-primary" id="proceedPayment" disabled>
-                                        <i class="bi bi-credit-card me-2"></i>Pagar Múltiple
-                                    </button>
+                                
+                                <h5 class="fw-bold mb-1 text-dark">{{ invoice.concept }}</h5>
+                                <p class="text-muted small mb-3">Vence el: {{ invoice.due_date|date:"d M, Y" }}</p>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-end mt-3 pt-3 border-top border-light">
+                                <div>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">Monto</small>
+                                    <span class="fs-4 fw-bold text-dark">${{ invoice.amount|floatformat:0 }}</span>
                                 </div>
+                                <a href="{% url 'guardian:guardian_pay_quota' invoice.id %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                    Pagar <i class="bi bi-chevron-right ms-1"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                {% endif %}
-            </form> </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-patch-check-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">¡Estás al día!</h3>
+                    <p class="text-muted">No tienes pagos pendientes por el momento.</p>
+                </div>
+            {% endif %}
+        </div>
+
     </div>
 </div>
-
-{% comment %}
-    Este es el contenido para 'templates/guardian/includes/quota_card.html'
-    (Lo pongo aquí como comentario, pero debes crearlo como un archivo separado)
-
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card border-{{ card_type }} h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    {% if invoice.player.photo %}
-                        <img src="{{ invoice.player.photo.url }}" alt="{{ invoice.player.get_full_name }}" 
-                             class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                    {% else %}
-                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
-                             style="width: 40px; height: 40px;">
-                            <i class="bi bi-person text-muted"></i>
-                        </div>
-                    {% endif %}
-                    <div>
-                        <h6 class="mb-0">{{ invoice.player.get_full_name }}</h6>
-                        <small class="text-muted">{{ invoice.player.category.name|default:"Sin categoría" }}</small>
-                    </div>
-                </div>
-                
-                <h6 class="text-{{ card_type }}">{{ invoice.fee_definition.name }}</h6>
-                <p class="mb-2">
-                    <strong class="text-{{ card_type }} fs-5">${{ invoice.amount|floatformat:0 }}</strong>
-                </p>
-                <p class="mb-2">
-                    <small class="text-muted">
-                        <i class="bi bi-calendar-{% if invoice.status == 'atrasada' %}x{% else %}event{% endif %} me-1"></i>
-                        Vence: {{ invoice.due_date|date:"d/m/Y" }}
-                    </small><br>
-                    
-                    {% if invoice.status == 'atrasada' %}
-                        <small class="text-danger fw-bold">
-                            <i class="bi bi-clock me-1"></i>{{ invoice.due_date|timesince }} de atraso
-                        </small>
-                    {% elif invoice.status == 'pendiente' %}
-                        <small class="text-warning fw-bold">
-                            <i class="bi bi-clock me-1"></i>Vence en {{ invoice.due_date|timeuntil }}
-                        </small>
-                    {% endif %}
-                </p>
-                
-                {% if invoice.status == 'en revisión' %}
-                    <div class="d-grid">
-                        <button class="btn btn-outline-info btn-sm" disabled>
-                            <i class="bi bi-arrow-repeat me-2"></i>En Revisión
-                        </button>
-                    </div>
-                {% elif invoice.status == 'pagada' %}
-                     <div class="d-grid">
-                        <button class="btn btn-outline-success btn-sm" disabled>
-                            <i class="bi bi-check-circle me-2"></i>Pagada
-                        </button>
-                    </div>
-                {% else %}
-                    <div class="d-grid mb-2">
-                        <a href="{% url 'guardian:guardian_pay_quota' invoice.id %}" class="btn btn-{{ card_type }} btn-sm">
-                            <i class="bi bi-credit-card me-2"></i>Pagar Ahora
-                        </a>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" name="invoices" value="{{ invoice.id }}" 
-                               class="form-check-input invoice-checkbox" 
-                               data-amount="{{ invoice.amount }}">
-                        <label class="form-check-label small" for="invoice-{{ invoice.id }}">
-                            Seleccionar para pago múltiple
-                        </label>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-{% endcomment %}
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const invoiceCheckboxes = document.querySelectorAll('.invoice-checkbox');
-    const totalAmountSpan = document.getElementById('totalAmount');
-    const proceedButton = document.getElementById('proceedPayment');
-    const paymentForm = document.getElementById('multiplePaymentForm');
-
-    function updateTotal() {
-        let total = 0;
-        let selectedCount = 0;
-        
-        invoiceCheckboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                total += parseFloat(checkbox.dataset.amount);
-                selectedCount++;
-            }
-        });
-        
-        totalAmountSpan.textContent = total.toLocaleString('es-CL');
-        proceedButton.disabled = selectedCount === 0;
-    }
-
-    invoiceCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateTotal);
-    });
-
-    // Modificamos el evento del botón para que use el formulario
-    paymentForm.addEventListener('submit', function(e) {
-        const selectedInvoices = Array.from(invoiceCheckboxes)
-            .filter(cb => cb.checked)
-            .map(cb => cb.value);
-        
-        if (selectedInvoices.length === 0) {
-            e.preventDefault();
-            alert('Debes seleccionar al menos una cuota para el pago múltiple.');
-        } else {
-            // Limpiamos y añadimos los inputs hidden dinámicamente
-            const existingInputs = paymentForm.querySelectorAll('input[name="invoices"]');
-            existingInputs.forEach(input => input.remove());
-            
-            selectedInvoices.forEach(id => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'invoices';
-                input.value = id;
-                paymentForm.appendChild(input);
-            });
-        }
-    });
-
-    // Inicializar el total al cargar la página (por si acaso)
-    updateTotal();
-});
-</script>
 {% endblock %}

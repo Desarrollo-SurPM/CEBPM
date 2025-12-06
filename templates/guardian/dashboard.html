@@ -1,315 +1,185 @@
 {% extends 'guardian/base_guardian.html' %}
 {% load static %}
 
-{% block title %}Dashboard - Panel de Apoderado{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}Inicio{% endblock %}
 
 {% block content %}
+
+{% if last_message %}
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));">
-                    <i class="bi bi-people"></i>
-                </div>
-                <div class="ms-3">
-                    <h3 class="mb-0">{{ total_players }}</h3>
-                    <p class="text-muted mb-0">Jugadores</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, var(--button-color), var(--secondary-bg));">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <div class="ms-3">
-                    <h3 class="mb-0">{{ active_players }}</h3>
-                    <p class="text-muted mb-0">Activos</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning-color), var(--secondary-bg));">
-                    <i class="bi bi-credit-card"></i>
-                </div>
-                <div class="ms-3">
-                    <h3 class="mb-0">${{ pending_payments|floatformat:0 }}</h3>
-                    <p class="text-muted mb-0">Pagos Pendientes</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center">
-                <div class="stat-icon" style="background: linear-gradient(135deg, var(--secondary-bg), var(--button-color));">
-                    <i class="bi bi-envelope"></i>
-                </div>
-                <div class="ms-3">
-                    <h3 class="mb-0">{{ unread_messages }}</h3>
-                    <p class="text-muted mb-0">Mensajes</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-people me-2"></i>
-                    Mis Jugadores
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if players %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Jugador</th>
-                                    <th>Equipo</th> <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for player in players %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm me-2">
-                                                {% if player.photo %}
-                                                    <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" onerror="this.onerror=null;this.src='{% static 'img/player.png' %}'">
-                                                {% else %}
-                                                    <i class="bi bi-person-circle text-primary" style="font-size: 2rem;"></i>
-                                                {% endif %}
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold">
-                                                    <a href="{% url 'guardian:guardian_player_detail' player.id %}" class="text-decoration-none">{{ player.get_full_name }}</a>
-                                                </div>
-                                                <small class="text-muted">{{ player.rut|default:"Sin RUT" }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if player.category %}
-                                            <span class="badge bg-info">{{ player.category.name }}</span>
-                                        {% else %}
-                                            <span class="text-muted">Sin equipo</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if player.status == 'active' %}
-                                            <span class="badge bg-success">Activo</span>
-                                        {% elif player.status == 'inactive' %}
-                                            <span class="badge bg-secondary">Inactivo</span>
-                                        {% else %}
-                                            <span class="badge bg-light text-dark">{{ player.get_status_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+    <div class="col-12">
+        <div class="card-modern overflow-hidden">
+            <div class="d-flex flex-column flex-md-row">
+                <div class="p-2 {% if not last_message.read_at %}bg-warning{% else %}bg-primary{% endif %}" style="min-width: 8px;"></div>
+                
+                <div class="p-4 flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge rounded-pill {% if not last_message.read_at %}bg-warning text-dark{% else %}bg-light text-muted border{% endif %}">
+                            {% if not last_message.read_at %}🔔 NUEVO COMUNICADO{% else %}ℹ️ Último Mensaje{% endif %}
+                        </span>
+                        <small class="text-muted">{{ last_message.sent_at|date:"d M, H:i" }}</small>
                     </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'guardian:players' %}" class="btn btn-primary btn-sm">
-                            Ver todos los jugadores
-                        </a>
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-2">No tienes jugadores registrados</p>
-                        <a href="{% url 'guardian:players' %}" class="btn btn-primary btn-sm">
-                            Registrar jugador
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-calendar-event me-2"></i>
-                    Próximos Eventos
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if upcoming_matches or upcoming_trainings %}
-                    <div class="list-group list-group-flush">
-                        {% for match in upcoming_matches %}
-                        <div class="list-group-item border-0 px-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-bold text-primary">
-                                        <i class="bi bi-trophy me-1"></i>
-                                        {{ match.category.name }} vs {{ match.opponent }}
-                                    </div>
-                                    <small class="text-muted">
-                                        {{ match.starts_at|date:"d/m/Y" }} - {{ match.starts_at|time:"H:i" }}
-                                        {% if match.location %} | {{ match.location }}{% endif %}
-                                    </small>
-                                </div>
-                                <span class="badge bg-primary">Partido</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        
-                        {% for training in upcoming_trainings %}
-                        <div class="list-group-item border-0 px-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-bold text-success">
-                                        <i class="bi bi-person-workspace me-1"></i>
-                                        {{ training.title }}
-                                    </div>
-                                    <small class="text-muted">
-                                        {{ training.starts_at|date:"d/m/Y" }} - {{ training.starts_at|time:"H:i" }}
-                                        {% if training.location %} | {{ training.location }}{% endif %}
-                                    </small>
-                                </div>
-                                <span class="badge bg-success">{{ training.get_type_display }}</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'guardian:schedule' %}" class="btn btn-primary btn-sm">
-                            Ver calendario completo
-                        </a>
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-2">No hay eventos próximos</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-8 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-credit-card me-2"></i>
-                    Actividad de Pagos Reciente
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if recent_payments %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Jugador</th>
-                                    <th>Concepto</th>
-                                    <th>Monto</th>
-                                    <th>Vencimiento</th> <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in recent_payments %}
-                                <tr>
-                                    <td>{{ payment.invoice.player.get_full_name }}</td>
-                                    <td>{{ payment.invoice.fee_definition.name }}</td>
-                                    <td>${{ payment.amount|floatformat:0 }}</td>
-                                    <td>{{ payment.invoice.due_date|date:"d/m/Y" }}</td>
-                                    <td>
-                                        {% if payment.status == 'completado' %}
-                                            <span class="badge bg-success">Completado</span>
-                                        {% elif payment.status == 'pendiente' %}
-                                            <span class="badge bg-warning">En Revisión</span>
-                                        {% elif payment.status == 'fallido' %}
-                                            <span class="badge bg-danger">Rechazado</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-primary btn-sm">
-                            Ver todos los pagos
-                        </a>
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-credit-card text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-2">No hay actividad de pagos reciente</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-4 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-lightning me-2"></i>
-                    Acciones Rápidas
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{% url 'guardian:players' %}" class="btn btn-outline-primary">
-                        <i class="bi bi-person-plus me-2"></i>
-                        Mis Jugadores
-                    </a>
-
-                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-outline-success">
-                        <i class="bi bi-cash-coin me-2"></i>
-                        Gestionar Mis Pagos
-                    </a>
                     
-                    <a href="{% url 'guardian:schedule' %}" class="btn btn-outline-info">
-                        <i class="bi bi-calendar-event me-2"></i>
-                        Ver Calendario
-                    </a>
-                    <a href="{% url 'guardian:messages' %}" class="btn btn-outline-warning">
-                        <i class="bi bi-envelope me-2"></i>
-                        Mensajes
-                        {% if unread_messages > 0 %}
-                            <span class="badge bg-danger ms-1">{{ unread_messages }}</span>
-                        {% endif %}
-                    </a>
-                    <a href="{% url 'guardian:profile' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-person-gear me-2"></i>
-                        Mi Perfil
+                    <h3 class="h4 fw-bold mb-2">{{ last_message.bulk_email.title }}</h3>
+                    <p class="text-muted mb-3 text-truncate" style="max-width: 800px;">
+                        {{ last_message.bulk_email.body_html|striptags }}
+                    </p>
+                    
+                    <a href="{% url 'guardian:guardian_view_message' last_message.id %}" class="btn btn-outline-primary rounded-pill btn-sm px-4">
+                        Leer Mensaje Completo <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endif %}
 
-{% block extra_js %}
-<script>
-    // Auto-refresh dashboard every 5 minutes
-    setTimeout(function() {
-        location.reload();
-    }, 300000);
-</script>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card-modern p-3 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden">
+            <div>
+                <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Finanzas</small>
+                <h2 class="my-2 fw-bold {% if pending_payments > 0 %}text-danger{% else %}text-success{% endif %}">
+                    ${{ pending_payments|floatformat:0 }}
+                </h2>
+                <small class="text-muted">Deuda Total</small>
+            </div>
+            <div class="mt-3">
+                {% if pending_payments > 0 %}
+                    <a href="{% url 'guardian:guardian_quotas_upcoming' %}" class="btn btn-danger btn-sm w-100 rounded-pill">Pagar <i class="bi bi-credit-card ms-1"></i></a>
+                {% else %}
+                    <div class="text-success small"><i class="bi bi-check-circle-fill"></i> Al día</div>
+                {% endif %}
+            </div>
+            <i class="bi bi-wallet2 position-absolute text-muted opacity-25" style="top: 10px; right: 10px; font-size: 3rem;"></i>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card-modern p-3 h-100 d-flex flex-column justify-content-center text-center">
+            <div class="display-5 fw-bold text-primary">{{ active_players }}</div>
+            <div class="text-muted small">Jugadores Activos</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card-modern p-4 h-100 bg-light border-0">
+            <h6 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-warning"></i> Accesos Rápidos</h6>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'guardian:schedule' %}" class="btn btn-white border shadow-sm flex-fill py-3 rounded-4">
+                    <i class="bi bi-calendar-week fs-4 d-block mb-1 text-primary"></i>
+                    <span class="small fw-bold text-muted">Ver Agenda</span>
+                </a>
+                <a href="{% url 'guardian:profile' %}" class="btn btn-white border shadow-sm flex-fill py-3 rounded-4">
+                    <i class="bi bi-person-badge fs-4 d-block mb-1 text-primary"></i>
+                    <span class="small fw-bold text-muted">Mis Datos</span>
+                </a>
+                <a href="{% url 'guardian:add_new_player' %}" class="btn btn-white border shadow-sm flex-fill py-3 rounded-4">
+                    <i class="bi bi-plus-circle fs-4 d-block mb-1 text-success"></i>
+                    <span class="small fw-bold text-muted">Inscribir</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0">Mis Jugadores</h5>
+        </div>
+        
+        {% if players %}
+            {% for player in players %}
+            <div class="card-modern p-3 mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        {% if player.photo %}
+                            <img src="{{ player.photo.url }}" class="rounded-circle shadow-sm" width="60" height="60" style="object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-muted" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="fw-bold mb-1">{{ player.get_full_name }}</h5>
+                            <span class="badge rounded-pill {% if player.status == 'active' %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                {{ player.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="d-flex gap-3 text-muted small">
+                            <span><i class="bi bi-shield-shaded me-1"></i>{{ player.category.name }}</span>
+                            {% if player.position %}<span><i class="bi bi-bullseye me-1"></i>{{ player.get_position_display }}</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="ms-3 d-none d-sm-block">
+                        <a href="{% url 'guardian:guardian_player_detail' player.id %}" class="btn btn-light rounded-circle border">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-light text-center py-5 border-dashed">
+                <p>No tienes jugadores registrados.</p>
+                <a href="{% url 'guardian:add_new_player' %}" class="btn btn-primary btn-sm rounded-pill">Registrar Ahora</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0">Próximas Actividades</h5>
+            <a href="{% url 'guardian:schedule' %}" class="small text-decoration-none fw-bold">Ver Todo</a>
+        </div>
+
+        <div class="card-modern p-0 overflow-hidden">
+            <div class="list-group list-group-flush">
+                {% if not upcoming_matches and not upcoming_trainings %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-calendar-x fs-1 mb-2"></i>
+                        <p class="mb-0 small">Sin actividades programadas próximamente.</p>
+                    </div>
+                {% endif %}
+
+                {% for match in upcoming_matches %}
+                <div class="list-group-item p-3 border-start border-4 border-primary">
+                    <div class="d-flex w-100 justify-content-between mb-1">
+                        <small class="text-primary fw-bold text-uppercase" style="font-size: 0.7rem;">Partido</small>
+                        <small class="text-muted fw-bold">{{ match.starts_at|date:"D d, H:i" }}</small>
+                    </div>
+                    <h6 class="mb-1 fw-bold text-dark">{{ match.category.name }} vs {{ match.opponent }}</h6>
+                    <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> {{ match.location|truncatechars:20 }}</small>
+                </div>
+                {% endfor %}
+
+                {% for training in upcoming_trainings %}
+                <div class="list-group-item p-3 border-start border-4 border-success">
+                    <div class="d-flex w-100 justify-content-between mb-1">
+                        <small class="text-success fw-bold text-uppercase" style="font-size: 0.7rem;">Entrenamiento</small>
+                        <small class="text-muted fw-bold">{{ training.starts_at|date:"D d, H:i" }}</small>
+                    </div>
+                    <h6 class="mb-1 fw-bold text-dark">{{ training.title }}</h6>
+                    <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> {{ training.location|truncatechars:20 }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="card-modern p-3 mt-4 bg-primary-subtle border border-primary-subtle">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-primary fw-bold text-uppercase">Tu teléfono de contacto</small>
+                    <div class="h5 fw-bold mb-0 mt-1 text-dark">{{ guardian_profile.phone|default:"Sin registrar" }}</div>
+                </div>
+                <a href="{% url 'guardian:profile' %}" class="btn btn-white btn-sm shadow-sm text-primary"><i class="bi bi-pencil"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
