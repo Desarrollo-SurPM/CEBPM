@@ -1,58 +1,95 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
-{% block title %}Pagos Pendientes{% endblock %}
+{% block page_title %}Revisión de Pagos{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+<div class="row justify-content-center">
+    <div class="col-12">
+        
+        <div class="card-modern p-4 mb-4 border-0 bg-white d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-1 text-dark">Pagos por Aprobar</h5>
+                <p class="text-muted small mb-0">Revisa los comprobantes subidos por los apoderados.</p>
+            </div>
+            <a href="{% url 'admin_panel:finances_dashboard' %}" class="btn btn-outline-secondary rounded-pill btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Volver a Finanzas
+            </a>
+        </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Pagos esperando aprobación</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Fecha de Pago</th>
-                        <th>Apoderado</th>
-                        <th>Jugador(a)</th>
-                        <th>Monto</th>
-                        <th>Método</th>
-                        <th>Comprobante</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for payment in payments %}
-                    <tr>
-                        <td>{{ payment.paid_at|date:"d/m/Y H:i" }}</td>
-                        <td>{{ payment.invoice.guardian.get_full_name }}</td>
-                        <td>{{ payment.invoice.player.get_full_name }}</td>
-                        <td>${{ payment.amount|floatformat:0 }}</td>
-                        <td>{{ payment.get_method_display }}</td>
-                        <td>
+        {% if payments %}
+        <div class="row g-3">
+            {% for payment in payments %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card-modern h-100 border-top border-4 border-warning shadow-sm position-relative">
+                    <div class="card-body p-4 d-flex flex-column h-100">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill border border-warning">
+                                Pendiente
+                            </span>
+                            <small class="text-muted">{{ payment.paid_at|date:"d M" }}</small>
+                        </div>
+
+                        <h4 class="fw-bold text-dark mb-1">${{ payment.amount|floatformat:0 }}</h4>
+                        <p class="text-muted small mb-3">{{ payment.invoice.concept }}</p>
+
+                        <div class="bg-light p-3 rounded-3 mb-3 small">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Jugador:</span>
+                                <span class="fw-bold">{{ payment.invoice.player.get_full_name }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Apoderado:</span>
+                                <span>{{ payment.invoice.guardian.get_full_name }}</span>
+                            </div>
+                            {% if payment.notes %}
+                            <div class="mt-2 pt-2 border-top text-muted fst-italic">
+                                "{{ payment.notes }}"
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-center mb-3">
                             {% if payment.payment_proof %}
-                                <a href="{{ payment.payment_proof.url }}" target="_blank" class="btn btn-info btn-sm">
-                                    <i class="bi bi-eye-fill"></i> Ver
+                                <a href="{{ payment.payment_proof.url }}" target="_blank" class="btn btn-light btn-sm w-100 border text-primary">
+                                    <i class="bi bi-file-earmark-image me-2"></i> Ver Comprobante
                                 </a>
                             {% else %}
-                                N/A
+                                <span class="text-danger small"><i class="bi bi-exclamation-circle"></i> Sin comprobante</span>
                             {% endif %}
-                        </td>
-                        <td>
-                            <a href="{% url 'admin_panel:review_payment' payment.pk %}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-search"></i> Revisar
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center">No hay pagos pendientes de aprobación. ¡Buen trabajo!</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+
+                        <div class="mt-auto d-grid gap-2 d-flex">
+                            <form action="{% url 'admin_panel:approve_payment' payment.id %}" method="post" class="flex-fill">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill fw-bold" onclick="return confirm('¿Confirmar que el dinero está en cuenta?')">
+                                    <i class="bi bi-check-lg"></i> Aprobar
+                                </button>
+                            </form>
+                            <form action="{% url 'admin_panel:reject_payment' payment.id %}" method="post" class="flex-fill">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-bold" onclick="return confirm('¿Rechazar este pago?')">
+                                    <i class="bi bi-x-lg"></i> Rechazar
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
+        {% else %}
+            <div class="card-modern p-5 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success opacity-50" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="fw-bold text-secondary">¡Todo al día!</h4>
+                <p class="text-muted">No hay pagos pendientes de revisión.</p>
+            </div>
+        {% endif %}
+
     </div>
 </div>
 {% endblock %}

@@ -1,65 +1,204 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
-{% block title %}Definiciones de Cuotas{% endblock %}
+{% block page_title %}Definición de Cuotas{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+<div class="row g-4">
+    
+    <div class="col-lg-4">
+        <div class="card-modern p-4 sticky-top border-top border-4 border-primary" style="top: 100px; z-index: 10;">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div class="bg-primary-subtle text-primary p-2 rounded-circle">
+                    <i class="bi bi-plus-lg"></i>
+                </div>
+                <h5 class="fw-bold text-dark m-0">Nueva Tarifa</h5>
+            </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Agregar Nueva Definición de Cuota</h6>
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Guardar Definición</button>
-        </form>
-    </div>
-</div>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Nombre del Cobro</label>
+                    <input type="text" name="name" class="form-control rounded-3 bg-light border-0" placeholder="Ej: Mensualidad Marzo" required>
+                </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Cuotas Existentes</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Categoría</th>
-                        <th>Monto</th>
-                        <th>Período</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for fee in fees %}
-                    <tr>
-                        <td>{{ fee.name }}</td>
-                        <td>{{ fee.category.name|default:"General" }}</td>
-                        <td>${{ fee.amount|floatformat:0 }}</td>
-                        <td>{{ fee.get_period_display }}</td>
-                        <td>
-                            <a href="{% url 'admin_panel:edit_fee' fee.pk %}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            <form method="POST" action="{% url 'admin_panel:delete_fee' fee.pk %}" style="display: inline;" onsubmit="return confirm('¿Seguro que quieres eliminar esta definición?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">No hay definiciones de cuotas creadas.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Monto</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 rounded-start-3">$</span>
+                            <input type="number" name="amount" class="form-control bg-light border-0 rounded-end-3" placeholder="0" required>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Periodo</label>
+                        <select name="period" class="form-select bg-light border-0 rounded-3">
+                            <option value="mensual">Mensual</option>
+                            <option value="unico">Pago Único</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Categoría (Opcional)</label>
+                    {{ form.category }} 
+                    <div class="form-text small">Si lo dejas vacío, será una cuota General.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                    <textarea name="description" class="form-control bg-light border-0 rounded-3" rows="2" placeholder="Detalles adicionales..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm hover-scale">
+                    <i class="bi bi-save me-2"></i> Guardar Tarifa
+                </button>
+            </form>
         </div>
     </div>
+
+    <div class="col-lg-8">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold text-dark mb-1">Catálogo de Tarifas</h5>
+                <p class="text-muted small mb-0">Organizadas por categoría deportiva.</p>
+            </div>
+            
+            <div class="input-group w-auto">
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="feeSearch" class="form-control border-start-0 rounded-end-pill" placeholder="Buscar tarifa..." onkeyup="filterFees()">
+            </div>
+        </div>
+        
+        <div class="accordion" id="feesAccordion">
+            {% for group in grouped_fees %}
+            <div class="accordion-item border-0 mb-3 rounded-4 overflow-hidden shadow-sm fee-group">
+                <h2 class="accordion-header" id="heading{{ group.id }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold bg-white p-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ group.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
+                        <div class="d-flex align-items-center w-100 me-3">
+                            <div class="bg-{{ group.style }}-subtle text-{{ group.style }} p-2 rounded-circle me-3">
+                                <i class="bi {{ group.icon }}"></i>
+                            </div>
+                            <span class="flex-grow-1">{{ group.name }}</span>
+                            <span class="badge bg-light text-dark border rounded-pill">{{ group.count }} cuotas</span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ group.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#feesAccordion">
+                    <div class="accordion-body bg-light p-4">
+                        
+                        {% if group.fees %}
+                        <div class="row g-3">
+                            {% for fee in group.fees %}
+                            <div class="col-md-6 fee-card" data-name="{{ fee.name|lower }}">
+                                <div class="card-modern p-3 h-100 bg-white border-start border-4 border-{{ group.style }} position-relative hover-scale">
+                                    
+                                    <div class="dropdown position-absolute top-0 end-0 m-2">
+                                        <button class="btn btn-sm btn-light rounded-circle" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu shadow border-0">
+                                            <li><a class="dropdown-item" href="{% url 'admin_panel:edit_fee' fee.id %}"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                                            <li>
+                                                <form action="{% url 'admin_panel:delete_fee' fee.id %}" method="post" onsubmit="return confirm('¿Eliminar esta tarifa?');">
+                                                    {% csrf_token %}
+                                                    <button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Eliminar</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="pe-4">
+                                        <h6 class="fw-bold text-dark mb-1">{{ fee.name }}</h6>
+                                        <h4 class="text-{{ group.style }} fw-bold mb-2">${{ fee.amount|floatformat:0 }}</h4>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge bg-light text-muted border text-uppercase" style="font-size: 0.7rem;">{{ fee.get_period_display }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                            <div class="text-center py-3 text-muted border border-dashed rounded-3">
+                                <small>No hay tarifas definidas para esta categoría.</small>
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="noResults" class="text-center py-5 d-none">
+            <i class="bi bi-search text-muted fs-1"></i>
+            <p class="text-muted mt-2">No se encontraron tarifas con ese nombre.</p>
+        </div>
+
+    </div>
 </div>
+
+<style>
+    /* Ajustes visuales para inputs de Django */
+    select {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        border: 0;
+        background-color: #f8f9fa; /* bg-light */
+        border-radius: 0.5rem; /* rounded-3 */
+        color: #212529;
+    }
+    
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: translateY(-3px); }
+</style>
+
+<script>
+    function filterFees() {
+        const input = document.getElementById('feeSearch');
+        const filter = input.value.toLowerCase();
+        const groups = document.getElementsByClassName('fee-group');
+        let hasVisible = false;
+
+        Array.from(groups).forEach(group => {
+            const cards = group.getElementsByClassName('fee-card');
+            let groupHasVisible = false;
+
+            Array.from(cards).forEach(card => {
+                const name = card.getAttribute('data-name');
+                if (name.includes(filter)) {
+                    card.classList.remove('d-none');
+                    groupHasVisible = true;
+                    hasVisible = true;
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+
+            // Si el grupo tiene items visibles, mostramos el acordeón completo (y lo abrimos si se está buscando)
+            if (groupHasVisible) {
+                group.classList.remove('d-none');
+                if (filter.length > 0) {
+                    // Abrir acordeón automáticamente al buscar
+                    const collapse = group.querySelector('.accordion-collapse');
+                    const bsCollapse = new bootstrap.Collapse(collapse, { toggle: false });
+                    bsCollapse.show();
+                }
+            } else {
+                group.classList.add('d-none');
+            }
+        });
+
+        const noResults = document.getElementById('noResults');
+        if (!hasVisible && filter.length > 0) {
+            noResults.classList.remove('d-none');
+        } else {
+            noResults.classList.add('d-none');
+        }
+    }
+</script>
 {% endblock %}

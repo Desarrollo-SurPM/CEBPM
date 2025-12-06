@@ -1,253 +1,200 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Dashboard - Panel de Administración{% endblock %}
-
-{% block page_title %}Dashboard{% endblock %}
-{% block page_subtitle %}Resumen general del club{% endblock %}
+{% block page_title %}Resumen General{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="stat-card">
-            <div class="stat-number">{{ total_players }}</div>
-            <div class="stat-label">
-                <i class="bi bi-people me-2"></i>Total Jugadores
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <a href="{% url 'admin_panel:registrations' %}" class="text-decoration-none">
+            <div class="card-modern p-4 h-100 border-start border-4 border-warning position-relative overflow-hidden group">
+                <div class="d-flex justify-content-between align-items-center position-relative z-1">
+                    <div>
+                        <h6 class="text-muted text-uppercase small fw-bold">Solicitudes</h6>
+                        <h2 class="fw-bold mb-0 text-dark display-5">{{ pending_registrations }}</h2>
+                    </div>
+                    <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                        <i class="bi bi-person-plus-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="badge bg-warning text-dark rounded-pill">
+                        {% if pending_registrations > 0 %}Requiere Atención{% else %}Todo al día{% endif %}
+                    </span>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="stat-card success">
-            <div class="stat-number">{{ total_guardians }}</div>
-            <div class="stat-label">
-                <i class="bi bi-person-check me-2"></i>Apoderados
+
+    <div class="col-md-6 col-xl-3">
+        <a href="{% url 'admin_panel:manage_pending_payments' %}" class="text-decoration-none">
+            <div class="card-modern p-4 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase small fw-bold">Por Aprobar</h6>
+                        <h2 class="fw-bold mb-0 text-dark">${{ total_pending_quotas|floatformat:0 }}</h2>
+                    </div>
+                    <div class="bg-success-subtle text-success p-3 rounded-circle">
+                        <i class="bi bi-cash-coin fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                    <i class="bi bi-check-circle me-1"></i> Pagos en revisión
+                </div>
             </div>
-        </div>
+        </a>
     </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="stat-card warning">
-            <div class="stat-number">${{ total_pending_quotas|floatformat:0 }}</div>
-            <div class="stat-label">
-                <i class="bi bi-clock me-2"></i>Cuotas Pendientes
+
+    <div class="col-md-6 col-xl-3">
+        <a href="{% url 'admin_panel:players' %}" class="text-decoration-none">
+            <div class="card-modern p-4 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase small fw-bold">Plantel Total</h6>
+                        <h2 class="fw-bold mb-0 text-dark">{{ total_players }}</h2>
+                    </div>
+                    <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Jugadores activos
+                </div>
             </div>
-        </div>
+        </a>
     </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="stat-card danger">
-            <div class="stat-number">${{ total_funds|floatformat:0 }}</div>
-            <div class="stat-label">
-                <i class="bi bi-cash-stack me-2"></i>Fondos Totales (Aprobados)
+
+    <div class="col-md-6 col-xl-3">
+        <a href="{% url 'admin_panel:admin_tickets_list' %}" class="text-decoration-none">
+            <div class="card-modern p-4 h-100 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase small fw-bold">Soporte</h6>
+                        <h2 class="fw-bold mb-0 text-dark">--</h2> </div>
+                    <div class="bg-info-subtle text-info p-3 rounded-circle">
+                        <i class="bi bi-chat-square-text-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                    Consultas abiertas
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3 mb-4">
-        <div class="stat-card success">
-            <div class="stat-number">${{ total_paid_quotas|floatformat:0 }}</div>
-            <div class="stat-label">
-                <i class="bi bi-check-circle me-2"></i>Cuotas Pagadas
+<div class="row g-4">
+    <div class="col-lg-8">
+        
+        <div class="card-modern mb-4">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0 text-dark">📋 Últimos Registros</h5>
+                <a href="{% url 'admin_panel:registrations' %}" class="btn btn-sm btn-light rounded-pill fw-bold text-primary">Ver Todos</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 text-muted small border-0">Nombre</th>
+                                <th class="text-muted small border-0">Categoría</th>
+                                <th class="text-muted small border-0">Fecha</th>
+                                <th class="text-end pe-4 text-muted small border-0">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reg in recent_registrations %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">{{ reg.player_first_name }} {{ reg.player_last_name }}</div>
+                                    <small class="text-muted">{{ reg.player_rut }}</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ reg.team }}</span></td>
+                                <td class="text-muted small">{{ reg.created_at|date:"d M" }}</td>
+                                <td class="text-end pe-4">
+                                    {% if reg.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark rounded-pill">Pendiente</span>
+                                    {% elif reg.status == 'approved' %}
+                                        <span class="badge bg-success rounded-pill">Aprobado</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill">Rechazado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No hay registros recientes</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="stat-card danger">
-            <div class="stat-number">${{ total_overdue_quotas|floatformat:0 }}</div>
-            <div class="stat-label">
-                <i class="bi bi-exclamation-triangle me-2"></i>Cuotas Atrasadas
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="stat-card info">
-            <div class="stat-number">{{ active_sponsors }}</div>
-            <div class="stat-label">
-                <i class="bi bi-building me-2"></i>Auspiciadores Activos
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="stat-card warning">
-            <div class="stat-number">{{ pending_registrations }}</div>
-            <div class="stat-label">
-                <i class="bi bi-person-plus me-2"></i>Registros Pendientes
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="admin-card p-4">
-            <h5 class="card-title mb-3">
-                <i class="bi bi-bar-chart text-primary me-2"></i>Estadísticas del Mes
-            </h5>
-            <div class="row">
-                <div class="col-6">
-                    <div class="text-center">
-                        <h3 class="text-primary">{{ monthly_registrations }}</h3>
-                        <small class="text-muted">Nuevos Registros</small>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="text-center">
-                        <h3 class="text-success">{{ monthly_payments }}</h3>
-                        <small class="text-muted">Pagos Recibidos</small>
-                    </div>
-                </div>
+        <div class="card-modern">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold m-0 text-dark">🏀 Próximos Partidos</h5>
             </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="admin-card p-4">
-            <h5 class="card-title mb-3">
-                <i class="bi bi-calendar-event text-primary me-2"></i>Próximos Partidos
-            </h5>
-            {% if upcoming_matches %}
+            <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     {% for match in upcoming_matches %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <div>
-                                <strong>{{ match.category.name }} vs {{ match.opponent }}</strong><br>
-                                <small class="text-muted">{{ match.starts_at|date:"d/m/Y H:i" }} - {{ match.location }}</small>
-                                </div>
-                            <span class="badge bg-primary rounded-pill">{{ match.category.name }}</span>
+                    <div class="list-group-item px-4 py-3 border-0 d-flex align-items-center">
+                        <div class="text-center me-3 bg-light rounded p-2" style="min-width: 60px;">
+                            <span class="d-block fw-bold text-dark h5 mb-0">{{ match.starts_at|date:"d" }}</span>
+                            <small class="text-uppercase text-muted">{{ match.starts_at|date:"M" }}</small>
                         </div>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-1 text-primary">{{ match.category.name }} vs {{ match.opponent }}</h6>
+                            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i> {{ match.location }} • {{ match.starts_at|date:"H:i" }} hrs</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted">Sin partidos programados</div>
                     {% endfor %}
                 </div>
-            {% else %}
-                <p class="text-muted">No hay partidos programados próximamente.</p>
-            {% endif %}
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="admin-card">
-            <div class="card-header bg-transparent border-0 pb-0">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-person-plus text-primary me-2"></i>Registros Recientes
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if recent_registrations %}
-                    <div class="list-group list-group-flush">
-                        {% for registration in recent_registrations %}
-                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                <div>
-                                    <strong>{{ registration.player_first_name }} {{ registration.player_last_name }}</strong><br>
-                                    <small class="text-muted">{{ registration.team }} - {{ registration.created_at|date:"d/m/Y" }}</small>
-                                </div>
-                                <span class="badge badge-status 
-                                    {% if registration.status == 'pending' %}bg-warning
-                                    {% elif registration.status == 'approved' %}bg-success
-                                    {% else %}bg-danger{% endif %}">
-                                    {{ registration.get_status_display|capfirst }}
-                                </span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'admin_panel:registrations' %}" class="btn btn-admin btn-sm">
-                            Ver Todos los Registros
-                        </a>
-                    </div>
-                {% else %}
-                    <p class="text-muted">No hay registros recientes.</p>
-                {% endif %}
+    <div class="col-lg-4">
+        <div class="card-modern p-4 mb-4 bg-primary text-white" style="background: linear-gradient(135deg, var(--ceb-primary), var(--ceb-dark));">
+            <h6 class="fw-bold mb-3 text-uppercase text-white-50 small">Acciones Rápidas</h6>
+            <div class="d-grid gap-2">
+                <a href="{% url 'admin_panel:send_notification' %}" class="btn btn-light fw-bold text-primary rounded-pill text-start">
+                    <i class="bi bi-broadcast me-2"></i> Enviar Mensaje Masivo
+                </a>
+                <a href="{% url 'admin_panel:manage_news' %}" class="btn btn-outline-light rounded-pill text-start">
+                    <i class="bi bi-newspaper me-2"></i> Publicar Noticia
+                </a>
+                <a href="{% url 'admin_panel:manage_calendar' %}" class="btn btn-outline-light rounded-pill text-start">
+                    <i class="bi bi-calendar-plus me-2"></i> Agendar Evento
+                </a>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-6 mb-4">
-        <div class="admin-card">
-            <div class="card-header bg-transparent border-0 pb-0">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-cash text-success me-2"></i>Pagos Recientes (Aprobados)
-                </h5>
+
+        <div class="card-modern p-4">
+            <h6 class="fw-bold mb-4 text-dark">Resumen del Mes</h6>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Nuevos Inscritos</span>
+                <span class="fw-bold text-dark">{{ monthly_registrations }}</span>
             </div>
-            <div class="card-body">
-                {% if recent_payments %}
-                    <div class="list-group list-group-flush">
-                        {% for payment in recent_payments %}
-                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                <div>
-                                    <strong>${{ payment.amount|floatformat:0 }}</strong><br>
-                                    <small class="text-muted">{{ payment.invoice.player.get_full_name|default:"N/A" }} - {{ payment.created_at|date:"d/m/Y" }}</small>
-                                </div>
-                                <span class="badge bg-success">Completado</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'admin_panel:finances_dashboard' %}" class="btn btn-admin btn-sm">
-                            Ver Todas las Finanzas
-                        </a>
-                        </div>
-                {% else %}
-                    <p class="text-muted">No hay pagos recientes.</p>
-                {% endif %}
+            <div class="progress mb-4" style="height: 6px;">
+                <div class="progress-bar bg-info" style="width: 75%"></div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Pagos Recibidos</span>
+                <span class="fw-bold text-success">{{ monthly_payments }}</span>
+            </div>
+            <div class="progress mb-2" style="height: 6px;">
+                <div class="progress-bar bg-success" style="width: 60%"></div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top text-center">
+                <a href="{% url 'admin_panel:finances_dashboard' %}" class="btn btn-link text-decoration-none small fw-bold">Ver Reporte Financiero Completo</a>
             </div>
         </div>
     </div>
 </div>
-
-<div class="row">
-    <div class="col-12">
-        <div class="admin-card p-4">
-            <h5 class="card-title mb-3">
-                <i class="bi bi-lightning text-warning me-2"></i>Acciones Rápidas
-            </h5>
-            <div class="row">
-                <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:registrations' %}" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-person-plus me-2"></i>Revisar Registros
-                    </a>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:send_notification' %}" class="btn btn-outline-success w-100">
-                        <i class="bi bi-bell me-2"></i>Enviar Notificación
-                    </a>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:players' %}" class="btn btn-outline-info w-100">
-                        <i class="bi bi-people me-2"></i>Gestionar Jugadores
-                    </a>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:finances_dashboard' %}" class="btn btn-outline-warning w-100">
-                        <i class="bi bi-cash-stack me-2"></i>Ver Finanzas
-                    </a>
-                    </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:admin_sponsors' %}" class="btn btn-outline-success w-100">
-                        <i class="bi bi-building me-2"></i>Gestionar Auspiciadores
-                    </a>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{% url 'admin_panel:admin_player_cards' %}" class="btn btn-outline-info w-100">
-                        <i class="bi bi-person-badge me-2"></i>Fichas de Jugadores
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Auto-refresh dashboard every 5 minutes
-    setTimeout(function() {
-        location.reload();
-    }, 300000);
-</script>
 {% endblock %}

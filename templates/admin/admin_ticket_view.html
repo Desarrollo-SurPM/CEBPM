@@ -1,75 +1,92 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}Detalle de Solicitud{% endblock %}
+
 {% block content %}
-<style>
-    .chat-bubble { padding: 15px; border-radius: 20px; margin-bottom: 10px; max-width: 80%; }
-    .chat-guardian { background-color: #0d6efd; color: white; margin-left: auto; border-bottom-right-radius: 0; }
-    .chat-admin { background-color: #e9ecef; color: #212529; margin-right: auto; border-bottom-left-radius: 0; }
-    .chat-meta { font-size: 0.8rem; color: #6c757d; }
-</style>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0 text-gray-800">{{ page_title }}</h1>
-    <a href="{% url 'admin_panel:admin_tickets_list' %}" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-arrow-left me-2"></i> Volver a la lista
-    </a>
-</div>
-
-<div class="card shadow mb-4">
-    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <div>
-            <h6 class="m-0 font-weight-bold text-primary">{{ ticket.subject }}</h6>
-            <small class="text-muted">
-                Solicitante: {{ ticket.guardian.get_full_name }} ({{ ticket.guardian.email }})
-            </small>
-        </div>
-        <span class="badge 
-            {% if ticket.status == 'abierto' %}bg-warning
-            {% elif ticket.status == 'respondido' %}bg-success
-            {% else %}bg-secondary{% endif %}">
-            {{ ticket.get_status_display }}
-        </span>
-    </div>
-    
-    <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-        {% for reply in replies %}
-            <div class="chat-bubble {% if reply.user.is_staff or reply.user.admin_profile %}chat-admin{% else %}chat-guardian{% endif %}">
-                <p class="mb-1">{{ reply.message|linebreaksbr }}</p>
-                <div class="chat-meta text-end">
-                    <strong>{% if reply.user.is_staff or reply.user.admin_profile %}Tú (Admin){% else %}{{ reply.user.get_full_name }}{% endif %}</strong>
-                    <br>
-                    <small>{{ reply.created_at|date:"d M Y, H:i" }}</small>
+<div class="row justify-content-center h-100">
+    <div class="col-lg-10 d-flex flex-column h-100">
+        
+        <div class="card-modern p-3 mb-3 border-0 bg-white d-flex justify-content-between align-items-center sticky-top" style="top: 80px; z-index: 100;">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'admin_panel:admin_tickets_list' %}" class="btn btn-light rounded-circle shadow-sm"><i class="bi bi-arrow-left"></i></a>
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark">{{ ticket.subject }}</h6>
+                    <div class="d-flex align-items-center gap-2 small text-muted">
+                        <span>#{{ ticket.id }}</span>
+                        <span>•</span>
+                        <i class="bi bi-person me-1"></i> {{ ticket.guardian.get_full_name }}
+                    </div>
                 </div>
             </div>
-        {% endfor %}
-    </div>
-
-    <div class="card-footer">
-        <form method="POST" class="mb-3">
-            {% csrf_token %}
-            <label class="form-label">Tu Respuesta:</label>
-            <div class="input-group">
-                {{ reply_form.message }}
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-send me-1"></i> Enviar Respuesta
+            
+            {% if ticket.status != 'cerrado' %}
+            <form action="{% url 'admin_panel:admin_ticket_close' ticket.pk %}" method="post" onsubmit="return confirm('¿Cerrar este ticket?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill fw-bold">
+                    <i class="bi bi-check-lg me-1"></i> Marcar Resuelto
                 </button>
+            </form>
+            {% else %}
+                <span class="badge bg-secondary rounded-pill px-3">Cerrado</span>
+            {% endif %}
+        </div>
+
+        <div class="card-modern border-0 flex-grow-1 bg-light p-4 overflow-auto d-flex flex-column gap-3 mb-3 shadow-inner" style="min-height: 500px; max-height: 60vh;">
+            
+            {% for reply in replies %}
+            <div class="d-flex {% if reply.user.is_staff %}justify-content-end{% else %}justify-content-start{% endif %}">
+                <div class="d-flex flex-column {% if reply.user.is_staff %}align-items-end{% else %}align-items-start{% endif %}" style="max-width: 75%;">
+                    
+                    <div class="p-3 shadow-sm text-break position-relative
+                                {% if reply.user.is_staff %}
+                                    bg-primary text-white rounded-3 rounded-tr-0
+                                {% else %}
+                                    bg-white text-dark rounded-3 rounded-tl-0 border
+                                {% endif %}">
+                        {{ reply.message|linebreaksbr }}
+                    </div>
+                    
+                    <small class="text-muted mt-1 px-1" style="font-size: 0.7rem;">
+                        {% if reply.user.is_staff %}Tú (Admin){% else %}{{ reply.user.first_name }}{% endif %} • {{ reply.created_at|date:"H:i" }}
+                    </small>
+                </div>
             </div>
-            {% if reply_form.message.errors %}<div class="text-danger small">{{ reply_form.message.errors }}</div>{% endif %}
-        </form>
+            {% endfor %}
+            
+        </div>
 
         {% if ticket.status != 'cerrado' %}
-        <hr>
-        <div class="d-flex justify-content-end">
-            <form method="POST" action="{% url 'admin_panel:admin_ticket_close' ticket.pk %}" 
-                  onsubmit="return confirm('¿Estás seguro de que quieres CERRAR este ticket? El apoderado no podrá responder.');">
+        <div class="card-modern border-0 p-3 bg-white">
+            <form method="POST" class="d-flex gap-2 align-items-end">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger">
-                    <i class="bi bi-lock-fill me-2"></i> Forzar Cierre de Ticket
+                <div class="flex-grow-1">
+                    {{ reply_form.message }} </div>
+                <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-lg hover-scale" style="width: 50px; height: 50px;">
+                    <i class="bi bi-send-fill fs-5"></i>
                 </button>
             </form>
         </div>
         {% endif %}
-        </div>
+
+    </div>
 </div>
+
+<style>
+    .rounded-tr-0 { border-top-right-radius: 0 !important; }
+    .rounded-tl-0 { border-top-left-radius: 0 !important; }
+    /* Ajuste para textarea de respuesta */
+    textarea.form-control {
+        border-radius: 20px !important;
+        background-color: #f8f9fa !important;
+        border: 1px solid #e9ecef;
+        padding: 12px 20px;
+        resize: none;
+    }
+    textarea.form-control:focus {
+        background-color: #fff !important;
+        box-shadow: 0 0 0 4px rgba(88, 29, 147, 0.1);
+        border-color: var(--ceb-primary);
+    }
+</style>
 {% endblock %}

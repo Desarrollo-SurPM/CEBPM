@@ -1,62 +1,299 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block page_title %}Gestión de Calendario{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+<div class="row g-4">
+    <div class="col-12">
+        
+        <div class="card-modern p-3 mb-4 border-0 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            
+            <ul class="nav nav-pills bg-light p-1 rounded-pill" id="calendarTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-pill fw-bold px-4" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button">
+                        <i class="bi bi-trophy-fill me-2"></i>Partidos
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill fw-bold px-4" id="trainings-tab" data-bs-toggle="tab" data-bs-target="#trainings" type="button">
+                        <i class="bi bi-stopwatch-fill me-2"></i>Entrenamientos
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill fw-bold px-4" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button">
+                        <i class="bi bi-star-fill me-2"></i>Actividades
+                    </button>
+                </li>
+            </ul>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Agregar Nuevo Evento</h6>
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Guardar Evento</button>
-        </form>
-    </div>
-</div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'admin_panel:bulk_schedule' %}" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold">
+                    <i class="bi bi-calendar-range me-1"></i> Masivo
+                </a>
+                <div class="dropdown">
+                    <button class="btn btn-primary rounded-pill btn-sm fw-bold shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-plus-lg me-1"></i> Crear Nuevo
+                    </button>
+                    <ul class="dropdown-menu border-0 shadow rounded-3">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addMatchModal">Partido</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addTrainingModal">Entrenamiento</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addActivityModal">Actividad Especial</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Eventos Programados</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Fecha y Hora</th>
-                        <th>Título</th>
-                        <th>Tipo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in event_list %}
-                    <tr>
-                        <td>{{ event.date|date:"d/m/Y H:i" }}</td>
-                        <td>{{ event.title }}</td>
-                        <td><span class="badge bg-info">{{ event.get_event_type_display }}</span></td>
-                        <td>
-                            <a href="{% url 'admin_panel:edit_event' event.pk %}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil-fill"></i> Editar
-                            </a>
-                            <form method="POST" action="{% url 'admin_panel:delete_event' event.pk %}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este evento?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash-fill"></i> Eliminar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+        <div class="tab-content" id="calendarTabContent">
+            
+            <div class="tab-pane fade show active" id="matches" role="tabpanel">
+                <div class="row g-3">
+                    {% for match in matches %}
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card-modern border-start border-4 border-primary h-100 p-4 position-relative hover-scale">
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <form action="{% url 'admin_panel:delete_match' match.id %}" method="post" onsubmit="return confirm('¿Eliminar?')">
+                                    {% csrf_token %}
+                                    <button class="btn btn-link text-muted p-0"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary rounded-pill me-2">{{ match.category.name }}</span>
+                                <small class="text-muted fw-bold">{{ match.starts_at|date:"D d M, H:i" }}</small>
+                            </div>
+                            <h5 class="fw-bold text-dark text-center my-3">
+                                CEB PM <span class="text-muted mx-2">vs</span> {{ match.opponent }}
+                            </h5>
+                            <p class="small text-muted mb-0 text-center"><i class="bi bi-geo-alt-fill me-1"></i> {{ match.location }}</p>
+                        </div>
+                    </div>
                     {% empty %}
-                    <tr>
-                        <td colspan="4">No hay eventos programados.</td>
-                    </tr>
+                    <div class="col-12 text-center py-5 text-muted"><i class="bi bi-calendar-x fs-1 d-block mb-2"></i>Sin partidos.</div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="trainings" role="tabpanel">
+                <div class="card-modern border-0">
+                    <div class="list-group list-group-flush">
+                        {% for training in trainings %}
+                        <div class="list-group-item p-3 border-0 border-bottom d-flex align-items-center justify-content-between hover-bg-light">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-center bg-light rounded p-2 text-success border border-success-subtle" style="min-width: 60px;">
+                                    <span class="d-block fw-bold h5 mb-0">{{ training.starts_at|date:"d" }}</span>
+                                    <small class="text-uppercase" style="font-size: 0.7rem;">{{ training.starts_at|date:"M" }}</small>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">{{ training.title }}</h6>
+                                    <div class="d-flex gap-2 small text-muted mt-1">
+                                        <span class="badge bg-secondary-subtle text-dark border">{{ training.category.name|default:"General" }}</span>
+                                        <span><i class="bi bi-clock me-1"></i>{{ training.starts_at|date:"H:i" }}</span>
+                                        <span><i class="bi bi-geo-alt me-1"></i>{{ training.location }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <form action="{% url 'admin_panel:delete_activity' training.id %}" method="post" onsubmit="return confirm('¿Eliminar?')">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm rounded-circle shadow-sm"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                        {% empty %}
+                        <div class="p-5 text-center text-muted">Sin entrenamientos.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="activities" role="tabpanel">
+                <div class="card-modern border-0">
+                    <div class="list-group list-group-flush">
+                        {% for activity in activities %}
+                        <div class="list-group-item p-3 border-0 border-bottom d-flex align-items-center justify-content-between hover-bg-light">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-center bg-warning-subtle rounded p-2 text-warning-emphasis border border-warning-subtle" style="min-width: 60px;">
+                                    <span class="d-block fw-bold h5 mb-0">{{ activity.starts_at|date:"d" }}</span>
+                                    <small class="text-uppercase" style="font-size: 0.7rem;">{{ activity.starts_at|date:"M" }}</small>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">{{ activity.title }}</h6>
+                                    <div class="d-flex gap-2 small text-muted mt-1">
+                                        <span class="badge bg-warning-subtle text-dark border">{{ activity.category.name|default:"General" }}</span>
+                                        <span><i class="bi bi-clock me-1"></i>{{ activity.starts_at|date:"H:i" }}</span>
+                                        <span><i class="bi bi-geo-alt me-1"></i>{{ activity.location }}</span>
+                                    </div>
+                                    {% if activity.description %}
+                                        <p class="small text-muted mb-0 mt-1 fst-italic">{{ activity.description|truncatewords:10 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <form action="{% url 'admin_panel:delete_activity' activity.id %}" method="post" onsubmit="return confirm('¿Eliminar?')">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm rounded-circle shadow-sm"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                        {% empty %}
+                        <div class="p-5 text-center text-muted">Sin actividades especiales.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="addActivityModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header bg-warning text-dark px-4 border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-star-fill me-2"></i>Nueva Actividad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'admin_panel:add_activity' %}">
+                <div class="modal-body p-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Título</label>
+                        <input type="text" name="title" class="form-control rounded-3" placeholder="Ej: Reunión Apoderados" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Categoría</label>
+                        <select name="category" class="form-select rounded-3">
+                            <option value="">General (Todas)</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Inicio</label>
+                            <input type="datetime-local" name="starts_at" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Término</label>
+                            <input type="datetime-local" name="ends_at" class="form-control rounded-3" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Ubicación</label>
+                        <input type="text" name="location" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Descripción (Opcional)</label>
+                        <textarea name="description" class="form-control rounded-3" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addTrainingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header bg-success text-white px-4 border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-calendar-plus me-2"></i>Nuevo Entrenamiento</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'admin_panel:add_training' %}">
+                <div class="modal-body p-4">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Título</label>
+                        <input type="text" name="title" class="form-control rounded-3" value="Entrenamiento" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Categoría</label>
+                        <select name="category" class="form-select rounded-3">
+                            <option value="">General (Todas)</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text small">Selecciona una serie específica o déjalo vacío para general.</div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Inicio</label>
+                            <input type="datetime-local" name="starts_at" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Término</label>
+                            <input type="datetime-local" name="ends_at" class="form-control rounded-3" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Ubicación</label>
+                        <input type="text" name="location" class="form-control rounded-3" placeholder="Ej: Gimnasio Municipal" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addMatchModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header bg-primary text-white px-4 border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-trophy-fill me-2"></i>Nuevo Partido</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'admin_panel:add_match' %}">
+                <div class="modal-body p-4">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Categoría *</label>
+                        <select name="category" class="form-select rounded-3" required>
+                            <option value="">Selecciona la serie...</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Rival (Oponente) *</label>
+                        <input type="text" name="opponent" class="form-control rounded-3" placeholder="Ej: CD Valdivia" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Fecha y Hora Inicio *</label>
+                        <input type="datetime-local" name="starts_at" class="form-control rounded-3" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Ubicación (Gimnasio) *</label>
+                        <input type="text" name="location" class="form-control rounded-3" placeholder="Ej: Gimnasio Fiscal" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Programar Partido</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-scale:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: all 0.2s; }
+    .nav-pills .nav-link.active { background-color: var(--ceb-primary); color: white; }
+    .nav-pills .nav-link { color: #6c757d; }
+</style>
 {% endblock %}

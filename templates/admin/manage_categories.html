@@ -1,70 +1,148 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
-{% block title %}Gestionar Categorías{% endblock %}
+{% block page_title %}Gestión de Categorías{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
+<div class="row justify-content-center">
+    <div class="col-12">
+        
+        <div class="card-modern p-4 mb-4 border-0 bg-white">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-diagram-3-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Categorías y Series</h5>
+                        <p class="text-muted small mb-0">Gestiona las divisiones del club y sus inscripciones.</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Nueva Categoría</span>
+                </button>
+            </div>
+        </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Agregar Nueva Categoría</h6>
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Crear Categoría</button>
-        </form>
+        {% if categories %}
+        <div class="row g-3">
+            {% for category in categories %}
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card-modern h-100 border-top border-4 shadow-sm hover-up position-relative
+                            {% if category.is_registration_open %}border-success{% else %}border-secondary{% endif %}">
+                    
+                    <div class="card-body p-4 d-flex flex-column h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h4 class="fw-bold text-dark mb-0">{{ category.name }}</h4>
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Eliminar</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {% if category.is_registration_open %}
+                                <div class="d-flex align-items-center text-success bg-success-subtle px-3 py-2 rounded-3 border border-success-subtle">
+                                    <span class="spinner-grow spinner-grow-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span class="small fw-bold text-uppercase">Inscripciones Abiertas</span>
+                                </div>
+                            {% else %}
+                                <div class="d-flex align-items-center text-muted bg-light px-3 py-2 rounded-3 border">
+                                    <i class="bi bi-lock-fill me-2"></i>
+                                    <span class="small fw-bold text-uppercase">Cerradas</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto">
+                            <form method="post" action="{% url 'admin_panel:toggle_category_registration' category.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn w-100 rounded-pill fw-bold py-2 transition-all
+                                        {% if category.is_registration_open %}btn-outline-danger hover-bg-danger{% else %}btn-outline-success hover-bg-success{% endif %}">
+                                    {% if category.is_registration_open %}
+                                        <i class="bi bi-pause-circle me-2"></i> Cerrar Inscripción
+                                    {% else %}
+                                        <i class="bi bi-play-circle me-2"></i> Abrir Inscripción
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <div class="card-modern p-5 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-layers-half text-muted opacity-25" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="fw-bold text-secondary">No hay categorías</h4>
+                <p class="text-muted mb-4">Crea la primera categoría (ej: Sub-12, Adulta) para comenzar.</p>
+                <button class="btn btn-primary rounded-pill px-5" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    Crear Categoría
+                </button>
+            </div>
+        {% endif %}
+
     </div>
 </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Categorías Existentes</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Nombre de Categoría</th>
-                        <th>Inscripciones</th>
-                        <th>Acción (Abrir/Cerrar)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for category in categories %}
-                    <tr>
-                        <td><strong>{{ category.name }}</strong></td>
-                        <td>
-                            {% if category.is_registration_open %}
-                                <span class="badge bg-success">Abiertas</span>
-                            {% else %}
-                                <span class="badge bg-danger">Cerradas</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <form method="POST" action="{% url 'admin_panel:toggle_category_registration' category.pk %}">
-                                {% csrf_token %}
-                                {% if category.is_registration_open %}
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="bi bi-x-circle-fill me-1"></i> Cerrar
-                                    </button>
-                                {% else %}
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Abrir
-                                    </button>
-                                {% endif %}
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3">No hay categorías creadas.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-primary text-white px-4 border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-square-fill me-2 text-white-50"></i>Nueva Categoría</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form method="post">
+                <div class="modal-body p-4">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Nombre de la Serie</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3"><i class="bi bi-tag text-primary"></i></span>
+                            <input type="text" name="name" class="form-control bg-light border-start-0 rounded-end-pill py-2" 
+                                   placeholder="Ej: Sub-15 Varones" required>
+                        </div>
+                        <div class="form-text ms-2 mt-1">Nombre único para identificar al equipo.</div>
+                    </div>
+
+                    <div class="form-check form-switch p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center ps-4">
+                        <label class="form-check-label fw-bold text-dark mb-0" for="is_registration_open">
+                            ¿Habilitar inscripción pública?
+                        </label>
+                        <input class="form-check-input ms-0" type="checkbox" role="switch" name="is_registration_open" id="is_registration_open" style="width: 3em; height: 1.5em;">
+                    </div>
+                    <div class="form-text ms-1 mt-1 small">Si activas esto, los apoderados podrán ver y seleccionar esta categoría en el formulario de registro.</div>
+
+                </div>
+                
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                        <i class="bi bi-save me-2"></i> Guardar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<style>
+    /* Efectos hover para tarjetas */
+    .hover-up { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-up:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+    
+    /* Efectos botones outline */
+    .btn-outline-danger:hover { color: white !important; }
+    .btn-outline-success:hover { color: white !important; }
+</style>
 {% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block page_title %}Programación Masiva{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1 text-dark">Planificador de Entrenamientos</h4>
+                <p class="text-muted small mb-0">Crea múltiples sesiones para varias categorías a la vez.</p>
+            </div>
+            <a href="{% url 'admin_panel:manage_calendar' %}" class="btn btn-outline-secondary rounded-pill btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Calendario
+            </a>
+        </div>
+
+        <form method="post" class="card-modern p-4 p-lg-5 border-top border-4 border-success">
+            {% csrf_token %}
+
+            <h6 class="text-uppercase text-success fw-bold small mb-3 border-bottom pb-2">1. Detalles de la Sesión</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted">Título</label>
+                    <input type="text" name="title" class="form-control rounded-3" value="Entrenamiento Técnico" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted">Lugar / Cancha</label>
+                    <input type="text" name="location" class="form-control rounded-3" placeholder="Ej: Gimnasio Fiscal" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Hora Inicio</label>
+                    <input type="time" name="start_time" class="form-control rounded-3" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Hora Término</label>
+                    <input type="time" name="end_time" class="form-control rounded-3" required>
+                </div>
+            </div>
+
+            <h6 class="text-uppercase text-success fw-bold small mb-3 border-bottom pb-2">2. ¿Para quién es?</h6>
+            <p class="small text-muted mb-3">Selecciona todas las series que compartirán este horario.</p>
+            
+            <div class="d-flex flex-wrap gap-2 mb-4" id="category-selector">
+                {% for cat in categories %}
+                <input type="checkbox" class="btn-check" name="categories" id="cat_{{ cat.id }}" value="{{ cat.id }}" autocomplete="off">
+                <label class="btn btn-outline-dark rounded-pill btn-sm" for="cat_{{ cat.id }}">
+                    {{ cat.name }}
+                </label>
+                {% endfor %}
+            </div>
+
+            <h6 class="text-uppercase text-success fw-bold small mb-3 border-bottom pb-2">3. ¿Cuándo se repite?</h6>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted">Rango de Fechas</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0">Desde</span>
+                        <input type="date" name="start_date" class="form-control border-0 bg-light" required>
+                        <span class="input-group-text bg-light border-0">Hasta</span>
+                        <input type="date" name="end_date" class="form-control border-0 bg-light" required>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label small fw-bold text-muted">Días de la Semana</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_0" value="0" autocomplete="off">
+                        <label class="btn btn-outline-primary rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_0">L</label>
+
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_1" value="1" autocomplete="off">
+                        <label class="btn btn-outline-primary rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_1">M</label>
+
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_2" value="2" autocomplete="off">
+                        <label class="btn btn-outline-primary rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_2">X</label>
+
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_3" value="3" autocomplete="off">
+                        <label class="btn btn-outline-primary rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_3">J</label>
+
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_4" value="4" autocomplete="off">
+                        <label class="btn btn-outline-primary rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_4">V</label>
+
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_5" value="5" autocomplete="off">
+                        <label class="btn btn-outline-danger rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_5">S</label>
+
+                        <input type="checkbox" class="btn-check" name="weekdays" id="day_6" value="6" autocomplete="off">
+                        <label class="btn btn-outline-danger rounded-circle" style="width: 40px; height: 40px; display:grid; place-items:center;" for="day_6">D</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success rounded-pill py-3 fw-bold shadow-lg hover-scale" onclick="return confirm('Esto generará múltiples eventos en el calendario. ¿Continuar?')">
+                    <i class="bi bi-calendar-check-fill me-2"></i> Generar Programación
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Estilo activo para los días y categorías */
+    .btn-check:checked + .btn-outline-dark {
+        background-color: var(--ceb-dark);
+        color: white;
+        border-color: var(--ceb-dark);
+    }
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--ceb-primary);
+        color: white;
+    }
+    .btn-check:checked + .btn-outline-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    .hover-scale:hover { transform: translateY(-2px); }
+</style>
+{% endblock %}

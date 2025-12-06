@@ -37,6 +37,7 @@ class Activity(models.Model):
     location = models.CharField(max_length=200, verbose_name='Ubicación')
     starts_at = models.DateTimeField(verbose_name='Fecha y hora de inicio')
     ends_at = models.DateTimeField(verbose_name='Fecha y hora de fin')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, related_name='activities')
     type = models.CharField(max_length=15, choices=TYPE_CHOICES, verbose_name='Tipo')
     description = models.TextField(blank=True, null=True, verbose_name='Descripción')
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,204 +1,188 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block page_title %}Solicitudes de Registro{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <h2 class="h3 mb-4 text-gray-800">Gestión de Inscripciones</h2>
-
-    <div class="mb-4">
-        <div class="btn-group" role="group">
-            <a href="?status=pending" class="btn btn-{% if status_filter == 'pending' %}primary{% else %}outline-primary{% endif %}">
-                Pendientes
-            </a>
-            <a href="?status=approved" class="btn btn-{% if status_filter == 'approved' %}success{% else %}outline-success{% endif %}">
-                Aprobadas
-            </a>
-            <a href="?status=rejected" class="btn btn-{% if status_filter == 'rejected' %}danger{% else %}outline-danger{% endif %}">
-                Rechazadas
-            </a>
-            <a href="?status=" class="btn btn-{% if not status_filter %}secondary{% else %}outline-secondary{% endif %}">
-                Todas
-            </a>
-        </div>
-    </div>
-
-    {% if page_obj %}
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Solicitudes ({{ page_obj.paginator.count }})</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Jugador</th>
-                            <th>RUT</th>
-                            <th>Categoría</th>
-                            <th>Apoderado</th>
-                            <th>Estado</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in page_obj %}
-                        <tr>
-                            <td>
-                                <strong>{{ req.player_first_name }} {{ req.player_last_name }}</strong><br>
-                                <small class="text-muted">{{ req.player_birth_date|date:"d/m/Y" }}</small>
-                            </td>
-                            <td>{{ req.player_rut }}</td>
-                            <td>{{ req.team }}</td>
-                            <td>
-                                {{ req.guardian.get_full_name }}<br>
-                                <small>{{ req.guardian.email }}</small>
-                            </td>
-                            <td>
-                                {% if req.status == 'pending' %}
-                                    <span class="badge bg-warning text-dark">Pendiente</span>
-                                {% elif req.status == 'approved' %}
-                                    <span class="badge bg-success">Aprobada</span>
-                                {% elif req.status == 'rejected' %}
-                                    <span class="badge bg-danger">Rechazada</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ req.created_at|date:"d/m/Y H:i" }}</td>
-                            <td>
-                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetail{{ req.id }}" title="Ver Detalles">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-
-                                {% if req.status == 'pending' %}
-                                <button type="button" class="btn btn-success btn-sm" onclick="approveRegistration({{ req.id }})" title="Aprobar">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button type="button" class="btn btn-danger btn-sm" onclick="rejectRegistration({{ req.id }})" title="Rechazar">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<div class="row justify-content-center">
+    <div class="col-12">
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Solicitudes de Ingreso</h4>
+                <p class="text-muted small mb-0">Gestiona las nuevas inscripciones de apoderados y jugadores.</p>
             </div>
+            
+            <div class="bg-white p-1 rounded-pill shadow-sm d-inline-flex">
+                <a href="?status=pending" class="btn btn-sm rounded-pill px-3 fw-bold {% if status_filter == 'pending' %}btn-warning text-dark{% else %}btn-light text-muted{% endif %}">
+                    Pendientes
+                </a>
+                <a href="?status=approved" class="btn btn-sm rounded-pill px-3 fw-bold {% if status_filter == 'approved' %}btn-success text-white{% else %}btn-light text-muted{% endif %}">
+                    Aprobados
+                </a>
+                <a href="?status=rejected" class="btn btn-sm rounded-pill px-3 fw-bold {% if status_filter == 'rejected' %}btn-danger text-white{% else %}btn-light text-muted{% endif %}">
+                    Rechazados
+                </a>
+                <a href="?status=" class="btn btn-sm rounded-pill px-3 fw-bold {% if not status_filter %}btn-primary text-white{% else %}btn-light text-muted{% endif %}">
+                    Todos
+                </a>
+            </div>
+        </div>
 
-            {% if page_obj.has_other_pages %}
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
+        {% if page_obj %}
+        <div class="row g-3">
+            {% for reg in page_obj %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card-modern h-100 border-top border-4 
+                            {% if reg.status == 'pending' %}border-warning
+                            {% elif reg.status == 'approved' %}border-success
+                            {% else %}border-danger{% endif %} shadow-sm hover-scale position-relative">
+                    
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge rounded-pill border
+                                {% if reg.status == 'pending' %}bg-warning-subtle text-warning-emphasis border-warning
+                                {% elif reg.status == 'approved' %}bg-success-subtle text-success-emphasis border-success
+                                {% else %}bg-danger-subtle text-danger-emphasis border-danger{% endif %}">
+                                {{ reg.get_status_display }}
+                            </span>
+                            <small class="text-muted">{{ reg.created_at|date:"d M, H:i" }}</small>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-1">{{ reg.player_first_name }} {{ reg.player_last_name }}</h5>
+                        <p class="text-muted small mb-3">RUT: {{ reg.player_rut|default:"--" }}</p>
+
+                        <div class="bg-light p-3 rounded-3 mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small text-muted">Categoría:</span>
+                                <span class="small fw-bold text-dark">{{ reg.team }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small text-muted">Apoderado:</span>
+                                <span class="small fw-bold text-dark">{{ reg.guardian.get_full_name }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="small text-muted">Contacto:</span>
+                                <span class="small fw-bold text-dark">{{ reg.emergency_phone }}</span>
+                            </div>
+                        </div>
+
+                        {% if reg.status == 'pending' %}
+                        <div class="d-grid gap-2 d-flex mt-3 pt-3 border-top">
+                            <button onclick="approveRegistration({{ reg.id }})" class="btn btn-success btn-sm flex-fill rounded-pill fw-bold">
+                                <i class="bi bi-check-lg me-1"></i> Aprobar
+                            </button>
+                            <button onclick="openRejectModal({{ reg.id }})" class="btn btn-outline-danger btn-sm flex-fill rounded-pill fw-bold">
+                                <i class="bi bi-x-lg me-1"></i> Rechazar
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}">Anterior</a>
+                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
                     </li>
                     {% endif %}
                     <li class="page-item disabled">
-                        <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                        <span class="page-link border-0 bg-transparent text-muted">
+                            Pág {{ page_obj.number }}
+                        </span>
                     </li>
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}">Siguiente</a>
+                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
             </nav>
-            {% endif %}
         </div>
+
+        {% else %}
+        <div class="card-modern p-5 text-center mt-4">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+            </div>
+            <h5 class="fw-bold text-secondary">No hay solicitudes</h5>
+            <p class="text-muted">No se encontraron registros con este filtro.</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="alert alert-info text-center">
-        No hay solicitudes de registro en estado <strong>{{ status_filter|default:"Todas" }}</strong>.
-    </div>
-    {% endif %}
 </div>
 
-{% for req in page_obj %}
-<div class="modal fade" id="modalDetail{{ req.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Detalle Solicitud #{{ req.id }}</h5>
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">Rechazar Solicitud</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <h6>Datos del Jugador</h6>
-                <p>
-                    <strong>Nombre:</strong> {{ req.player_first_name }} {{ req.player_last_name }}<br>
-                    <strong>RUT:</strong> {{ req.player_rut }}<br>
-                    <strong>Nacimiento:</strong> {{ req.player_birth_date|date:"d/m/Y" }}
-                </p>
-                <hr>
-                <h6>Contacto y Salud</h6>
-                <p>
-                    <strong>Emergencia:</strong> {{ req.emergency_contact }}<br>
-                    <strong>Teléfono:</strong> {{ req.emergency_phone }}<br>
-                    <strong>Info Médica:</strong> {{ req.medical_info|default:"Ninguna" }}
-                </p>
-                <hr>
-                <h6>Datos del Apoderado</h6>
-                <p>
-                    <strong>Nombre:</strong> {{ req.guardian.get_full_name }}<br>
-                    <strong>Email:</strong> {{ req.guardian.email }}<br>
-                    <strong>Teléfono:</strong> {{ req.guardian.guardian_profile.phone }}
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-3">Indica el motivo del rechazo para notificar al apoderado:</p>
+                <textarea id="rejectReason" class="form-control rounded-3 mb-3" rows="3" placeholder="Ej: Datos incompletos, categoría llena..."></textarea>
+                <input type="hidden" id="rejectId">
+                <div class="d-grid">
+                    <button onclick="confirmReject()" class="btn btn-danger rounded-pill fw-bold">Confirmar Rechazo</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endfor %}
+{% endblock %}
 
+{% block extra_js %}
 <script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function approveRegistration(id) {
-    if(confirm('¿Estás seguro de aprobar esta inscripción?')) {
-        fetch(`/admin-panel/registrations/approve/${id}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) { location.reload(); } 
-            else { alert('Error: ' + (data.error || 'Error desconocido')); }
-        });
-    }
-}
-
-function rejectRegistration(id) {
-    let reason = prompt("Motivo del rechazo:");
-    if(reason) {
-        let formData = new FormData();
-        formData.append('reason', reason);
+    function approveRegistration(id) {
+        if(!confirm('¿Aprobar esta solicitud y crear el jugador?')) return;
         
-        fetch(`/admin-panel/registrations/reject/${id}/`, {
+        fetch(`/admin-panel/registrations/${id}/approve/`, {
             method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') },
-            body: formData
+            headers: {'X-CSRFToken': '{{ csrf_token }}'}
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-            if(data.success) { location.reload(); } 
-            else { alert('Error: ' + (data.error || 'Error desconocido')); }
+            if(data.success) location.reload();
+            else alert('Error al aprobar');
         });
     }
-}
+
+    function openRejectModal(id) {
+        document.getElementById('rejectId').value = id;
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    function confirmReject() {
+        const id = document.getElementById('rejectId').value;
+        const reason = document.getElementById('rejectReason').value;
+        
+        const formData = new FormData();
+        formData.append('reason', reason);
+
+        fetch(`/admin-panel/registrations/${id}/reject/`, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': '{{ csrf_token }}'}
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) location.reload();
+            else alert('Error al rechazar');
+        });
+    }
 </script>
+
+<style>
+    .hover-scale:hover { transform: translateY(-3px); }
+</style>
 {% endblock %}

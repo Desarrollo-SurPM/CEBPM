@@ -1,135 +1,199 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
-{% block title %}Gestión de Jugadores{% endblock %}
+{% block page_title %}Gestión del Plantel{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4 text-gray-800">Gestión de Jugadores</h1>
+<div class="row g-4">
+    <div class="col-12">
+        
+        <div class="card-modern p-4 mb-4 border-0 bg-white">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Jugadores Registrados</h5>
+                        <p class="text-muted small mb-0">{{ page_obj.paginator.count }} deportistas en total</p>
+                    </div>
+                </div>
 
-<div class="card shadow mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-3 align-items-center">
-            <div class="col-md-4">
-                <input type="text" name="search" class="form-control" placeholder="Buscar por nombre..." value="{{ search_query }}">
+                <a href="{% url 'admin_panel:registrations' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-person-plus-fill fs-5"></i>
+                    <span>Ver Solicitudes</span>
+                </a>
             </div>
-            <div class="col-md-3">
-                <select name="team" class="form-select">
-                    <option value="">Todas las categorías</option>
-                    {% for team in teams %}
-                        <option value="{{ team }}" {% if team == team_filter %}selected{% endif %}>{{ team }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select name="status" class="form-select">
-                    <option value="">Todos los estados</option>
-                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activo</option>
-                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactivo</option>
-                    <option value="injured" {% if status_filter == 'injured' %}selected{% endif %}>Lesionado</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-            </div>
-        </form>
-    </div>
-</div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Lista de Jugadores ({{ page_obj.paginator.count }})</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Categoría</th>
-                        <th>Estado</th>
-                        
-                        <th>Apoderado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for player in page_obj %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                {% if player.photo %}
-                                    <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                {% else %}
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                        <i class="bi bi-person text-muted fs-5"></i>
+            <hr class="border-light my-4">
+
+            <form method="get" class="row g-3">
+                <div class="col-12 col-md-5">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Buscar</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control bg-light border-start-0 rounded-end-pill py-2" 
+                               placeholder="Nombre o Apellido..." value="{{ search_query }}">
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Categoría</label>
+                    <select name="category" class="form-select rounded-pill py-2" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        {% for team in teams %}
+                            <option value="{{ team }}" {% if request.GET.category == team %}selected{% endif %}>
+                                {{ team }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                {% if search_query or request.GET.category %}
+                <div class="col-md-1 d-flex align-items-end">
+                    <a href="{% url 'admin_panel:players' %}" class="btn btn-light rounded-circle w-100 shadow-sm" title="Limpiar" style="height: 38px; width: 38px !important; display: grid; place-items: center;">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if page_obj %}
+        <div class="card-modern border-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-secondary text-uppercase small ls-1 border-0">Jugador</th>
+                            <th class="py-3 text-secondary text-uppercase small ls-1 border-0">Categoría</th>
+                            <th class="py-3 text-secondary text-uppercase small ls-1 border-0 text-center">Estado</th>
+                            <th class="py-3 text-secondary text-uppercase small ls-1 border-0 text-center">Apoderado</th>
+                            <th class="pe-4 py-3 text-end text-secondary text-uppercase small ls-1 border-0">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in page_obj %}
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative me-3">
+                                        {% if player.photo %}
+                                            <img src="{{ player.photo.url }}" class="rounded-circle shadow-sm object-fit-cover" width="50" height="50">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 50px; height: 50px;">
+                                                {{ player.first_name|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                        <span class="position-absolute bottom-0 start-100 translate-middle p-1 border border-light rounded-circle 
+                                            {% if player.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        </span>
                                     </div>
-                                {% endif %}
-                                <div>
-                                    <strong>
-                                        <a href="{% url 'admin_panel:admin_player_detail' player.pk %}">
-                                            {{ player.get_full_name }}
-                                        </a>
-                                    </strong><br>
-                                    <small class="text-muted">{{ player.rut|default:"Sin RUT" }}</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-primary">{{ player.category.name|default:"N/A" }}</span></td>
-                        <td>
-                            {% if player.status == 'active' %}
-                                <span class="badge bg-success">Activo</span>
-                            {% elif player.status == 'inactive' %}
-                                <span class="badge bg-secondary">Inactivo</span>
-                            {% else %}
-                                <span class="badge bg-warning">{{ player.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        
-                        <td>
-                            {% with guardian_link=player.guardianplayer_set.first %}
-                                {% if guardian_link %}
-                                    {{ guardian_link.guardian.get_full_name }}
-                                    <br>
-                                    <small class="text-muted">{{ guardian_link.guardian.email }}</small>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">{{ player.get_full_name }}</h6>
+                                        <small class="text-muted font-monospace">{{ player.rut|default:"--.---.---" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if player.category %}
+                                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">{{ player.category.name }}</span>
                                 {% else %}
-                                    <span class="text-muted">Sin apoderado</span>
+                                    <span class="text-muted small">Sin Categoría</span>
                                 {% endif %}
-                            {% endwith %}
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" title="Ver Detalles">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-warning" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center">No se encontraron jugadores con esos filtros.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                            <td class="text-center">
+                                {% if player.status == 'active' %}
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-3">Activo</span>
+                                {% elif player.status == 'injured' %}
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Lesionado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% with guardian=player.guardianplayer_set.first.guardian %}
+                                    {% if guardian %}
+                                        <div class="d-flex justify-content-center" title="{{ guardian.get_full_name }}">
+                                            <i class="bi bi-person-check-fill text-primary fs-5"></i>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="btn-group">
+                                    <a href="{% url 'admin_panel:admin_player_detail' player.id %}" class="btn btn-white border shadow-sm rounded-start-pill text-primary hover-scale" title="Ver Ficha">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    <a href="{% url 'admin_panel:admin_player_edit' player.id %}" class="btn btn-white border shadow-sm rounded-end-pill text-dark hover-scale" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-3 border-top bg-light d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 gap-1">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link rounded-circle border-0 shadow-sm" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}" aria-label="Previous">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item disabled">
+                            <span class="page-link border-0 bg-transparent fw-bold text-muted">
+                                Pág {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link rounded-circle border-0 shadow-sm" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}" aria-label="Next">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
         </div>
         
-        {% if page_obj.has_other_pages %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&team={{ team_filter }}&status={{ status_filter }}">Anterior</a>
-                    </li>
-                {% endif %}
-                <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&team={{ team_filter }}&status={{ status_filter }}">Siguiente</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+        <div class="d-md-none mt-4">
+            <p class="text-muted small text-center mb-3">Vista de Tarjetas:</p>
+            {% for player in page_obj %}
+            <div class="card-modern p-3 mb-3 border-start border-4 {% if player.status == 'active' %}border-success{% else %}border-secondary{% endif %}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center text-muted fw-bold" style="width: 40px; height: 40px;">
+                            {{ player.first_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0">{{ player.get_full_name }}</h6>
+                            <span class="badge bg-light text-dark border">{{ player.category.name|default:"--" }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_panel:admin_player_detail' player.id %}" class="btn btn-light btn-sm rounded-circle shadow-sm">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
+        {% else %}
+            <div class="card-modern p-5 text-center">
+                <h4 class="fw-bold text-secondary">No se encontraron jugadores</h4>
+                <p class="text-muted">Intenta con otra búsqueda o filtro.</p>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

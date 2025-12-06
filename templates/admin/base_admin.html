@@ -4,475 +4,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Panel de Administración - Club Deportivo Puerto Montt{% endblock %}</title>
+    <title>{% block title %}Admin | CEB Puerto Montt{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Russo+One&display=swap" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <link href="{% static 'css/forms.css' %}" rel="stylesheet">
 
     <style>
         :root {
-            --banner-color: #c07ccd;
-            --button-color: #c860b0;
-            --primary-bg: #581d93;
-            --secondary-bg: #e7617c;
-            --dark-bg: #1a0d2e;
-            --primary-color: var(--primary-bg);
-            --secondary-color: var(--secondary-bg);
-            --success-color: #2E9841;
-            --warning-color: #ff6b35;
-            --danger-color: #dc3545;
-            --dark-color: var(--dark-bg);
-            --light-color: #FFFFFF;
-            --sidebar-width: 280px;
+            --ceb-primary: #581d93;
+            --ceb-dark: #1a0d2e;
+            --ceb-accent: #e7617c;
+            --ceb-light: #f3f4f6;
+            --sidebar-width: 260px;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-color);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--ceb-light);
+            color: #374151;
         }
 
+        h1, h2, h3, h4, h5, .brand-text {
+            font-family: 'Russo One', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* === SIDEBAR MODERNO === */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             height: 100vh;
             width: var(--sidebar-width);
-            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+            background: linear-gradient(160deg, var(--ceb-dark) 0%, var(--ceb-primary) 100%);
             color: white;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(-100%);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
         }
 
         .sidebar-header {
             padding: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-nav {
-            padding: 1rem 0;
-            flex-grow: 1;
-        }
-
-        .nav-item {
-            margin: 0.25rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
         }
 
         .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.9rem 1.5rem;
             display: flex;
             align-items: center;
             text-decoration: none;
-            transition: all 0.3s ease;
-            border-radius: 0;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            border-left: 4px solid transparent;
         }
 
-        .nav-link:hover,
+        .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
         .nav-link.active {
             color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left: 4px solid white;
-        }
-
-        .nav-link[data-bs-toggle="collapse"]::after {
-            content: '\F282';
-            font-family: 'bootstrap-icons';
-            margin-left: auto;
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
-            transform: rotate(90deg);
-        }
-
-        .collapse-inner {
-            background: rgba(0,0,0,0.2);
-            margin: 0.25rem 1rem;
-            border-radius: 8px;
-        }
-
-        .collapse-inner .nav-link {
-            padding-left: 3rem;
-            font-size: 0.9rem;
-        }
-
-        .collapse-inner .nav-link:hover,
-        .collapse-inner .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-left: none;
+            background: linear-gradient(90deg, rgba(231, 97, 124, 0.2) 0%, transparent 100%);
+            border-left-color: var(--ceb-accent);
+            font-weight: 600;
         }
 
         .nav-link i {
-            margin-right: 0.75rem;
-            width: 20px;
+            width: 24px;
+            font-size: 1.1rem;
+            margin-right: 10px;
             text-align: center;
         }
 
-        .main-content {
+        /* Submenús */
+        .collapse-inner {
+            background: rgba(0,0,0,0.15);
+            padding: 0.5rem 0;
+        }
+        
+        .collapse-inner .nav-link {
+            padding-left: 3.5rem;
+            font-size: 0.85rem;
+            padding-top: 0.6rem;
+            padding-bottom: 0.6rem;
+        }
+
+        /* === CONTENIDO PRINCIPAL === */
+        .main-wrapper {
             margin-left: var(--sidebar-width);
-            min-height: 100vh;
             transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        .main-content.expanded {
-            margin-left: 0;
-        }
-
-        .top-navbar {
+        /* Topbar */
+        .topbar {
             background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 900;
         }
 
-        .content-area {
-            padding: 2rem;
-        }
-
-        .card {
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 100%);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-            border: none;
-        }
-
-        .stat-card {
+        /* Cards & Utilities */
+        .card-modern {
             background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--button-color) 0%, var(--secondary-bg) 100%);
             border: none;
-            border-radius: 8px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card-modern:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--button-color) 100%);
-        }
-
-        .table {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .table thead th {
-            background-color: var(--dark-bg);
-            color: white;
-            border: none;
+        .btn-modern {
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
             font-weight: 600;
+            transition: all 0.2s;
         }
 
-        .badge {
-            font-size: 0.75rem;
-            padding: 0.5rem 0.75rem;
+        /* Mobile */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        .mobile-toggle {
-            display: block;
-        }
-
-        .user-info {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: auto;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 0.75rem;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .mobile-toggle {
-                display: block;
-            }
-
-            .content-area { padding: 1rem; }
-            .table { font-size: 0.9rem; }
-            .table thead { display: none; }
-            .table tbody tr { display: block; margin-bottom: .75rem; border: 1px solid #eee; border-radius: 8px; }
-            .table tbody td { display: flex; justify-content: space-between; padding: .5rem .75rem; border-bottom: 1px dashed #eee; }
-            .table tbody td:last-child { border-bottom: none; }
-        }
-
-        .notification-badge {
-            margin-left: auto;
-            background: var(--danger-color);
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+        @media (max-width: 991.98px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+            .sidebar-overlay.show { display: block; opacity: 1; }
         }
     </style>
-
     {% block extra_css %}{% endblock %}
 </head>
-
 <body>
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h4 class="mb-0">
-                <i class="bi bi-shield-fill"></i>
-                Panel Administración
-            </h4>
-            <small class="text-light">{{ user.get_full_name|default:user.username }}</small>
+
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header d-flex align-items-center gap-3">
+            <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                 style="width: 40px; height: 40px; font-size: 1.2rem;">
+                A
+            </div>
+            <div>
+                <h5 class="m-0 fs-6 text-white brand-text">Admin Panel</h5>
+                <small class="text-white-50" style="font-size: 0.75rem;">CEB Puerto Montt</small>
+            </div>
         </div>
 
-        <ul class="sidebar-nav list-unstyled">
-            <li class="nav-item">
-                <a href="{% url 'admin_panel:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <i class="bi bi-speedometer2"></i>
-                    Dashboard
-                </a>
-            </li>
+        <div class="py-3">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
 
-            <li class="nav-item">
-                <a href="#collapseLanding" class="nav-link {% if 'news' in request.resolver_match.url_name or 'calendar' in request.resolver_match.url_name or 'featured_players' in request.resolver_match.url_name %}active{% endif %}"
-                   data-bs-toggle="collapse" role="button"
-                   aria-expanded="{% if 'news' in request.resolver_match.url_name or 'calendar' in request.resolver_match.url_name or 'featured_players' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
-                   aria-controls="collapseLanding">
-                    <i class="bi bi-display"></i>
-                    Gestión Landing
-                </a>
-
-                <div class="collapse {% if 'news' in request.resolver_match.url_name or 'calendar' in request.resolver_match.url_name or 'featured_players' in request.resolver_match.url_name %}show{% endif %}" id="collapseLanding">
-                    <div class="collapse-inner">
-                        <a href="{% url 'admin_panel:manage_news' %}" class="nav-link {% if 'news' in request.resolver_match.url_name %}active{% endif %}">
-                            <i class="bi bi-newspaper"></i> Últimas Noticias
-                        </a>
-                        <a href="{% url 'admin_panel:manage_calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
-                            <i class="bi bi-calendar-event"></i> Calendario
-                        </a>
-                        <a href="{% url 'admin_panel:manage_featured_players' %}" class="nav-link {% if 'featured_players' in request.resolver_match.url_name %}active{% endif %}">
-                            <i class="bi bi-star"></i> Jugadoras Destacadas
-                        </a>
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a href="#collapsePlayers" class="nav-link {% if 'player' in request.resolver_match.url_name or 'registration' in request.resolver_match.url_name or 'categories' in request.resolver_match.url_name %}active{% endif %}"
-                   data-bs-toggle="collapse" role="button"
-                   aria-expanded="{% if 'player' in request.resolver_match.url_name or 'registration' in request.resolver_match.url_name or 'categories' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
-                   aria-controls="collapsePlayers">
-                    <i class="bi bi-people-fill"></i>
-                    Jugadores
-                </a>
-
-                <div class="collapse {% if 'player' in request.resolver_match.url_name or 'registration' in request.resolver_match.url_name or 'categories' in request.resolver_match.url_name %}show{% endif %}" id="collapsePlayers">
-                    <div class="collapse-inner">
-                        <a href="{% url 'admin_panel:players' %}" class="nav-link {% if request.resolver_match.url_name == 'players' %}active{% endif %}">
-                            <i class="bi bi-list-ul"></i> Ver Lista Jugadores
-                        </a>
-                        <a href="{% url 'admin_panel:admin_player_cards' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_player_cards' %}active{% endif %}">
-                            <i class="bi bi-card-list"></i> Ver Fichas
-                        </a>
-                        <a href="{% url 'admin_panel:registrations' %}" class="nav-link {% if request.resolver_match.url_name == 'registrations' %}active{% endif %}">
-                            <i class="bi bi-person-plus"></i> Solicitudes Registro
-                        </a>
-                        <a href="{% url 'admin_panel:manage_categories' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_categories' %}active{% endif %}">
-                            <i class="bi bi-diagram-3"></i> Categorías (Cupos)
-                        </a>
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a href="#collapseFinances" class="nav-link {% if 'finance' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name or 'fee' in request.resolver_match.url_name %}active{% endif %}"
-                   data-bs-toggle="collapse" role="button"
-                   aria-expanded="{% if 'finance' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name or 'fee' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
-                   aria-controls="collapseFinances">
-                    <i class="bi bi-cash-coin"></i>
-                    Finanzas
-                </a>
-
-                <div class="collapse {% if 'finance' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name or 'fee' in request.resolver_match.url_name %}show{% endif %}" id="collapseFinances">
-                    <div class="collapse-inner">
-                        <a href="{% url 'admin_panel:finances_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'finances_dashboard' %}active{% endif %}">
-                            <i class="bi bi-graph-up"></i> Dashboard Finanzas
-                        </a>
-                        <a href="{% url 'admin_panel:manage_pending_payments' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_pending_payments' %}active{% endif %}">
-                            <i class="bi bi-clock-history"></i> Pagos Pendientes
-                        </a>
-                        <a href="{% url 'admin_panel:manage_fees' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_fees' %}active{% endif %}">
-                            <i class="bi bi-currency-dollar"></i> Definir Cuotas
-                        </a>
-                        <a href="{% url 'admin_panel:assign_fees' %}" class="nav-link {% if request.resolver_match.url_name == 'assign_fees' %}active{% endif %}">
-                            <i class="bi bi-person-check"></i> Asignar Cuotas
-                        </a>
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a href="{% url 'admin_panel:communications' %}" class="nav-link {% if 'communications' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="bi bi-broadcast"></i>
-                    Comunicaciones
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="{% url 'admin_panel:admin_tickets_list' %}" class="nav-link {% if 'ticket' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="bi bi-patch-question-fill"></i>
-                    Solicitudes
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="{% url 'admin_panel:admin_sponsors' %}" class="nav-link {% if 'sponsors' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="bi bi-star-fill"></i>
-                    Patrocinadores
-                </a>
-            </li>
-        </ul>
-
-        <div class="user-info">
-            <div class="d-flex align-items-center">
-                <div class="user-avatar">
-                    <i class="bi bi-person"></i>
-                </div>
-                <div>
-                    <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
-                    <small class="text-light">Administrador</small>
+            <small class="text-white-50 text-uppercase fw-bold px-4 mt-3 mb-2 d-block" style="font-size: 0.7rem; letter-spacing: 1px;">Deportivo</small>
+            
+            <a href="#menuPlayers" class="nav-link d-flex justify-content-between" data-bs-toggle="collapse">
+                <span><i class="bi bi-people-fill"></i> Jugadores</span>
+                <i class="bi bi-chevron-down ms-auto" style="width: auto; font-size: 0.8rem;"></i>
+            </a>
+            <div class="collapse {% if 'player' in request.resolver_match.url_name or 'registration' in request.resolver_match.url_name or 'categories' in request.resolver_match.url_name %}show{% endif %}" id="menuPlayers">
+                <div class="collapse-inner">
+                    <a href="{% url 'admin_panel:registrations' %}" class="nav-link {% if 'registration' in request.resolver_match.url_name %}text-white{% endif %}">Solicitudes <span class="badge bg-danger ms-2 rounded-pill">!</span></a>
+                    <a href="{% url 'admin_panel:players' %}" class="nav-link {% if request.resolver_match.url_name == 'players' %}text-white{% endif %}">Lista General</a>
+                    <a href="{% url 'admin_panel:manage_categories' %}" class="nav-link {% if 'categories' in request.resolver_match.url_name %}text-white{% endif %}">Categorías</a>
                 </div>
             </div>
-            <div class="mt-2">
-                <form method="post" action="{% url 'logout' %}" class="d-inline w-100">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-light btn-sm w-100">
-                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                    </button>
-                </form>
+
+            <small class="text-white-50 text-uppercase fw-bold px-4 mt-3 mb-2 d-block" style="font-size: 0.7rem; letter-spacing: 1px;">Administración</small>
+            
+            <a href="{% url 'admin_panel:finances_dashboard' %}" class="nav-link {% if 'finance' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-cash-stack"></i> Finanzas
+            </a>
+            
+            <a href="{% url 'admin_panel:manage_pending_payments' %}" class="nav-link {% if 'pending_payments' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clock-history"></i> Revisar Pagos
+            </a>
+
+            <small class="text-white-50 text-uppercase fw-bold px-4 mt-3 mb-2 d-block" style="font-size: 0.7rem; letter-spacing: 1px;">Comunicación</small>
+            
+            <a href="{% url 'admin_panel:admin_tickets_list' %}" class="nav-link {% if 'ticket' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-chat-left-text-fill"></i> Soporte
+            </a>
+            
+            <a href="{% url 'admin_panel:communications' %}" class="nav-link {% if 'communication' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-broadcast"></i> Difusión
+            </a>
+
+            <a href="#menuWeb" class="nav-link d-flex justify-content-between" data-bs-toggle="collapse">
+                <span><i class="bi bi-globe"></i> Sitio Web</span>
+                <i class="bi bi-chevron-down ms-auto" style="width: auto; font-size: 0.8rem;"></i>
+            </a>
+            <div class="collapse {% if 'landing' in request.resolver_match.url_name or 'news' in request.resolver_match.url_name %}show{% endif %}" id="menuWeb">
+                <div class="collapse-inner">
+                    <a href="{% url 'admin_panel:manage_news' %}" class="nav-link">Noticias</a>
+                    <a href="{% url 'admin_panel:manage_calendar' %}" class="nav-link">Calendario</a>
+                    <a href="{% url 'admin_panel:admin_sponsors' %}" class="nav-link">Sponsors</a>
+                </div>
             </div>
+        </div>
+
+        <div class="mt-auto p-3 border-top border-white-10 bg-black bg-opacity-25">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="bg-white rounded-circle" style="width: 8px; height: 8px;"></div>
+                <small class="text-white-50">{{ user.email|truncatechars:20 }}</small>
+            </div>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn btn-outline-light btn-sm w-100 rounded-pill">Cerrar Sesión</button>
+            </form>
         </div>
     </nav>
 
-    <div class="main-content" id="mainContent">
-        <div class="top-navbar">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-outline-primary mobile-toggle me-3" id="sidebarToggle">
-                    <i class="bi bi-list"></i>
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light border-0 d-lg-none" onclick="toggleSidebar()">
+                    <i class="bi bi-list fs-4"></i>
                 </button>
-                <h5 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
+                <h4 class="m-0 text-dark fw-bold" style="font-size: 1.1rem;">{% block page_title %}Dashboard{% endblock %}</h4>
             </div>
-            <div class="d-flex align-items-center">
-                <span class="text-muted me-3">{{ user.get_full_name|default:user.username }}</span>
-                <a href="{% url 'pages:landing' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-house"></i> Inicio
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'pages:landing' %}" class="btn btn-light rounded-pill btn-sm fw-bold text-secondary border">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Ver Sitio
                 </a>
             </div>
-        </div>
+        </header>
 
-        <div class="content-area">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            {% block content %}
-            {% endblock %}
+        <div class="p-4">
+            <div class="container-fluid p-0">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        // Sidebar toggle functionality
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    // Mobile: toggle show class
-                    sidebar.classList.toggle('show');
-                } else {
-                    // Desktop: toggle collapsed class
-                    sidebar.classList.toggle('collapsed');
-                    mainContent.classList.toggle('expanded');
-                }
-            });
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
         }
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const toggle = document.getElementById('sidebarToggle');
-
-            if (window.innerWidth <= 768 &&
-                toggle &&
-                !sidebar.contains(event.target) &&
-                !toggle.contains(event.target) &&
-                sidebar.classList.contains('show')) {
-                sidebar.classList.remove('show');
-            }
-        });
     </script>
-
     {% block extra_js %}{% endblock %}
 </body>
 </html>

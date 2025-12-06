@@ -57,7 +57,12 @@ urlpatterns = [
     path('tickets/<int:pk>/', admin_views.view_admin_ticket, name='admin_ticket_view'),
     path('tickets/<int:pk>/close/', admin_views.close_admin_ticket, name='admin_ticket_close'),
     # --- FIN ---
-    # --- FIN ---
+    path('landing/calendar/add-training/', admin_views.add_training, name='add_training'),
+    path('landing/calendar/add-activity/', admin_views.add_activity, name='add_activity'),
+    path('landing/calendar/add-match/', admin_views.add_match, name='add_match'),
+    path('landing/calendar/delete-match/<int:pk>/', admin_views.delete_match, name='delete_match'),
+    path('landing/calendar/delete-activity/<int:pk>/', admin_views.delete_activity, name='delete_activity'),
+    path('calendar/bulk/', admin_views.bulk_schedule_trainings, name='bulk_schedule'),
     # Landing Page Management
     path('landing/news/', admin_views.manage_landing_news, name='manage_news'),
     path('landing/news/edit/<int:pk>/', admin_views.edit_landing_news, name='edit_news'),

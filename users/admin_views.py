@@ -246,15 +246,51 @@ def add_transaction(request):
 @login_required
 @user_passes_test(is_admin)
 def manage_fee_definitions(request):
+    """Gestión de Tipos de Cuotas (Agrupadas por Categoría)"""
     if request.method == 'POST':
         form = FeeDefinitionForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Cuota creada.')
+            messages.success(request, 'Nueva tarifa creada correctamente.')
             return redirect('admin_panel:manage_fees')
+        else:
+            messages.error(request, 'Error al crear la tarifa. Revisa los datos.')
     else:
         form = FeeDefinitionForm()
-    return render(request, 'admin/manage_fees.html', {'form': form, 'fees': FeeDefinition.objects.all()})
+
+    # --- Lógica de Agrupación ---
+    grouped_fees = []
+    
+    # 1. Cuotas Generales (Sin categoría, aplican a todos)
+    general_fees = FeeDefinition.objects.filter(category__isnull=True).order_by('name')
+    grouped_fees.append({
+        'id': 'general',
+        'name': 'General / Transversal',
+        'icon': 'bi-globe',
+        'fees': general_fees,
+        'count': general_fees.count(),
+        'style': 'primary' # Color distintivo
+    })
+    
+    # 2. Cuotas por Categoría
+    categories = Category.objects.all().order_by('name')
+    for cat in categories:
+        fees = FeeDefinition.objects.filter(category=cat).order_by('name')
+        grouped_fees.append({
+            'id': f'cat_{cat.id}',
+            'name': cat.name,
+            'icon': 'bi-people-fill',
+            'fees': fees,
+            'count': fees.count(),
+            'style': 'dark'
+        })
+
+    context = {
+        'form': form,
+        'grouped_fees': grouped_fees,
+        'page_title': 'Definición de Cuotas'
+    }
+    return render(request, 'admin/manage_fees.html', context)
 
 @login_required
 @user_passes_test(is_admin)
@@ -415,10 +451,22 @@ def delete_landing_news(request, pk):
 @login_required
 @user_passes_test(is_admin)
 def manage_landing_calendar(request):
-    if request.method == 'POST':
-        form = LandingEventForm(request.POST)
-        if form.is_valid(): form.save(); return redirect('admin_panel:manage_calendar')
-    return render(request, 'admin/manage_calendar.html', {'event_list': LandingEvent.objects.all(), 'form': LandingEventForm()})
+    """
+    Vista principal del calendario.
+    AHORA SEPARA: Partidos, Entrenamientos y Actividades.
+    """
+    today = timezone.now()
+    context = {
+        'matches': Match.objects.filter(starts_at__gte=today).order_by('starts_at'),
+        
+        # Filtramos explícitamente por tipo
+        'trainings': Activity.objects.filter(starts_at__gte=today, type='entrenamiento').order_by('starts_at'),
+        'activities': Activity.objects.filter(starts_at__gte=today, type='otro').order_by('starts_at'),
+        
+        'categories': Category.objects.all(),
+        'page_title': 'Gestión de Calendario'
+    }
+    return render(request, 'admin/manage_calendar.html', context)
 
 @login_required
 @user_passes_test(is_admin)
@@ -428,6 +476,34 @@ def edit_landing_event(request, pk):
         form = LandingEventForm(request.POST, instance=item)
         if form.is_valid(): form.save(); return redirect('admin_panel:manage_calendar')
     return render(request, 'admin/manage_calendar_edit.html', {'form': LandingEventForm(instance=item)})
+
+@login_required
+@user_passes_test(is_admin)
+def add_activity(request):
+    """Crea actividades especiales (Reuniones, Eventos)"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        category_id = request.POST.get('category')
+        starts_at = request.POST.get('starts_at')
+        ends_at = request.POST.get('ends_at')
+        location = request.POST.get('location')
+        description = request.POST.get('description') # Campo extra para detalles
+        
+        category = None
+        if category_id:
+            category = Category.objects.get(id=category_id)
+            
+        Activity.objects.create(
+            title=title,
+            type='otro', # Importante: Tipo 'otro'
+            category=category,
+            starts_at=starts_at,
+            ends_at=ends_at,
+            location=location,
+            description=description
+        )
+        messages.success(request, 'Actividad creada correctamente.')
+    return redirect('admin_panel:manage_calendar')
 
 @login_required
 @user_passes_test(is_admin)
@@ -465,15 +541,78 @@ def toggle_category_registration(request, pk):
 @login_required
 @user_passes_test(is_admin)
 def assign_fees_to_category(request):
+    """
+    Vista para asignar cuotas masivas (por categoría) o individuales.
+    """
     if request.method == 'POST':
-        form = AssignFeeForm(request.POST)
-        if form.is_valid():
-            fd, cat, date = form.cleaned_data['fee_definition'], form.cleaned_data['category'], form.cleaned_data['due_date']
-            for gp in GuardianPlayer.objects.filter(player__category=cat, player__status='active'):
-                if not Invoice.objects.filter(player=gp.player, fee_definition=fd).exists():
-                    Invoice.objects.create(guardian=gp.guardian, player=gp.player, fee_definition=fd, amount=fd.amount, due_date=date, status='pendiente')
-            return redirect('admin_panel:manage_fees')
-    return render(request, 'admin/assign_fees.html', {'form': AssignFeeForm()})
+        # Obtenemos datos directos del request para mayor control
+        fee_id = request.POST.get('fee_definition')
+        due_date = request.POST.get('due_date')
+        target_type = request.POST.get('target_type')
+        
+        try:
+            fee_def = FeeDefinition.objects.get(id=fee_id)
+            invoices_created = 0
+            
+            # --- CASO 1: Por Categoría ---
+            if target_type == 'category':
+                cat_id = request.POST.get('category')
+                if not cat_id:
+                    messages.error(request, 'Debes seleccionar una categoría.')
+                    return redirect('admin_panel:assign_fees')
+                
+                # Buscar jugadores activos de esa categoría que tengan apoderado
+                # Usamos guardianplayer__isnull=False para asegurar que tengan quien pague
+                target_players = Player.objects.filter(
+                    category_id=cat_id, 
+                    status='active',
+                    guardianplayer__isnull=False 
+                ).distinct()
+                
+            # --- CASO 2: Jugador Individual ---
+            else:
+                player_id = request.POST.get('player')
+                if not player_id:
+                    messages.error(request, 'Debes buscar y seleccionar un jugador.')
+                    return redirect('admin_panel:assign_fees')
+                
+                target_players = Player.objects.filter(id=player_id)
+
+            # --- Generación de Cobros ---
+            for player in target_players:
+                # Obtener al apoderado (asumimos el primero si hay varios, o el tutor principal)
+                guardian_link = GuardianPlayer.objects.filter(player=player).first()
+                if guardian_link:
+                    # Crear la factura (Invoice)
+                    Invoice.objects.create(
+                        guardian=guardian_link.guardian,
+                        player=player,
+                        fee_definition=fee_def,
+                        amount=fee_def.amount, # Monto congelado al momento de asignar
+                        due_date=due_date,
+                        status='pendiente'
+                    )
+                    invoices_created += 1
+            
+            if invoices_created > 0:
+                messages.success(request, f'Se generaron {invoices_created} cobros exitosamente.')
+                return redirect('admin_panel:manage_pending_payments') # Éxito: Ir a revisión
+            else:
+                messages.warning(request, 'No se generaron cobros. Revisa que los jugadores tengan apoderado asignado.')
+                
+        except Exception as e:
+            messages.error(request, f'Ocurrió un error: {str(e)}')
+            
+    # --- CONTEXTO PARA EL TEMPLATE ---
+    # Esto es lo que faltaba para llenar los selectores:
+    context = {
+        'fees': FeeDefinition.objects.all(),
+        'categories': Category.objects.all(),
+        # Enviamos 'all_players' para el buscador TomSelect
+        'all_players': Player.objects.filter(status='active').select_related('category').order_by('first_name'),
+        'page_title': 'Asignar Cobros'
+    }
+    return render(request, 'admin/assign_fees.html', context)
 
 # --- TICKETS ---
 @login_required
@@ -503,3 +642,121 @@ def close_admin_ticket(request, pk):
         t = get_object_or_404(Ticket, pk=pk); t.status = 'cerrado'; t.save()
         return redirect('admin_panel:list_admin_tickets')
     return redirect('admin_panel:admin_ticket_view', pk=pk)
+
+# VISTAS INDIVIDUALES QUE FALTABAN
+@login_required
+@user_passes_test(is_admin)
+def add_match(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category')
+        opponent = request.POST.get('opponent')
+        starts_at = request.POST.get('starts_at')
+        location = request.POST.get('location')
+        
+        category = Category.objects.get(id=category_id)
+        Match.objects.create(category=category, opponent=opponent, starts_at=starts_at, location=location)
+        messages.success(request, 'Partido creado.')
+    return redirect('admin_panel:manage_calendar')
+
+@login_required
+@user_passes_test(is_admin)
+def delete_match(request, pk):
+    if request.method == 'POST':
+        get_object_or_404(Match, pk=pk).delete()
+        messages.success(request, 'Partido eliminado.')
+    return redirect('admin_panel:manage_calendar')
+
+@login_required
+@user_passes_test(is_admin)
+def add_training(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        category_id = request.POST.get('category')
+        starts_at = request.POST.get('starts_at')
+        ends_at = request.POST.get('ends_at')
+        location = request.POST.get('location')
+        
+        category = None
+        if category_id: category = Category.objects.get(id=category_id)
+            
+        Activity.objects.create(title=title, type='entrenamiento', category=category, starts_at=starts_at, ends_at=ends_at, location=location)
+        messages.success(request, 'Entrenamiento creado.')
+    return redirect('admin_panel:manage_calendar')
+
+@login_required
+@user_passes_test(is_admin)
+def delete_activity(request, pk):
+    if request.method == 'POST':
+        get_object_or_404(Activity, pk=pk).delete()
+        messages.success(request, 'Actividad eliminada.')
+    return redirect('admin_panel:manage_calendar')
+
+@login_required
+@user_passes_test(is_admin)
+def bulk_schedule_trainings(request):
+    """
+    Vista innovadora para crear entrenamientos recurrentes o masivos.
+    Permite seleccionar múltiples categorías y días.
+    """
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        location = request.POST.get('location')
+        start_time = request.POST.get('start_time') # Hora inicio (HH:MM)
+        end_time = request.POST.get('end_time')     # Hora fin (HH:MM)
+        start_date = request.POST.get('start_date') # Fecha inicio ciclo
+        end_date = request.POST.get('end_date')     # Fecha fin ciclo
+        
+        # Listas de selección múltiple
+        selected_categories = request.POST.getlist('categories') # IDs de categorías
+        selected_weekdays = request.POST.getlist('weekdays')     # ['0', '2', '4'] (Lunes, Miér, Vier)
+        
+        # Conversión de datos
+        from datetime import datetime, time
+        s_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+        e_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        
+        # Validar horas
+        h_start = datetime.strptime(start_time, "%H:%M").time()
+        h_end = datetime.strptime(end_time, "%H:%M").time()
+
+        created_count = 0
+        
+        # Iterar por cada día en el rango de fechas
+        current_date = s_date
+        while current_date <= e_date:
+            # Si el día de la semana coincide con los seleccionados
+            # weekday(): 0=Lunes, 6=Domingo
+            if str(current_date.weekday()) in selected_weekdays:
+                
+                # Para cada categoría seleccionada, creamos el evento
+                for cat_id in selected_categories:
+                    cat = Category.objects.get(id=cat_id)
+                    
+                    # Combinar fecha y hora
+                    dt_start = datetime.combine(current_date, h_start)
+                    dt_end = datetime.combine(current_date, h_end)
+                    
+                    # Hacerlo timezone aware si usas USE_TZ=True
+                    dt_start = timezone.make_aware(dt_start)
+                    dt_end = timezone.make_aware(dt_end)
+
+                    Activity.objects.create(
+                        title=title,
+                        type='entrenamiento',
+                        category=cat,
+                        starts_at=dt_start,
+                        ends_at=dt_end,
+                        location=location
+                    )
+                    created_count += 1
+            
+            current_date += timedelta(days=1)
+
+        messages.success(request, f'¡Éxito! Se generaron {created_count} sesiones de entrenamiento.')
+        return redirect('admin_panel:manage_calendar')
+
+    context = {
+        'categories': Category.objects.all().order_by('name'),
+        'page_title': 'Programación Masiva'
+    }
+    return render(request, 'admin/bulk_schedule.html', context)

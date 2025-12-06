@@ -237,7 +237,7 @@
                             <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu mt-3 shadow-lg">
                                 <li>
                                     {% if user.is_staff %}
-                                        <a class="dropdown-item" href="{% url 'users:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Panel</a>
+                                        <a class="dropdown-item" href="{% url 'admin_panel:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Panel</a>
                                     {% else %}
                                         <a class="dropdown-item" href="{% url 'guardian:dashboard' %}"><i class="bi bi-grid-fill me-2"></i>Mi Portal</a>
                                     {% endif %}
