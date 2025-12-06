@@ -1,219 +1,368 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CEBPM{% endblock %}</title>
-    {% load static %}
+    <title>{% block title %}CEB Puerto Montt{% endblock %}</title>
+    
     <link rel="icon" type="image/svg+xml" href="{% static 'img/LOGOCEB.svg' %}">
-    <link rel="shortcut icon" type="image/svg+xml" href="{% static 'img/LOGOCEB.svg' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{% static 'css/forms.css' %}" rel="stylesheet">
-    <link href="{% static 'css/custom-colors.css' %}" rel="stylesheet">
-    {% block extra_css %}{% endblock %}
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Russo+One&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        /* Menú lateral (offcanvas) para móviles */
-        .offcanvas-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-            z-index: 1040;
+        :root {
+            --ceb-primary: #581d93;   /* Morado Club */
+            --ceb-dark: #1a0d2e;      /* Fondo Oscuro */
+            --ceb-accent: #e7617c;    /* Rosa Neón */
+            --ceb-glow: #c07ccd;      /* Lila Brillante */
+            --nav-height: 80px;
         }
-        .offcanvas-overlay.show { opacity: 1; pointer-events: auto; }
 
-        .offcanvas-menu {
-            position: fixed;
-            top: 0;
-            right: 0;
-            height: 100vh;
-            width: 280px;
-            background: linear-gradient(135deg, var(--banner-color, #0d6efd), var(--button-color, #13623D));
-            color: #fff;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.25);
-            transform: translateX(100%);
-            transition: transform 0.25s ease;
-            z-index: 1041;
-            display: flex;
-            flex-direction: column;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            padding-top: 0; /* El navbar será flotante sobre el contenido */
+            overflow-x: hidden;
         }
-        .offcanvas-menu.show { transform: translateX(0); }
-        .offcanvas-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        .offcanvas-body { padding: 1rem; overflow-y: auto; }
-        .offcanvas-close { background: none; border: none; color: #fff; font-size: 1.5rem; }
 
-        /* Estilos de enlaces dentro del offcanvas (respetando branding del landing) */
-        .offcanvas-menu .navbar-nav { flex-direction: column; gap: .25rem; }
-        .offcanvas-menu .nav-link { color: #fff; }
-        .offcanvas-menu .nav-link i { color: #fff; }
-        .offcanvas-menu .dropdown-menu { background: rgba(255,255,255,0.1); border: 0; }
-        .offcanvas-menu .dropdown-item { color: #fff; }
-        .offcanvas-menu .dropdown-item:hover { background: rgba(255,255,255,0.15); }
-
-        @media (min-width: 992px) {
-            .offcanvas-menu, .offcanvas-overlay { display: none !important; }
+        h1, h2, h3, h4, h5, .navbar-brand, .btn-sport {
+            font-family: 'Russo One', sans-serif; /* Tipografía deportiva */
+            text-transform: uppercase;
         }
+
+        /* === NAVBAR PREMIUM SPORT === */
+        .navbar-sport {
+            background: linear-gradient(180deg, rgba(26, 13, 46, 0.9) 0%, rgba(88, 29, 147, 0.1) 100%);
+            backdrop-filter: blur(8px);
+            height: var(--nav-height);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 0;
+        }
+
+        /* Estado Scrolled (Sólido y compacto) */
+        .navbar-sport.scrolled {
+            background: rgba(26, 13, 46, 0.95);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid var(--ceb-primary);
+            height: 70px;
+        }
+
+        .navbar-brand img {
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+            transition: transform 0.3s;
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .navbar-brand span {
+            color: white;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Enlaces de Navegación */
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin: 0 8px;
+            padding: 8px 0;
+            position: relative;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #fff !important;
+            text-shadow: 0 0 10px var(--ceb-glow);
+        }
+
+        /* Línea decorativa al hover */
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ceb-accent), var(--ceb-glow));
+            transition: width 0.3s ease;
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--ceb-accent);
+        }
+
+        .nav-link:hover::before, .nav-link.active::before {
+            width: 100%;
+        }
+
+        /* Botones de Acción (Estilo Jersey) */
+        .btn-sport-outline {
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 4px; /* Bordes menos redondos para look deportivo */
+            padding: 0.4rem 1.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background: transparent;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%); /* Forma angular */
+        }
+
+        .btn-sport-outline:hover {
+            border-color: var(--ceb-accent);
+            background: rgba(231, 97, 124, 0.1);
+            color: var(--ceb-accent);
+            box-shadow: 0 0 15px rgba(231, 97, 124, 0.3);
+        }
+
+        .btn-sport-fill {
+            background: linear-gradient(135deg, var(--ceb-primary), var(--ceb-accent));
+            color: white;
+            border: none;
+            padding: 0.5rem 1.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-sport-fill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(88, 29, 147, 0.6);
+            color: white;
+        }
+
+        /* Dropdown de Usuario */
+        .user-dropdown-menu {
+            background: rgba(26, 13, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--ceb-accent);
+        }
+        
+        .user-dropdown-menu .dropdown-item {
+            color: rgba(255,255,255,0.8);
+            transition: 0.2s;
+        }
+        
+        .user-dropdown-menu .dropdown-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding-left: 1.5rem; /* Desplazamiento */
+        }
+
+        /* === MENÚ MÓVIL (Offcanvas) === */
+        .offcanvas-sport {
+            background: linear-gradient(160deg, #1a0d2e 0%, #2c0e4a 100%);
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .offcanvas-sport .btn-close { filter: invert(1); }
+        .offcanvas-sport .nav-link { 
+            font-size: 1.2rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem 0;
+        }
+
+        /* Footer Integrado */
+        footer {
+            background: #1a0d2e;
+            color: rgba(255,255,255,0.6);
+            border-top: 4px solid var(--ceb-primary);
+        }
+        
+        footer h5, footer h6 { color: white; letter-spacing: 1px; }
+        footer a { color: rgba(255,255,255,0.6); text-decoration: none; transition: 0.3s; }
+        footer a:hover { color: var(--ceb-accent); padding-left: 5px; }
+
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<body class="d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg fixed-top navbar-sport" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="{% static 'img/LOGOCEB.svg' %}" alt="Logo CEB" style="height: 40px; width: auto;" class="me-2">
-                CEBPM
+            
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'pages:landing' %}">
+                <img src="{% static 'img/LOGOCEB.svg' %}" alt="CEB Logo" height="45" class="d-inline-block align-text-top">
+                <span class="d-none d-sm-block">CEB <span style="color: var(--ceb-accent);">PM</span></span>
             </a>
-            
-            <button class="navbar-toggler" type="button" id="mobileMenuToggle" aria-controls="mobileOffcanvas" aria-expanded="false" aria-label="Abrir menú">
-                <span class="navbar-toggler-icon"></span>
+
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
+                <i class="bi bi-list fs-1 text-white"></i>
             </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pages:landing' %}"><i class="fas fa-home me-1"></i>Inicio</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'landing' %}active{% endif %}" href="{% url 'pages:landing' %}">INICIO</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pages:about' %}"><i class="fas fa-info-circle me-1"></i>Acerca de</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'teams' %}active{% endif %}" href="{% url 'pages:teams' %}">EQUIPOS</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pages:teams' %}"><i class="fas fa-users me-1"></i>Equipos</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'schedule' %}active{% endif %}" href="{% url 'pages:schedule' %}">CALENDARIO</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pages:schedule' %}"><i class="fas fa-calendar me-1"></i>Calendario</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'pages:about' %}">EL CLUB</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pages:contact' %}"><i class="fas fa-envelope me-1"></i>Contacto</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'pages:contact' %}">CONTACTO</a>
                     </li>
                 </ul>
-                
-                <ul class="navbar-nav ms-auto">
+
+                <div class="d-flex align-items-center gap-3">
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i>
-                                {{ user.get_full_name|default:user.username }}
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle text-white" data-bs-toggle="dropdown">
+                                <div class="bg-gradient-primary rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" 
+                                     style="width: 38px; height: 38px; background: var(--ceb-primary);">
+                                    {{ user.first_name|first|default:user.username|first|upper }}
+                                </div>
+                                <span class="d-none d-lg-block small fw-bold">{{ user.first_name }}</span>
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i>Mi Perfil</a></li>
-                                {% if user.admin_profile_id %}
-                                    <li><a class="dropdown-item" href="{% url 'admin_panel:dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                {% endif %}
-                                {% if user.is_superuser %}
-                                    <li><a class="dropdown-item" href="/admin/"><i class="fas fa-cog me-2"></i>Admin Django</a></li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
+                            <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu mt-3 shadow-lg">
                                 <li>
-                                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                    {% if user.is_staff %}
+                                        <a class="dropdown-item" href="{% url 'users:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Panel</a>
+                                    {% else %}
+                                        <a class="dropdown-item" href="{% url 'guardian:dashboard' %}"><i class="bi bi-grid-fill me-2"></i>Mi Portal</a>
+                                    {% endif %}
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person-gear me-2"></i>Mi Cuenta</a></li>
+                                <li><hr class="dropdown-divider bg-light opacity-25"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="dropdown-item border-0 bg-transparent">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
-                                        </button>
+                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-power me-2"></i>Cerrar Sesión</button>
                                     </form>
                                 </li>
                             </ul>
-                        </li>
+                        </div>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus me-1"></i>Registrarse</a>
-                        </li>
+                        <a href="{% url 'login' %}" class="btn-sport-outline">INGRESAR</a>
+                        <a href="{% url 'register' %}" class="btn-sport-fill">INSCRÍBETE</a>
                     {% endif %}
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Menú lateral para móviles -->
-    <div class="offcanvas-overlay" id="offcanvasOverlay"></div>
-    <div class="offcanvas-menu" id="mobileOffcanvas" aria-hidden="true">
-        <div class="offcanvas-header">
-            <div class="d-flex align-items-center">
-                <img src="{% static 'img/LOGOCEB.svg' %}" alt="Logo CEB" style="height: 32px; width: auto;" class="me-2">
-                <strong>CEBPM</strong>
-            </div>
-            <button class="offcanvas-close" type="button" id="mobileMenuClose" aria-label="Cerrar">&times;</button>
+    <div class="offcanvas offcanvas-end offcanvas-sport text-white" tabindex="-1" id="offcanvasNavbar">
+        <div class="offcanvas-header border-bottom border-white-10">
+            <h5 class="offcanvas-title d-flex align-items-center gap-2">
+                <img src="{% static 'img/LOGOCEB.svg' %}" height="35"> MENÚ
+            </h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body">
-            <!-- Clonaremos el contenido del #navbarNav aquí en móviles -->
-            <div id="offcanvasContent"></div>
+        <div class="offcanvas-body d-flex flex-column">
+            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                <li class="nav-item"><a class="nav-link" href="{% url 'pages:landing' %}"><i class="bi bi-house-door me-3 text-primary"></i>INICIO</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'pages:teams' %}"><i class="bi bi-people me-3 text-primary"></i>EQUIPOS</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'pages:schedule' %}"><i class="bi bi-calendar-event me-3 text-primary"></i>CALENDARIO</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'pages:contact' %}"><i class="bi bi-envelope me-3 text-primary"></i>CONTACTO</a></li>
+            </ul>
+            
+            <div class="mt-4 pt-4 border-top border-white-10">
+                {% if not user.is_authenticated %}
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'login' %}" class="btn btn-outline-light py-2 fw-bold">INICIAR SESIÓN</a>
+                        <a href="{% url 'register' %}" class="btn btn-sport-fill py-2 text-center text-decoration-none">INSCRÍBETE AHORA</a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'guardian:dashboard' %}" class="btn btn-sport-fill w-100 mb-3 text-decoration-none text-center">IR A MI PORTAL</a>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-link text-white-50 w-100 text-decoration-none">Cerrar Sesión</button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
     </div>
 
-    <main class="container mt-4">
+    <main>
         {% if messages %}
+        <div class="container position-fixed top-0 start-50 translate-middle-x mt-5 pt-5" style="z-index: 1050; width: 90%; max-width: 600px;">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-lg border-0 rounded-0" role="alert" style="border-left: 5px solid var(--ceb-accent) !important;">
+                    <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
+        </div>
         {% endif %}
 
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-light mt-5 py-4">
+    <footer class="py-5 mt-auto">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-futbol me-2"></i>CEBPM</h5>
-                    <p class="mb-0">Formando campeones desde 1950</p>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="{% static 'img/LOGOCEB.svg' %}" height="50">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-white">CEB PUERTO MONTT</h5>
+                            <small class="text-primary">EST. 1950</small>
+                        </div>
+                    </div>
+                    <p class="small opacity-75">Formando campeones dentro y fuera de la cancha. Pasión, disciplina y familia en el sur de Chile.</p>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="mb-0">&copy; 2025 CEBPM. Todos los derechos reservados.</p>
+                <div class="col-6 col-lg-2 offset-lg-2">
+                    <h6 class="fw-bold mb-3 text-white">CLUB</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="{% url 'pages:about' %}">Historia</a></li>
+                        <li><a href="{% url 'pages:teams' %}">Categorías</a></li>
+                        <li><a href="#">Directiva</a></li>
+                    </ul>
                 </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="fw-bold mb-3 text-white">SOCIOS</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="{% url 'login' %}">Portal Apoderados</a></li>
+                        <li><a href="{% url 'register' %}">Nuevas Inscripciones</a></li>
+                        <li><a href="{% url 'tickets:create' %}">Centro de Ayuda</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h6 class="fw-bold mb-3 text-white">CONTACTO</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><i class="bi bi-geo-alt me-2 text-primary"></i>Gimnasio Municipal</li>
+                        <li><i class="bi bi-envelope me-2 text-primary"></i>contacto@cebpm.cl</li>
+                        <li><i class="bi bi-whatsapp me-2 text-primary"></i>+56 9 1234 5678</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-top border-white-10 mt-5 pt-4 text-center">
+                <p class="small mb-0 opacity-50">&copy; 2025 Club Deportivo CEB Puerto Montt. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        (function(){
-            const toggleBtn = document.getElementById('mobileMenuToggle');
-            const closeBtn = document.getElementById('mobileMenuClose');
-            const offcanvas = document.getElementById('mobileOffcanvas');
-            const overlay = document.getElementById('offcanvasOverlay');
-            const navCollapse = document.getElementById('navbarNav');
-            const offcanvasContent = document.getElementById('offcanvasContent');
-
-            function openMenu(){
-                if (navCollapse && offcanvasContent && offcanvasContent.childElementCount === 0) {
-                    offcanvasContent.innerHTML = navCollapse.innerHTML;
-                    offcanvasContent.querySelectorAll('a').forEach(a => {
-                        a.addEventListener('click', closeMenu);
-                    });
-                }
-                offcanvas.classList.add('show');
-                overlay.classList.add('show');
-                offcanvas.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('mainNavbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
             }
-            function closeMenu(){
-                offcanvas.classList.remove('show');
-                overlay.classList.remove('show');
-                offcanvas.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
-            }
-            toggleBtn?.addEventListener('click', function(){
-                if (window.innerWidth < 992) openMenu();
-            });
-            closeBtn?.addEventListener('click', closeMenu);
-            overlay?.addEventListener('click', closeMenu);
-            window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMenu(); });
-            window.addEventListener('resize', function(){ if (window.innerWidth >= 992) closeMenu(); });
-        })();
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

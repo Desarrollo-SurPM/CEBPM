@@ -1,111 +1,119 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Registro de Apoderado - CEBPM{% endblock %}
+{% block title %}Registro | CEB Puerto Montt{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg border-0">
-                <div class="card-body p-5">
-                    <h2 class="card-title text-center text-primary fw-bold mb-4">Solicitud de Registro</h2>
-                    <p class="text-center text-muted mb-4">Completa tus datos como apoderado y los datos de la jugadora que deseas inscribir.</p>
-                    
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-
-                    <form method="POST">
-                        {% csrf_token %}
+<div class="auth-container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                
+                <div class="card card-auth border-0 text-white">
+                    <div class="card-body p-5">
                         
-                        <fieldset class="mb-4">
-                            <legend class="fs-5 fw-semibold text-secondary border-bottom pb-2 mb-3">
-                                <i class="bi bi-person-badge me-2"></i>Tus Datos (Apoderado)
-                            </legend>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }} *</label>
-                                    {{ form.first_name }}
-                                    {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }} *</label>
-                                    {{ form.last_name }}
-                                    {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }} *</label>
-                                    {{ form.email }}
-                                    {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.guardian_phone.id_for_label }}" class="form-label">{{ form.guardian_phone.label }} *</label>
-                                    {{ form.guardian_phone }}
-                                    {% if form.guardian_phone.errors %}<div class="text-danger small">{{ form.guardian_phone.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }} *</label>
-                                    {{ form.password }}
-                                    {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }} *</label>
-                                    {{ form.password_confirm }}
-                                    {% if form.password_confirm.errors %}<div class="text-danger small">{{ form.password_confirm.errors }}</div>{% endif %}
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <fieldset>
-                            <legend class="fs-5 fw-semibold text-secondary border-bottom pb-2 mb-3">
-                                <i class="bi bi-person-fill me-2"></i>Datos de la Jugadora
-                            </legend>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="{{ form.player_first_name.id_for_label }}" class="form-label">{{ form.player_first_name.label }} *</label>
-                                    {{ form.player_first_name }}
-                                    {% if form.player_first_name.errors %}<div class="text-danger small">{{ form.player_first_name.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.player_last_name.id_for_label }}" class="form-label">{{ form.player_last_name.label }} *</label>
-                                    {{ form.player_last_name }}
-                                    {% if form.player_last_name.errors %}<div class="text-danger small">{{ form.player_last_name.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.player_birth_date.id_for_label }}" class="form-label">{{ form.player_birth_date.label }} *</label>
-                                    {{ form.player_birth_date }}
-                                    {% if form.player_birth_date.errors %}<div class="text-danger small">{{ form.player_birth_date.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="{{ form.player_rut.id_for_label }}" class="form-label">{{ form.player_rut.label }}</label>
-                                    {{ form.player_rut }}
-                                    {% if form.player_rut.errors %}<div class="text-danger small">{{ form.player_rut.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-12">
-                                    <label for="{{ form.team.id_for_label }}" class="form-label">{{ form.team.label }} *</label>
-                                    {{ form.team }}
-                                    {% if form.team.errors %}<div class="text-danger small">{{ form.team.errors }}</div>{% endif %}
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <div class="d-grid mt-4">
-                            {% if form.fields.team.queryset.exists %}
-                                <button type="submit" class="btn btn-primary btn-lg fw-bold">Enviar Solicitud de Registro</button>
-                            {% else %}
-                                <button type="submit" class="btn btn-primary btn-lg fw-bold" disabled>Inscripciones Cerradas</button>
-                            {% endif %}
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold mb-1">Únete al Equipo</h3>
+                            <p class="text-white-50">Crea tu cuenta de apoderado en segundos</p>
                         </div>
-                    </form>
-                    <div class="text-center mt-3">
-                        <small class="text-muted">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></small>
+
+                        <form method="post" class="needs-validation">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger small p-2 mb-3">
+                                    {{ form.non_field_errors.0 }}
+                                </div>
+                            {% endif %}
+                            
+                            {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-white-50 ms-1">{{ field.label }}</label>
+                                <input type="{{ field.field.widget.input_type }}" 
+                                       name="{{ field.name }}" 
+                                       class="form-control form-control-auth ps-3"
+                                       placeholder="{{ field.label }}"
+                                       {% if field.value %}value="{{ field.value }}"{% endif %}
+                                       {% if field.field.required %}required{% endif %}>
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1 ms-1">
+                                        <i class="bi bi-x-circle me-1"></i> {{ field.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <div class="form-text text-white-50 small ms-1" style="font-size: 0.75rem;">{{ field.help_text|safe }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+
+                            <div class="form-check mb-4 bg-white/10 p-3 rounded-3 border border-white/10">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label small text-white-50" for="terms">
+                                    Acepto registrarme como <strong>Apoderado</strong> del Club.
+                                </label>
+                            </div>
+
+                            <div class="d-grid gap-2 mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm btn-glow">
+                                    REGISTRARME <i class="bi bi-person-plus-fill ms-1"></i>
+                                </button>
+                            </div>
+
+                            <div class="text-center border-top border-white-10 pt-3">
+                                <span class="text-white-50 small">¿Ya tienes cuenta?</span>
+                                <a href="{% url 'login' %}" class="text-warning fw-bold text-decoration-none ms-1 hover-white">
+                                    Inicia Sesión aquí
+                                </a>
+                            </div>
+
+                        </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .auth-container {
+        background: linear-gradient(rgba(44, 14, 74, 0.85), rgba(26, 13, 46, 0.9)), url("{% static 'img/equipo2.png' %}");
+        background-size: cover;
+        background-attachment: fixed;
+        margin-top: -80px; 
+        padding-top: 80px;
+    }
+    .card-auth {
+        background: rgba(255, 255, 255, 0.05); /* Un poco más oscuro para registro */
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border-radius: 24px;
+    }
+    .form-control-auth {
+        background: rgba(255, 255, 255, 0.1); /* Input transparente en registro */
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 12px;
+        padding: 0.7rem;
+    }
+    .form-control-auth:focus {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-color: var(--ceb-accent);
+        box-shadow: 0 0 0 4px rgba(231, 97, 124, 0.2);
+    }
+    /* Placeholder color fix */
+    .form-control-auth::placeholder { color: rgba(255,255,255,0.4); }
+    
+    .btn-glow {
+        background: var(--ceb-accent); /* Botón Rosado para registro */
+        border: none;
+    }
+    .btn-glow:hover {
+        background: #d64d68;
+        transform: translateY(-2px);
+    }
+</style>
 {% endblock %}

@@ -77,24 +77,35 @@ def register_view(request):
 # ==============================================
 @login_required
 def profile_view(request):
-    """Vista del perfil del usuario"""
+    """
+    Vista de perfil 'Router'. 
+    Redirige al perfil específico según el tipo de usuario o muestra el de Admin/Staff.
+    """
     user = request.user
-    context = {'user': user}
     
-    # Verificar si es admin o guardian
+    # 1. Si es Apoderado, mandar a su perfil especializado
+    if hasattr(user, 'guardian_profile'):
+        return redirect('guardian:profile')
+    
+    # 2. Si es Admin/Staff, mostrar el perfil genérico (que vamos a embellecer)
+    #    o si tienes una app 'admin_panel', podrías redirigir allá.
+    #    Por ahora, renderizamos el template de admin con datos de AdminProfile si existen.
+    
+    profile = None
+    user_type = 'staff'
+    
     try:
-        admin_profile = AdminProfile.objects.get(user=user)
-        context['profile'] = admin_profile
-        context['user_type'] = 'admin'
+        profile = AdminProfile.objects.get(user=user)
+        user_type = 'admin'
     except AdminProfile.DoesNotExist:
-        try:
-            guardian_profile = GuardianProfile.objects.get(user=user)
-            context['profile'] = guardian_profile
-            context['user_type'] = 'guardian'
-        except GuardianProfile.DoesNotExist:
-            context['profile'] = None
-            context['user_type'] = 'unknown'
-    
+        pass
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'user_type': user_type
+    }
+    # Usamos el mismo template genérico pero ahora tendrá el diseño nuevo
     return render(request, 'users/profile.html', context)
 
 # ==============================================
