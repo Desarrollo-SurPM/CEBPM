@@ -1,0 +1,78 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Editar Auspiciador{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card-modern p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold m-0">Editar: {{ sponsor.name }}</h5>
+                <a href="{% url 'admin_panel:admin_sponsors' %}" class="btn-close"></a>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Nombre</label>
+                    <input type="text" name="name" class="form-control rounded-3" 
+                           value="{{ form.name.value|default:sponsor.name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Logo Actual</label>
+                    {% if sponsor.logo %}
+                        <div class="p-3 border rounded mb-2 bg-light text-center">
+                            <img src="{{ sponsor.logo.url }}" style="max-height: 80px; object-fit: contain;">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="logo" class="form-control rounded-3">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Sitio Web</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-link-45deg"></i></span>
+                        <input type="url" name="website" class="form-control rounded-end-3" 
+                               value="{{ form.website.value|default:sponsor.website|default:'' }}" 
+                               placeholder="https://...">
+                    </div>
+                    <div class="form-text small">Debe incluir https://</div>
+                    {% if form.website.errors %}
+                        <div class="text-danger small">{{ form.website.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="bg-light p-3 rounded-3 mb-4 border">
+                    <h6 class="small fw-bold text-muted mb-3">Datos de Contacto</h6>
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <input type="text" name="contact_name" class="form-control form-control-sm" 
+                                   value="{{ form.contact_name.value|default:sponsor.contact_name|default:'' }}" placeholder="Persona de contacto">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" name="contact_phone" class="form-control form-control-sm" 
+                                   value="{{ form.contact_phone.value|default:sponsor.contact_phone|default:'' }}" placeholder="Teléfono">
+                        </div>
+                        <div class="col-6">
+                            <input type="email" name="contact_email" class="form-control form-control-sm" 
+                                   value="{{ form.contact_email.value|default:sponsor.contact_email|default:'' }}" placeholder="Email">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-check form-switch mb-4 p-3 bg-light rounded border d-flex align-items-center justify-content-between ps-4">
+                    <label class="form-check-label fw-bold" for="is_visible">Visible en Web</label>
+                    <input class="form-check-input ms-0" type="checkbox" name="is_visible" id="is_visible" 
+                           {% if sponsor.is_visible %}checked{% endif %} style="width: 3em; height: 1.5em;">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary rounded-pill fw-bold">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

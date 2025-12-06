@@ -35,6 +35,8 @@ urlpatterns = [
     
     # Sponsors management
     path('sponsors/', admin_views.admin_sponsors, name='admin_sponsors'),
+    path('sponsors/edit/<int:pk>/', admin_views.edit_sponsor, name='edit_sponsor'),
+    path('sponsors/delete/<int:pk>/', admin_views.delete_sponsor, name='delete_sponsor'),
     
     # --- AÑADIR ESTA LÍNEA ---
     path('players/<int:pk>/', admin_views.admin_player_detail, name='admin_player_detail'),

@@ -220,14 +220,17 @@
                 <span><i class="bi bi-globe"></i> Sitio Web</span>
                 <i class="bi bi-chevron-down ms-auto" style="width: auto; font-size: 0.8rem;"></i>
             </a>
-            <div class="collapse {% if 'landing' in request.resolver_match.url_name or 'news' in request.resolver_match.url_name %}show{% endif %}" id="menuWeb">
+            <div class="collapse {% if 'landing' in request.resolver_match.url_name or 'news' in request.resolver_match.url_name or 'featured' in request.resolver_match.url_name %}show{% endif %}" id="menuWeb">
                 <div class="collapse-inner">
                     <a href="{% url 'admin_panel:manage_news' %}" class="nav-link">Noticias</a>
                     <a href="{% url 'admin_panel:manage_calendar' %}" class="nav-link">Calendario</a>
                     <a href="{% url 'admin_panel:admin_sponsors' %}" class="nav-link">Sponsors</a>
+                    
+                    <a href="{% url 'admin_panel:manage_featured_players' %}" class="nav-link {% if 'featured' in request.resolver_match.url_name %}active{% endif %}">
+                        Figuras del Home
+                    </a>
                 </div>
             </div>
-        </div>
 
         <div class="mt-auto p-3 border-top border-white-10 bg-black bg-opacity-25">
             <div class="d-flex align-items-center gap-2 mb-2">

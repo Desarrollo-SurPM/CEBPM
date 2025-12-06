@@ -1,148 +1,128 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
 
-{% block title %}Gestión de Auspiciadores - Admin{% endblock %}
+{% block page_title %}Gestión de Auspiciadores{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <h1 class="h3 mb-4 text-gray-800">Gestión de Auspiciadores</h1>
+<div class="row g-4">
     
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Nuevo Auspiciador</h6>
+    <div class="col-lg-4">
+        <div class="card-modern p-4 sticky-top border-top border-4 border-primary" style="top: 100px; z-index: 10;">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div class="bg-primary-subtle text-primary p-2 rounded-circle">
+                    <i class="bi bi-star-fill"></i>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
+                <h5 class="fw-bold text-dark m-0">Nuevo Auspiciador</h5>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Nombre de la Marca</label>
+                    <input type="text" name="name" class="form-control rounded-3 bg-light border-0" placeholder="Ej: Coca-Cola" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Logotipo</label>
+                    <input type="file" name="logo" class="form-control rounded-3 bg-light border-0" required accept="image/*">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Sitio Web</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0 rounded-start-3"><i class="bi bi-link-45deg"></i></span>
+                        <input type="url" name="website" class="form-control bg-light border-0 rounded-end-3" placeholder="https://sitio.com">
+                    </div>
+                </div>
+
+                <div class="bg-light p-3 rounded-3 mb-3 border">
+                    <h6 class="small fw-bold text-muted mb-3"><i class="bi bi-person-vcard me-1"></i> Contacto (Interno)</h6>
+                    <div class="mb-2">
+                        <input type="text" name="contact_name" class="form-control form-control-sm border-0" placeholder="Nombre Contacto">
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="contact_phone" class="form-control form-control-sm border-0" placeholder="Teléfono">
+                    </div>
+                    <div class="mb-0">
+                        <input type="email" name="contact_email" class="form-control form-control-sm border-0" placeholder="Email">
+                    </div>
+                </div>
+
+                <div class="form-check form-switch p-3 bg-light rounded-3 border mb-4 d-flex justify-content-between align-items-center ps-4">
+                    <label class="form-check-label fw-bold text-dark mb-0" for="is_visible">
+                        Visible en el sitio
+                    </label>
+                    <input class="form-check-input ms-0" type="checkbox" role="switch" name="is_visible" id="is_visible" checked style="width: 3em; height: 1.5em;">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm hover-scale">
+                    <i class="bi bi-plus-circle me-2"></i> Agregar Marca
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold text-dark mb-1">Alianzas Comerciales</h5>
+                <p class="text-muted small mb-0">Marcas que apoyan al club.</p>
+            </div>
+            </div>
+
+        {% if sponsors %}
+        <div class="row g-3">
+            {% for sponsor in sponsors %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card-modern h-100 position-relative group hover-scale border-0 shadow-sm">
+                    <div class="ratio ratio-16x9 bg-light rounded-top-4 overflow-hidden border-bottom d-flex align-items-center justify-content-center p-4">
+                        {% if sponsor.logo %}
+                            <img src="{{ sponsor.logo.url }}" class="img-fluid object-fit-contain" alt="{{ sponsor.name }}">
+                        {% else %}
+                            <i class="bi bi-image text-muted fs-1 opacity-25"></i>
                         {% endif %}
-
-                        {% for field in form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {{ field.errors|striptags }}
-                                    </div>
-                                {% endif %}
-                                {% if field.help_text %}
-                                    <div class="form-text text-muted">{{ field.help_text }}</div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-save me-2"></i>Guardar Auspiciador
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Listado de Auspiciadores</h6>
-                    <div class="btn-group btn-group-sm">
-                        <a href="?status=" class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">Todos</a>
-                        <a href="?status=active" class="btn btn-outline-success {% if status_filter == 'active' %}active{% endif %}">Visibles</a>
-                        <a href="?status=inactive" class="btn btn-outline-secondary {% if status_filter == 'inactive' %}active{% endif %}">Ocultos</a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 100px;">Logo</th>
-                                    <th>Información</th>
-                                    <th>Contacto</th>
-                                    <th style="width: 80px;">Visible</th>
-                                    <th style="width: 100px;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sponsor in sponsors %}
-                                <tr>
-                                    <td class="text-center bg-light">
-                                        {% if sponsor.logo %}
-                                            <img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" class="img-fluid" style="max-height: 50px; max-width: 80px;">
-                                        {% else %}
-                                            <i class="bi bi-image text-muted"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <strong>{{ sponsor.name }}</strong>
-                                        {% if sponsor.website %}
-                                            <br>
-                                            <a href="{{ sponsor.website }}" target="_blank" class="small text-decoration-none">
-                                                <i class="bi bi-link-45deg"></i> Sitio Web
-                                            </a>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if sponsor.contact_name %}
-                                            <small class="d-block"><i class="bi bi-person me-1"></i>{{ sponsor.contact_name }}</small>
-                                        {% endif %}
-                                        {% if sponsor.contact_email %}
-                                            <small class="d-block text-muted"><i class="bi bi-envelope me-1"></i>{{ sponsor.contact_email }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        {% if sponsor.is_visible %}
-                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Sí</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> No</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <form method="POST" action="{% url 'admin_panel:admin_sponsors' %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este auspiciador?');">
-                                            {% csrf_token %}
-                                            <button type="button" class="btn btn-sm btn-danger disabled" title="Eliminar (Próximamente)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        No se encontraron auspiciadores.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
 
-                    {% if sponsors.has_other_pages %}
-                    <nav aria-label="Navegación">
-                        <ul class="pagination justify-content-center mt-3">
-                            {% if sponsors.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ sponsors.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Anterior</a>
-                                </li>
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <form action="{% url 'admin_panel:delete_sponsor' sponsor.id %}" method="post" onsubmit="return confirm('¿Eliminar a {{ sponsor.name }}?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-white btn-sm rounded-circle shadow-sm text-danger border-0">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold text-dark mb-0 text-truncate">{{ sponsor.name }}</h6>
+                            {% if sponsor.is_visible %}
+                                <span class="badge bg-success-subtle text-success rounded-pill"><i class="bi bi-eye-fill"></i></span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill"><i class="bi bi-eye-slash-fill"></i></span>
                             {% endif %}
-                            <li class="page-item disabled">
-                                <span class="page-link">Pág. {{ sponsors.number }} de {{ sponsors.paginator.num_pages }}</span>
-                            </li>
-                            {% if sponsors.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ sponsors.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Siguiente</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
+                        </div>
+                        
+                        {% if sponsor.website %}
+                            <a href="{{ sponsor.website }}" target="_blank" class="small text-muted text-decoration-none d-block text-truncate">
+                                <i class="bi bi-link-45deg me-1"></i> {{ sponsor.website }}
+                            </a>
+                        {% else %}
+                            <span class="small text-muted opacity-50"><i class="bi bi-link-45deg me-1"></i> Sin enlace</span>
+                        {% endif %}
+                        
+                        <div class="mt-3 pt-3 border-top">
+                            <a href="{% url 'admin_panel:edit_sponsor' sponsor.id %}" class="btn btn-sm btn-light w-100 rounded-pill fw-bold text-muted">
+                                Editar
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
+        {% else %}
+            {% endif %}
     </div>
 </div>
 {% endblock %}

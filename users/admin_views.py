@@ -133,19 +133,21 @@ def admin_reject_registration(request, registration_id):
 def admin_sponsors(request):
     """Maneja la lista y creación de auspiciadores"""
     
-    # 1. Manejo del Formulario (POST = Guardar, GET = Vacío)
+    # 1. Manejo del Formulario
     if request.method == 'POST':
         form = SponsorForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Auspiciador creado correctamente.')
-            return redirect('admin_panel:sponsors')
+            # CORRECCIÓN AQUÍ: Cambiamos 'sponsors' por 'admin_sponsors' 
+            # para que coincida con name='admin_sponsors' en admin_urls.py
+            return redirect('admin_panel:admin_sponsors') 
         else:
             messages.error(request, 'Error al crear. Revisa los datos.')
     else:
         form = SponsorForm()
 
-    # 2. Listado
+    # 2. Listado y Filtros
     sponsors_query = Sponsor.objects.all().order_by('-created_at')
     status_filter = request.GET.get('status')
     
@@ -158,13 +160,40 @@ def admin_sponsors(request):
     page_obj = paginator.get_page(request.GET.get('page'))
     
     context = {
-        'sponsors': page_obj, # Tu HTML usa 'sponsors'
+        'sponsors': page_obj, 
         'page_obj': page_obj,
-        'form': form,         # IMPORTANTE: Enviamos el form para que se vea
+        'form': form,
         'status_filter': status_filter
     }
     return render(request, 'admin/sponsors.html', context)
 
+# ... al final del archivo ...
+
+@login_required
+@user_passes_test(is_admin)
+def edit_sponsor(request, pk):
+    """Editar un auspiciador existente"""
+    sponsor = get_object_or_404(Sponsor, pk=pk)
+    if request.method == 'POST':
+        form = SponsorForm(request.POST, request.FILES, instance=sponsor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Auspiciador actualizado.')
+            return redirect('admin_panel:admin_sponsors')
+    else:
+        form = SponsorForm(instance=sponsor)
+    
+    return render(request, 'admin/sponsor_edit.html', {'form': form, 'sponsor': sponsor})
+
+@login_required
+@user_passes_test(is_admin)
+def delete_sponsor(request, pk):
+    """Eliminar un auspiciador"""
+    if request.method == 'POST':
+        sponsor = get_object_or_404(Sponsor, pk=pk)
+        sponsor.delete()
+        messages.success(request, 'Auspiciador eliminado.')
+    return redirect('admin_panel:admin_sponsors')
 # --- FINANZAS ---
 @login_required
 @user_passes_test(is_admin)

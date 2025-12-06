@@ -1,75 +1,147 @@
 {% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block page_title %}Jugadoras Destacadas{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4 text-gray-800">{{ page_title }}</h1>
-
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Seleccionar Jugadoras (Máximo 4)</h6>
-    </div>
-    <div class="card-body">
+<div class="row justify-content-center">
+    <div class="col-lg-10">
         
-        <div class="alert alert-info">
-            Actualmente has seleccionado <strong>{{ featured_count }}</strong> de 4 jugadoras.
+        <div class="card-modern p-4 mb-4 border-0 bg-white">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle text-primary p-2 rounded-circle">
+                        <i class="bi bi-star-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Figuras del Home</h5>
+                        <p class="text-muted small mb-0">Selecciona hasta <strong>4 jugadoras</strong> para mostrar en la portada.</p>
+                    </div>
+                </div>
+                
+                <div class="input-group w-auto">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="playerSearch" class="form-control border-start-0 rounded-end-pill" placeholder="Buscar jugadora..." onkeyup="filterPlayers()">
+                </div>
+            </div>
         </div>
 
-        <form method="POST" id="featuredPlayersForm">
+        <form method="post" id="featuredForm">
             {% csrf_token %}
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Destacar</th>
-                            <th>Foto</th>
-                            <th>Nombre Completo</th>
-                            <th>Categoría</th>
-                            <th>Posición</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for player in all_players %}
-                        <tr>
-                            <td>
-                                <input type="checkbox" class="form-check-input" name="featured_players" value="{{ player.id }}" 
-                                       {% if player.is_featured %}checked{% endif %}>
-                            </td>
-                            <td>
-                                {% if player.photo %}
-                                <img src="{{ player.photo.url }}" alt="{{ player.get_full_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
-                                {% endif %}
-                            </td>
-                            <td>{{ player.get_full_name }}</td>
-                            <td>{{ player.category.name }}</td>
-                            <td>{{ player.get_position_display }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
             
-            <button type
-="submit" class="btn btn-primary">Guardar Selección</button>
+            <div class="alert alert-info border-0 shadow-sm d-flex justify-content-between align-items-center mb-4 sticky-top" style="top: 90px; z-index: 5;">
+                <div>
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    Seleccionadas: <strong id="countDisplay">{{ featured_count }}</strong> / 4
+                </div>
+                <button type="submit" class="btn btn-primary rounded-pill fw-bold shadow-sm px-4">
+                    Guardar Selección
+                </button>
+            </div>
+
+            <div class="row g-3" id="playersGrid">
+                {% for player in all_players %}
+                <div class="col-md-6 col-xl-4 player-card-item" data-name="{{ player.get_full_name|lower }}">
+                    <label class="card-modern p-3 h-100 cursor-pointer position-relative border-2 selector-card {% if player.is_featured %}selected border-primary bg-primary-subtle{% else %}border-transparent hover-scale{% endif %}" for="check_{{ player.id }}">
+                        
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="checkbox" name="featured_players" value="{{ player.id }}" 
+                                   id="check_{{ player.id }}" class="btn-check feature-check" 
+                                   {% if player.is_featured %}checked{% endif %}
+                                   onchange="updateSelection(this)">
+                            
+                            <div class="position-relative">
+                                {% if player.photo %}
+                                    <img src="{{ player.photo.url }}" class="rounded-circle object-fit-cover shadow-sm" width="50" height="50">
+                                {% else %}
+                                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center text-muted fw-bold shadow-sm" style="width: 50px; height: 50px;">
+                                        {{ player.first_name|slice:":1" }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="check-icon position-absolute top-0 start-100 translate-middle bg-primary text-white rounded-circle p-1" style="width: 24px; height: 24px; display: none; place-items: center;">
+                                    <i class="bi bi-check-lg" style="font-size: 14px;"></i>
+                                </div>
+                            </div>
+
+                            <div class="overflow-hidden">
+                                <h6 class="fw-bold mb-0 text-truncate text-dark">{{ player.get_full_name }}</h6>
+                                <small class="text-muted">{{ player.category.name }}</small>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No hay jugadoras registradas para seleccionar.</p>
+                </div>
+                {% endfor %}
+            </div>
+
         </form>
     </div>
 </div>
 
-{% block extra_js %}
+<style>
+    .cursor-pointer { cursor: pointer; transition: all 0.2s; }
+    
+    /* Estilos cuando está seleccionado */
+    .selector-card.selected {
+        background-color: #f3e5f5; /* Tono morado muy suave */
+        border-color: var(--ceb-primary) !important;
+    }
+    .selector-card.selected .check-icon {
+        display: grid !important;
+    }
+    .selector-card:hover:not(.selected) {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+    }
+</style>
+
 <script>
-// Script simple para limitar checkboxes a 4
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('featuredPlayersForm');
-    const checkboxes = form.querySelectorAll('input[name="featured_players"]');
-    const limit = 4;
+    function updateSelection(checkbox) {
+        const card = checkbox.closest('label');
+        const countDisplay = document.getElementById('countDisplay');
+        let currentCount = document.querySelectorAll('.feature-check:checked').length;
 
-    form.addEventListener('submit', function(e) {
-        const checkedCount = form.querySelectorAll('input[name="featured_players"]:checked').length;
-        if (checkedCount > limit) {
-            alert('¡Solo puedes seleccionar un máximo de 4 jugadoras!');
-            e.preventDefault(); // Detiene el envío del formulario
+        if (checkbox.checked) {
+            if (currentCount > 4) {
+                checkbox.checked = false;
+                alert('Solo puedes destacar a un máximo de 4 jugadoras. Desmarca una primero.');
+                return;
+            }
+            card.classList.add('selected', 'border-primary', 'bg-primary-subtle');
+            card.classList.remove('border-transparent');
+        } else {
+            card.classList.remove('selected', 'border-primary', 'bg-primary-subtle');
+            card.classList.add('border-transparent');
         }
-    });
-});
-</script>
-{% endblock %}
+        
+        // Actualizar contador visual
+        countDisplay.textContent = document.querySelectorAll('.feature-check:checked').length;
+    }
 
+    // Buscador Rápido
+    function filterPlayers() {
+        const input = document.getElementById('playerSearch').value.toLowerCase();
+        const cards = document.getElementsByClassName('player-card-item');
+
+        Array.from(cards).forEach(card => {
+            const name = card.getAttribute('data-name');
+            if (name.includes(input)) {
+                card.classList.remove('d-none');
+            } else {
+                card.classList.add('d-none');
+            }
+        });
+    }
+
+    // Inicializar estados visuales al cargar (por si el HTML no atrapó alguna clase)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.feature-check:checked').forEach(cb => {
+            updateSelection(cb);
+        });
+    });
+</script>
 {% endblock %}
